@@ -11,7 +11,7 @@ class Image < Rubee::SequelObject
     attribute(:image_data).required.type(String)
   end
 
-  # Hashed getter
+  # Hashed mage_data getter
   def image_data_h
     return unless image_data&.is_a?(String)
 
