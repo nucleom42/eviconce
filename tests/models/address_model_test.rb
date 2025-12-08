@@ -27,7 +27,7 @@ describe 'Address model' do
       it 'should not save' do
         address = Address.new(city: 'city', country: 'country', postal: 'postal', region: 'region',
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1, ln: 0)
-        _(raise_error { address.save }).is_a?(Rubee::Validatable::Error)
+        _(raise_error { address.save }.is_a?(Rubee::Validatable::Error)).must_equal(true)
       end
     end
   end
@@ -45,8 +45,8 @@ describe 'Address model' do
           raise_error do
             Address.create(city: 'ci', country: 'country', postal: 'postal', region: 'region',
                                street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
-          end
-        ).is_a?(Rubee::Validatable::Error)
+          end.is_a?(Rubee::Validatable::Error)
+        ).must_equal(true)
       end
     end
   end
@@ -68,8 +68,8 @@ describe 'Address model' do
           raise_error do
             address.update(city: 'ci', country: 'country', postal: 'postal', region: 'region',
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
-          end
-        ).is_a?(Rubee::Validatable::Error)
+          end.is_a?(Rubee::Validatable::Error)
+        ).must_equal(true)
       end
     end
   end

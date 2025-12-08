@@ -1,9 +1,13 @@
 require_relative '../test_helper'
+using ChargedString
 
 describe 'Company model' do
   after do
+    CompanyClient.destroy_all cascade: true
+    CompanyEmployee.destroy_all cascade: true
     Company.destroy_all
     Address.destroy_all
+    Employee.destroy_all
   end
 
   describe '.save' do
@@ -43,7 +47,7 @@ describe 'Company model' do
         company = Company.new(
           name: 'name', email: 'email', website: 'website', phone: 'phone', description: 'description'
         )
-        _(raise_error { company.save }).is_a?(Rubee::Validatable::Error)
+        _(raise_error { company.save }.is_a?(Rubee::Validatable::Error)).must_equal(true)
       end
     end
 
@@ -59,6 +63,39 @@ describe 'Company model' do
         company.save
         _(company.persisted?).must_equal(true)
         _(company.address.id).must_equal(address.id)
+      end
+    end
+
+    describe 'owns_many employees' do
+      it 'should add employees' do
+        company = Company.create(
+          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+        )
+        employee = Employee.new(
+          first_name: 'first_name', last_name: 'last_name', description: 'description',
+          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+        )
+        employee.password = 'password_digest'
+        employee.save
+        assert_difference(-> { company.employees.count }, 1) do
+          company.add_employees(employee)
+        end
+      end
+    end
+
+    describe 'owns many clients' do
+      it 'should add clients' do
+        company = Company.create(
+          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+        )
+        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: 'ok@ok.com', phone: 'phone',
+                            password_digest: 'password_digest')
+        client.password = 'password_digest'
+        client.save
+        assert_difference(-> { company.clients.count }, 1) do
+          company.add_clients(client)
+        end
+        _(company.clients.count).must_equal(1)
       end
     end
   end

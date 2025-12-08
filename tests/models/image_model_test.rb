@@ -18,7 +18,7 @@ describe 'Image model' do
     describe 'when invalid' do
       it 'should raise error' do
         image = Image.new(image_data: 123)
-        _(raise_error { image.save }).is_a?(Rubee::Validatable::Error)
+        _(raise_error { image.save }.is_a?(Rubee::Validatable::Error)).must_equal(true)
       end
     end
   end
