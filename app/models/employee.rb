@@ -14,7 +14,7 @@ class Employee < Rubee::SequelObject
     attribute(:phone).required.type(String).condition(-> { phone.length > 5 })
     attribute(:password_digest).required.type(String)
       .condition(-> { @__encoded }, message: "Password must be encoded by using 'password=' method")
-    attribute(:role).required.type(Integer).condition(-> { role.between?(0, 1) })
+    attribute(:role).required.condition(-> { role.to_i&.between?(0, 1) })
   end
 
   owns_many :compannies, over: :company_employees

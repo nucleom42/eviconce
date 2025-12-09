@@ -7,21 +7,27 @@ class EmployeesController < Rubee::BaseController
   def create
     employee = Employee.new(employee_params)
     employee.password = employee_params[:password_digest]
-    if employee.save
-      response_with object: employee, status: 201, type: :json
+
+    if employee.valid? && employee.save
+      response_with object: employee, type: :json, status: 201
     else
-      response_with object: employee.errors, type: :json
+      response_with object: { errors: employee.errors }, type: :json, status: 422
     end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   # POST /api/employees/login
   def login
     params[:password] = Employee.digest params[:password]
+
     if authentificate! user_model: Employee, login: :email, password: :password_digest
-      response_with object: { message: :authentificated }, status: 200
+      response_with object: { ok: :authentificated }, type: :json, status: 200
     else
-      response_with object: { message: :unauthentificated }, status: 401
+      response_with object: { error: :unauthentificated }, type: :json, status: 401
     end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   private
@@ -29,6 +35,7 @@ class EmployeesController < Rubee::BaseController
   def employee_params
     params.tap do |hash|
       hash[:password_digest] = hash.delete(:password)
+      hash[:role] = hash[:role].to_i
     end
   end
 end
