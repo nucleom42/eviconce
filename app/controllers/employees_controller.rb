@@ -1,4 +1,7 @@
 class EmployeesController < Rubee::BaseController
+  include Rubee::AuthTokenable
+
+  # GET /api/employees
   def index
     response_with
   end
@@ -19,15 +22,22 @@ class EmployeesController < Rubee::BaseController
 
   # POST /api/employees/login
   def login
-    params[:password] = Employee.digest params[:password]
+    params[:password_digest] = Employee.digest params[:password]
 
     if authentificate! user_model: Employee, login: :email, password: :password_digest
-      response_with object: { ok: :authentificated }, type: :json, status: 200
+      response_with object: { ok: :authentificated }, type: :json, status: 200, headers: @token_header
     else
-      response_with object: { error: :unauthentificated }, type: :json, status: 401
+      response_with object: { errors: :unauthentificated }, type: :json, status: 401
     end
   rescue StandardError => e
     response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
+  # POST /api/employees/logout
+  def logout
+    unauthentificate!
+
+    response_with object: { ok: :unauthentificated }, type: :json, headers: @zeroed_token_header
   end
 
   private

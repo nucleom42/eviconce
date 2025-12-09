@@ -73,6 +73,8 @@ Rubee::Router.draw do |router|
   router.get('/api/employees/{id}', to: 'employees#show')
   router.get('/api/employees/new', to: 'employees#new')
   router.post('/api/employees', to: 'employees#create')
+  router.post('/api/employees/logout', to: 'employees#logout')
+  router.post('/api/employees/login', to: 'employees#login')
   router.get('/api/employees/{id}/edit', to: 'employees#edit')
   router.put('/api/employees/{id}', to: 'employees#update')
   router.delete('/api/employees/{id}', to: 'employees#destroy')

@@ -53,5 +53,31 @@ describe 'Employee API' do
         assert_equal(200, last_response.status)
       end
     end
+
+    describe 'invalid params' do
+      it 'should not authenticate employee' do
+        invalid_params = { email: 'L4@example.com', password: 'wrong' }
+        post('/api/employees/login', invalid_params)
+
+        assert_equal(401, last_response.status)
+      end
+    end
+  end
+
+  describe 'POST /api/employees/logout' do
+    describe 'valid params' do
+      it 'should logout employee' do
+        employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon', email: 'L4qyW@example.com',
+                                 password_digest: '123456', description: 'nail specialist', phone: '1234567890',
+                                 role: 1)
+        employee.password = '123456'
+        employee.save
+        valid_params = { email: employee.email, password: employee.password }
+        post('/api/employees/login', valid_params)
+        post('/api/employees/logout')
+
+        assert_equal(200, last_response.status)
+      end
+    end
   end
 end

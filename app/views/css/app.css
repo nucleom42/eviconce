@@ -1,0 +1,132 @@
+/* GLOBAL RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* COLOR SYSTEM */
+:root {
+  --bg: #faf8f5; /* warm off-white */
+  --bg-soft: #fff7ef; /* very soft beige */
+  --text: #2f2a26; /* warm charcoal */
+  --accent: #d57a66; /* soft terracotta */
+  --accent-muted: #807b58; /* warm olive */
+  --border: rgba(80, 70, 60, 0.15);
+  --radius: 12px;
+  --shadow: 0 4px 14px rgba(80, 70, 60, 0.08);
+  --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* BASE */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  padding: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* HEADINGS */
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+/* LAYOUT HELPERS */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* CARDS (optional UI element) */
+.card {
+  background: var(--bg-soft);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+/* NAV LINKS */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-muted);
+}
+
+/* BUTTONS */
+button,
+.btn {
+  display: inline-block;
+  padding: 12px 18px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: 0.2s ease;
+  box-shadow: var(--shadow);
+}
+
+button:hover,
+.btn:hover {
+  background: var(--accent-muted);
+}
+
+/* INPUTS */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: white;
+  font-size: 16px;
+  color: var(--text);
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* SPACING HELPERS */
+.mt-1 {
+  margin-top: 8px;
+}
+.mt-2 {
+  margin-top: 16px;
+}
+.mt-3 {
+  margin-top: 24px;
+}
+.mb-1 {
+  margin-bottom: 8px;
+}
+.mb-2 {
+  margin-bottom: 16px;
+}
+.mb-3 {
+  margin-bottom: 24px;
+}
