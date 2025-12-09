@@ -6,7 +6,6 @@ class Image < Rubee::SequelObject
   after :initialize, :image_data_jsonify
   after :image_data=, :image_data_jsonify
 
-  validate_before_persist!
   validate do
     attribute(:image_data).required.type(String)
   end

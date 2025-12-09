@@ -1,7 +1,6 @@
 class TimeSlot < Rubee::SequelObject
   attr_accessor :id, :start_time, :end_time, :day, :employee_id, :client_id, :company_id, :state, :created, :updated
 
-  validate_before_persist!
   validate do
     attribute(:start_time).required.type(Time)
       .condition(

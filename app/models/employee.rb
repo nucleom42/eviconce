@@ -3,7 +3,6 @@ class Employee < Rubee::SequelObject
   attr_accessor :id, :first_name, :last_name, :description,
     :email, :phone, :password_digest, :role, :created, :updated
 
-  validate_before_persist!
   validate do
     attribute(:first_name).required.type(String).condition(-> { first_name.length > 1 })
     attribute(:last_name).optional.type(String).condition(-> { last_name.length > 1 })
@@ -25,7 +24,7 @@ class Employee < Rubee::SequelObject
   end
 
   def password=(value)
-    self.password_digest = ::JWT.encode({ password: value }, JWT_KEY, 'HS256')
+    self.password_digest = self.class.digest(value)
     @__encoded = true unless value == password_digest
     valid?
 
@@ -34,5 +33,11 @@ class Employee < Rubee::SequelObject
 
   def add_companies(*companies)
     companies.map { |company| CompanyEmployee.create(employee_id: id, company_id: company.id) }
+  end
+
+  class << self
+    def digest(password)
+      ::JWT.encode({ password: }, JWT_KEY, 'HS256')
+    end
   end
 end

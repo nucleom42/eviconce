@@ -1,7 +1,6 @@
 class Address < Rubee::SequelObject
   attr_accessor :id, :city, :country, :postal, :region, :lt, :ln, :street_line1, :street_line2, :created, :updated
 
-  validate_before_persist!
   validate do
     attribute(:city).required.type(String).condition(-> { city.length > 3 })
     attribute(:country).required.type(String).condition(-> { country.length > 3 })

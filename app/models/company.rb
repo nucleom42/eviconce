@@ -1,7 +1,6 @@
 class Company < Rubee::SequelObject
   attr_accessor :id, :name, :email, :website, :phone, :description, :address_id, :created, :updated
 
-  validate_before_persist!
   validate do
     attribute(:name).required.type(String).condition(-> { name.length > 1 })
     attribute(:email).required.type(String)
