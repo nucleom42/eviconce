@@ -4,11 +4,13 @@ import LoginEmployee from './LoginEmployee';
 
 export default function Welcome() {
   return (
-    <div>
-      <p>Вже маєте аккаунт?</p>
+    <div class="container">
+      <p class="t-a-center">Вже маєте аккаунт?</p>
       <LoginEmployee />
-      <p>Ще не маєте аккаунту?</p>
-      <Link to="/companies/new">Реєстрація</Link>
+      <div className="t-a-center">
+        <p>Ще не маєте аккаунту?</p>
+        <Link to="/companies/new">Реєстрація</Link>
+      </div>
     </div>
   );
 }

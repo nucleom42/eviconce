@@ -130,3 +130,6 @@ textarea:focus {
 .mb-3 {
   margin-bottom: 24px;
 }
+.t-a-center {
+  text-align: center;
+}

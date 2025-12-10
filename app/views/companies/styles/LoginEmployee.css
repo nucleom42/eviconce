@@ -1,0 +1,33 @@
+.login {
+  max-width: 380px;
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+.login__title {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.login__error {
+  background: #ffd7d2;
+  border-left: 4px solid #d57a66;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  color: #5a2a23;
+  font-size: 15px;
+}
+
+.login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login__container {
+  text-align: center;
+  padding-top: 60px;
+}

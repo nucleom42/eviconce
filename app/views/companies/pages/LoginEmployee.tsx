@@ -1,15 +1,50 @@
-import React from 'react';
+import React, { useState } from "react";
+import "./../styles/LoginEmployee.css";
 
 export default function LoginEmployee() {
+  const [error, setError] = useState("");
+
+  async function handleLogin(event) {
+    event.preventDefault();
+    setError("");
+
+    const email = event.target.email.value;
+    const password = event.target.password.value;
+
+    try {
+      const response = await fetch("/api/employees/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        setError("Невірний email або пароль");
+        return;
+      }
+
+      // Redirect or show dashboard
+      window.location.href = "/companies/dashboard";
+
+    } catch (err) {
+      console.error(err);
+      setError("Помилка з’єднання з сервером");
+    }
+  }
+
   return (
-    <div>
-      <h1>Login</h1>
-      <form action="/api/employees/login" method="post">
-        <input type="email" placeholder="Email" name="email" id="email" required />
-        <input type="password" placeholder="Password" name="password" id="password" required />
-        <button type="submit">Login</button>
+    <div className="login container">
+      <h1 className="login__title">Вхід</h1>
+
+      {error && <div className="login__error">{error}</div>}
+
+      <form className="login__form" onSubmit={handleLogin}>
+        <input type="email" placeholder="Email" name="email" required />
+        <input type="password" placeholder="Пароль" name="password" required />
+        <button type="submit" className="btn">Увійти</button>
       </form>
     </div>
   );
 }
-

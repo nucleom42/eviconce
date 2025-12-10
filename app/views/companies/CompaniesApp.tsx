@@ -4,9 +4,10 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import CompanyForm from "./pages/CompanyForm";
 import LoginEmployee from "./pages/LoginEmployee";
 import CompanyNotFound from "./pages/CompanyNotFound";
+import CompannyDashboard from "./pages/CompanyDashboard";
 import Welcome from "./pages/Welcome";
 
-import "./styles/companies.css";
+import "./styles/Companies.css";
 
 export default function CompaniesApp() {
   return (
@@ -15,6 +16,7 @@ export default function CompaniesApp() {
         <Route index element={<Welcome />} />
         <Route path="new" element={<CompanyForm />} />
         <Route path="login" element={<LoginEmployee />} />
+        <Route path="dashboard" element={<CompannyDashboard />} />
         <Route path="*" element={<CompanyNotFound />} />
       </Routes>
     </div>
