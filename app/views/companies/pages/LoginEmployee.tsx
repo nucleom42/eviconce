@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import "./../styles/LoginEmployee.css";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginEmployee() {
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   async function handleLogin(event) {
     event.preventDefault();
@@ -26,7 +28,7 @@ export default function LoginEmployee() {
       }
 
       // Redirect or show dashboard
-      window.location.href = "/companies/dashboard";
+      navigate("/companies/dashboard");
 
     } catch (err) {
       console.error(err);

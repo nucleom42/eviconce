@@ -1,0 +1,9 @@
+.company__error {
+  background: #ffd7d2;
+  border-left: 4px solid #d57a66;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  color: #5a2a23;
+  font-size: 15px;
+}
