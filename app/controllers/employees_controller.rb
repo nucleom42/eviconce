@@ -25,7 +25,10 @@ class EmployeesController < Rubee::BaseController
     params[:password_digest] = Employee.digest params[:password]
 
     if authentificate! user_model: Employee, login: :email, password: :password_digest
-      response_with object: { ok: :authentificated }, type: :json, status: 200, headers: @token_header
+      response_with(
+        object: { ok: :authentificated, has_companies: auth_user.companies.any? },
+        type: :json, status: 200, headers: @token_header
+      )
     else
       response_with object: { errors: :unauthentificated }, type: :json, status: 401
     end
@@ -42,8 +45,12 @@ class EmployeesController < Rubee::BaseController
 
   private
 
+  def auth_user
+    authentificated_user user_model: Employee, login: :email, password: :password_digest
+  end
+
   def employee_params
-    params.tap do |hash|
+    params[:employee].tap do |hash|
       hash[:password_digest] = hash.delete(:password)
       hash[:role] = hash[:role].to_i
     end

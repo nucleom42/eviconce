@@ -1,34 +1,39 @@
 class CompaniesController < Rubee::BaseController
+  include Rubee::AuthTokenable
+  auth_methods :create, :index
+
+  # GET /api/companies
   def index
-    response_with
+    owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
+    response_with object: owner.companies.where(companny_params), type: :json, status: 200
   end
 
   # POST /api/companies
   def create
-    address = Address.new(address_params)
-    if address.valid? && address.save
-      company = Company.new(companny_params.merge(address_id: address.id))
-    else
-      response_with object: { errors: address.errors }, type: :json, status: 422
-    end
-    if company.valid? && company.save
-      response_with object: company, type: :json, status: 201
-    else
-      address&.destroy
-      response_with object: { errors: company.errors }, type: :json, status: 422
+    Rubee::SequelObject::DB.transaction do
+      address = Address.create(address_params)
+      company = Company.create(companny_params.merge(address_id: address.id))
+      owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
+      company.add_employees owner
+
+      response_with(object: company, type: :json, status: 201)
     end
   rescue StandardError => e
-    address&.destroy
-    response_with object: { errors: e.message }, type: :json, status: 500
+    errors = begin
+               e.message.gsub(/(\w+):/, '"\1":').then { |json| JSON.parse(json) }
+             rescue
+               e.message
+             end
+    response_with object: { errors: }, type: :json, status: 422
   end
 
   private
 
   def companny_params
-    params[:company]
+    params[:company].reject { |_, val| val.strip == '' }
   end
 
   def address_params
-    params[:address]
+    params[:address].reject { |_, val| val.strip == '' }
   end
 end

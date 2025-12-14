@@ -1,4 +1,4 @@
-.company__error {
+.form__error {
   background: #ffd7d2;
   border-left: 4px solid #d57a66;
   padding: 10px 14px;
@@ -6,4 +6,13 @@
   margin-bottom: 20px;
   color: #5a2a23;
   font-size: 15px;
+}
+
+.field-error {
+  color: #b24a3b;
+  font-size: 14px;
+}
+
+input.error {
+  border-color: #d57a66;
 }

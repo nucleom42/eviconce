@@ -26,9 +26,8 @@ export default function LoginEmployee() {
         setError("Невірний email або пароль");
         return;
       }
-
-      // Redirect or show dashboard
-      navigate("/companies/dashboard");
+      const data = await response.json();
+      data.has_company ? navigate("/companies/dashboard") : navigate("/companies/new");
 
     } catch (err) {
       console.error(err);
