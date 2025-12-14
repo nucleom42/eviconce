@@ -44,7 +44,7 @@ export default function EmployeeForm({ role }) {
     });
 
     if (response.ok) {
-      navigate("/companies"); // or "/companies/login" if this is signup
+      navigate("/companies/welcome"); // or "/companies/login" if this is signup
     } else {
       const body = await response.json();
       setErrors(body.errors || {});

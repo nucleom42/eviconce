@@ -1,0 +1,120 @@
+.week-calendar {
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Header */
+.week-header {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+}
+
+.day-col-header {
+  padding: 8px 0;
+  text-align: center;
+}
+
+.day-name {
+  font-size: 12px;
+  color: #777;
+}
+
+.day-number {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Body */
+.week-body {
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.week-row {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  min-height: 48px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.time-col {
+  font-size: 12px;
+  color: #888;
+  padding: 8px;
+  text-align: right;
+}
+
+/* Cells */
+.week-cell {
+  border-left: 1px solid #f1f1f1;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.week-cell:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Today highlight */
+.day-col-header.today {
+  color: var(--accent);
+}
+
+.calendar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Native date picker, styled lightly */
+.date-picker {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid #ddd;
+  font-size: 14px;
+  background: #fff;
+  color: #111;
+}
+
+.date-picker:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 5;
+}
+
+.ghost-btn {
+  border: none;
+  background: #f3f3f5;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.week-body {
+  position: relative;
+}
+
+.event-block {
+  position: absolute;
+  width: calc((100% - 60px) / 7 - 6px);
+  margin-left: 3px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+}
+
+.event-block.preview {
+  opacity: 0.4;
+}

@@ -9,7 +9,7 @@ export default function Welcome() {
       <LoginEmployee />
       <div className="t-a-center">
         <p>Ще не маєте аккаунту?</p>
-        <Link to="admins/new">Реєстрація</Link>
+        <Link to="/companies/admins/new">Реєстрація</Link>
       </div>
     </div>
   );

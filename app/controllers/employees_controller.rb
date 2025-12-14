@@ -9,7 +9,6 @@ class EmployeesController < Rubee::BaseController
   # POST /api/employees
   def create
     employee = Employee.new(employee_params)
-    employee.password = employee_params[:password_digest]
 
     if employee.valid? && employee.save
       response_with object: employee, type: :json, status: 201
@@ -50,9 +49,6 @@ class EmployeesController < Rubee::BaseController
   end
 
   def employee_params
-    params[:employee].tap do |hash|
-      hash[:password_digest] = hash.delete(:password)
-      hash[:role] = hash[:role].to_i
-    end
+    params[:employee]
   end
 end

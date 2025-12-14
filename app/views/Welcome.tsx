@@ -10,7 +10,7 @@ export default function Welcome() {
 
       <div className="welcome__actions">
         <Link to="/clients" className="welcome__btn">Я клієнт</Link>
-        <Link to="/companies" className="welcome__btn">Я бізнес</Link>
+        <Link to="/companies/welcome" className="welcome__btn">Я бізнес</Link>
       </div>
     </div>
   );

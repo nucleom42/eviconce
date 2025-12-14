@@ -1,0 +1,22 @@
+.sidebar {
+  width: 240px;
+  background: var(--bg-sidebar);
+  padding: 10px;
+  border-right: 1px solid var(--border-soft);
+}
+
+.sidebar__logo {
+}
+
+.sidebar__nav a {
+  display: block;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-main);
+}
+
+.sidebar__nav a.active {
+  background: var(--accent-soft);
+}
