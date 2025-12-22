@@ -32,3 +32,19 @@ def raise_error
 rescue => e
   e
 end
+
+def current_time_ms
+  Process.clock_gettime(Process::CLOCK_REALTIME, :millisecond)
+end
+
+class Minitest::Test
+  class << self
+    def before_suite
+      DatabaseCleaner.truncate!
+    end
+
+    def after_suite
+      DatabaseCleaner.truncate!
+    end
+  end
+end

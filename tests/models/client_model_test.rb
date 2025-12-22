@@ -1,22 +1,19 @@
 require_relative '../test_helper'
 
 describe 'Client model' do
-  after do
-    CompanyClient.destroy_all cascade: true
-    Client.destroy_all
-    Address.destroy_all
-  end
   describe '.save' do
     describe 'when valid' do
       it 'should be valid' do
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: 'ok@ok.com', phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
                             password_digest: 'password_digest')
         client.password = 'password_digest'
         _(client.valid?).must_equal(true)
       end
 
       it 'should save' do
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: 'ok@ok.com', phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
                             password_digest: 'password_digest')
         client.password = 'password_digest'
         _(client.save).must_equal(true)
@@ -53,7 +50,8 @@ describe 'Client model' do
         address = Address.new(city: 'city', country: 'country', postal: 'postal', region: 'region',
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
         address.save
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: 'ok@ok.com', phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
                             password_digest: 'password_digest', address_id: address.id)
         client.password = 'password_digest'
         client.save
@@ -63,12 +61,14 @@ describe 'Client model' do
 
     describe 'owns many companies' do
       it 'should add companies' do
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: 'ok@ok.com', phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
                                password_digest: 'password_digest')
         client.password = 'password_digest'
         client.save
         company = Company.create(
-          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+          name: 'name', email: "ok#{Time.now.to_i}@ok.com", website: 'https://ok.com',
+          phone: '+123112123', description: 'description'
         )
         assert_difference(-> { client.companies.count }, 1) do
           client.add_companies(company)

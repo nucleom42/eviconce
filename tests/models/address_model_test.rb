@@ -1,7 +1,6 @@
 require_relative '../test_helper'
 
 describe 'Address model' do
-  after { Address.destroy_all }
   describe '.save' do
     describe 'when valid' do
       it 'should be valid' do

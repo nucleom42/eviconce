@@ -2,26 +2,20 @@ require_relative '../test_helper'
 using ChargedString
 
 describe 'Company model' do
-  after do
-    CompanyClient.destroy_all cascade: true
-    CompanyEmployee.destroy_all cascade: true
-    Company.destroy_all
-    Address.destroy_all
-    Employee.destroy_all
-  end
-
   describe '.save' do
     describe 'when valid' do
       it 'should be valid' do
         company = Company.new(
-          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+          name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+          phone: '+123112123', description: 'description'
         )
         _(company.valid?).must_equal(true)
       end
 
       it 'should save' do
         company = Company.new(
-          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com',
+          phone: '+123112123', description: 'description'
         )
         company.save
         _(company.persisted?).must_equal(true)
@@ -29,7 +23,7 @@ describe 'Company model' do
 
       it 'should be valid without website' do
         company = Company.new(
-          name: 'name', email: 'ok@ok.com', phone: '+123112123', description: 'description'
+          name: 'name', email: "ok#{current_time_ms}4@ok.com", phone: '+123112123', description: 'description'
         )
         _(company.valid?).must_equal(true)
       end
@@ -38,7 +32,8 @@ describe 'Company model' do
     describe 'when invalid' do
       it 'should be invalid' do
         company = Company.new(
-          name: 'name', email: 'ok@ok.com', website: 'website', phone: 'phone', description: 'description'
+          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'website',
+          phone: 'phone', description: 'description'
         )
         _(company.valid?).must_equal(false)
       end
@@ -57,7 +52,8 @@ describe 'Company model' do
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
         address.save
         company = Company.new(
-          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description',
+          name: 'name', email: "ok#{current_time_ms}3@ok.com",
+          website: 'https://ok.com', phone: '+123112123', description: 'description',
           address_id: address.id
         )
         company.save
@@ -69,11 +65,12 @@ describe 'Company model' do
     describe 'owns_many employees' do
       it 'should add employees' do
         company = Company.create(
-          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+          name: 'name', email: "ok#{current_time_ms}2@ok.com",
+          website: 'https://ok.com', phone: '+123112123', description: 'description'
         )
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
         )
         employee.password = 'password_digest'
         employee.save
@@ -86,9 +83,11 @@ describe 'Company model' do
     describe 'owns many clients' do
       it 'should add clients' do
         company = Company.create(
-          name: 'name', email: 'ok@ok.com', website: 'https://ok.com', phone: '+123112123', description: 'description'
+          name: 'name', email: "ok#{current_time_ms}1@ok.com", website: 'https://ok.com',
+          phone: '+123112123', description: 'description'
         )
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: 'ok@ok.com', phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{current_time_ms}@ok.com", phone: 'phone',
                             password_digest: 'password_digest')
         client.password = 'password_digest'
         client.save

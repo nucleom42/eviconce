@@ -150,4 +150,32 @@ Rubee::Router.draw do |router|
   router.put('/api/time_slots/{id}', to: 'time_slots#update')
   router.delete('/api/time_slots/{id}', to: 'time_slots#destroy')
   ### END TIME_SLOT API ###
+
+  ### START WINDOW API ###
+  router.get('/api/windows', to: 'windows#index', model: {
+    name: 'window',
+    attributes: [
+      { name: 'id', type: 'primary' },
+      { name: 'start_time', type: 'datetime', options: { null: false } },
+      { name: 'end_time', type: 'datetime', options: { null: false } },
+      { name: 'break_from', type: 'datetime', options: { null: false } },
+      { name: 'break_to', type: 'datetime', options: { null: false } },
+      { name: 'created', type: 'datetime' },
+      { name: 'updated', type: 'datetime' },
+    ],
+  })
+  ### END WINDOW API ###
+
+  ### START employee_windows ###
+  router.get('/api/employee_windows', to: 'employee_windows#index', model: {
+    name: 'employee_window',
+    attributes: [
+      { name: 'id', type: 'primary' },
+      { name: 'employee_id', type: 'foreign_key', options: { null: false } },
+      { name: 'window_id', type: 'foreign_key', options: { null: false } },
+      { name: 'created', type: 'datetime' },
+      { name: 'updated', type: 'datetime' },
+    ],
+  })
+  ### END employee_windows ###
 end

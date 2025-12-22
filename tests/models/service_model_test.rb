@@ -1,16 +1,12 @@
 require_relative '../test_helper'
 
 describe 'Service model' do
-  after do
-    Service.destroy_all
-    Employee.destroy_all
-  end
   describe '.save' do
     describe 'when valid' do
       it 'should be valid' do
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
         )
         employee.password = 'password_digest'
         employee.save
@@ -22,7 +18,7 @@ duration: 45)
       it 'should save' do
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
         )
         employee.password = 'password_digest'
         employee.save
@@ -36,7 +32,7 @@ duration: 45)
       it 'should raise error' do
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
         )
         employee.password = 'password_digest'
         employee.save
@@ -48,7 +44,7 @@ duration: 45)
       it 'should be invalid' do
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
         )
         employee.password = 'password_digest'
         employee.save
@@ -62,7 +58,7 @@ duration: 45)
       it 'should bring associated employee' do
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: 'ok@ok.com', phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
         )
         employee.password = 'password_digest'
         employee.save

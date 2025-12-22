@@ -95,10 +95,16 @@ export default function Calendar() {
             })}
           </h2>
         </div>
-
+        <button className="ghost-btn">Відкріти віконце</button>
+        <select className="employee-select">
+          <option></option>
+          <option>Галя</option>
+          <option>Свєта</option>
+          <option>Пєтя</option>
+        </select>
         <div className="calendar__actions">
           <button className="ghost-btn" onClick={prevWeek}>←</button>
-          <button className="ghost-btn" onClick={goToday}>Today</button>
+          <button className="ghost-btn" onClick={goToday}>Сьогодні</button>
           <button className="ghost-btn" onClick={nextWeek}>→</button>
 
           <input
@@ -110,7 +116,6 @@ export default function Calendar() {
             className="date-picker"
           />
 
-          <button className="primary-btn">+ New event</button>
         </div>
       </header>
 

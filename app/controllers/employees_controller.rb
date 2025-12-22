@@ -49,6 +49,8 @@ class EmployeesController < Rubee::BaseController
   end
 
   def employee_params
-    params[:employee]
+    params[:employee].tap do |ee_params|
+      ee_params['role'] = ee_params['role'].to_i
+    end
   end
 end

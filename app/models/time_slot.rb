@@ -1,5 +1,14 @@
 class TimeSlot < Rubee::SequelObject
-  attr_accessor :id, :start_time, :end_time, :day, :employee_id, :client_id, :company_id, :state, :created, :updated
+  attr_accessor :id, :start_time, :end_time, :day, :employee_id, :client_id,
+    :company_id, :state, :created, :updated
+
+  STATES = {
+    0 => 'scheduled',
+    1 => 'booked',
+    2 => 'canceled',
+    3 => 'in_progress',
+    4 => 'done',
+  }.freeze
 
   validate do
     attribute(:start_time).required.type(Time)
@@ -25,4 +34,12 @@ class TimeSlot < Rubee::SequelObject
   holds :employee
   holds :client
   holds :company
+
+  def booked?
+    STATES[state] == 'booked'
+  end
+
+  def scheduled?
+    STATES[state] == 'scheduled'
+  end
 end
