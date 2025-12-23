@@ -11,6 +11,7 @@ class CreateWindows
       DateTime :break_from, null: false
       DateTime :break_to, null: false
       Date :effective_date, null: false
+      Date :end_date, null: true
       column :weekends, 'smallint[]', null: false, array: true, default: Sequel.pg_array([], :smallint)
       DateTime :created
       DateTime :updated

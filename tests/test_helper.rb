@@ -38,6 +38,7 @@ def current_time_ms
 end
 
 class Minitest::Test
+  extend MinitestLet
   class << self
     def before_suite
       DatabaseCleaner.truncate!

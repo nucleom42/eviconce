@@ -1,7 +1,7 @@
 class Window < Rubee::SequelObject
   WEEKS = [1, 2, 3, 4, 5, 6, 7].freeze
   attr_accessor :id, :start_time, :end_time, :break_from, :break_to,
-    :weekends, :effective_date, :created, :updated
+    :weekends, :effective_date, :end_date, :created, :updated
 
   before :save, ->(m) { m.weekends = Sequel.pg_array(m.weekends) }
 
@@ -11,6 +11,7 @@ class Window < Rubee::SequelObject
     attribute(:break_from).required.type(Time).condition(-> { break_from < break_to })
     attribute(:break_to).required.type(Time).condition(-> { break_from < break_to })
     attribute(:effective_date).required.type(Date)
+    attribute(:end_date).optional.type(Date).condition(-> { effective_date < end_date })
     attribute(:weekends).required
       .condition(-> { weekends.uniq.size == weekends.size && weekends.all? { |w| WEEKS.include?(w) } })
   end
@@ -25,15 +26,15 @@ class Window < Rubee::SequelObject
     start_time_sec = start_time.days_seconds
     end_time_sec = end_time.days_seconds
 
-    request_from >= start_time_sec && request_to <= end_time_sec
+    request_from.days_seconds >= start_time_sec && request_to.days_seconds <= end_time_sec
   end
 
   def overlapping_break?(request_from, request_to)
     break_from_sec = break_from.days_seconds
     break_to_sec = break_to.days_seconds
 
-    !((request_from < break_from_sec && request_to < break_from_sec) ||
-      (request_from > break_to_sec && request_to > break_to_sec))
+    !((request_from.days_seconds < break_from_sec && request_to.days_seconds < break_from_sec) ||
+       (request_from.days_seconds > break_to_sec && request_to.days_seconds > break_to_sec))
   end
 
   def weekends?(date)
