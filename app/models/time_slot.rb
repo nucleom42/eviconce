@@ -15,13 +15,14 @@ class TimeSlot < Rubee::SequelObject
       .condition(
         -> {
           start_time < end_time &&
-          start_time > Time.new(Time.now.year, Time.now.month, Time.now.day) &&
+          start_time > Time.beginning_of_today &&
           start_time.to_date.to_s == day.to_s
         }
       )
     attribute(:end_time).required.type(Time)
       .condition(-> {
         start_time < end_time &&
+        end_time < Time.end_of_today &&
         end_time.to_date.to_s == day.to_s
       })
     attribute(:day).required.type(Date).condition(-> { day > (Date.today - 1) })
@@ -41,5 +42,12 @@ class TimeSlot < Rubee::SequelObject
 
   def scheduled?
     STATES[state] == 'scheduled'
+  end
+
+  def overlapping_booked?(date, request_from, request_to)
+    !scheduled? &&
+    day.to_s == date.to_s &&
+    !((request_from < time_from.days_seconds && request_to < time_from.days_seconds) ||
+      (request_from > time_to.days_seconds && request_to > time_to.days_seconds))
   end
 end

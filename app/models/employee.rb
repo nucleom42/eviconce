@@ -65,33 +65,18 @@ class Employee < Rubee::SequelObject
   end
 
   def time_slots(date)
-    TimeSlot.where(employee_id: id, date: date)
+    TimeSlot.where(employee_id: id, day: date)
   end
 
   def available?(range)
-    request_from = days_seconds(range.begin)
-    request_to = days_seconds(range.end)
+    request_from = range.begin.days_seconds
+    request_to = range.end.days_seconds
     request_date = time_from.to_date
 
-    start_sec = days_seconds(current_window.start_time)
-    end_sec = days_seconds(current_window.end_time)
-    break_from_sec = days_seconds(current_window.break_from)
-    break_to_sec = days_seconds(current_window.break_to)
-
-    within_work_hours = start_sec <= request_from && request_to <= end_sec
-    within_break = break_from_sec <= request_from && request_to <= break_to_sec
-    weekends = current_window.weekends.include?(request_date.wday + 1)
-
-    booked = time_slots(date: time.to_date).any? do |time_slot|
-      !time_slot.scheduled? &&
-      days_seconds(time_slot.start_time) <= time_sec && time_sec < days_seconds(time_slot.end_time)
-    end
-
-    within_work_hours && !within_break && !weekends && !booked
-  end
-
-  def days_seconds(t)
-    t.hour * 3600 + t.min * 60 + t.sec
+    current_window.within_work_hours?(request_from, request_to) &&
+    !current_window.overlapping_break?(request_from, request_to) &&
+    !current_window.weekends?(request_date) &&
+    time_slots(request_date).none? { |ts| ts.overlapping_booked?(request_date, request_from, request_to) }
   end
 
   def add_companies(*companies_args)

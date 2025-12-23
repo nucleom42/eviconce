@@ -20,4 +20,23 @@ class Window < Rubee::SequelObject
   def add_employees(*employees)
     employees.map { |e| EmployeeWindow.create(employee_id: e.id, window_id: id) }
   end
+
+  def within_work_hours?(request_from, request_to)
+    start_time_sec = start_time.days_seconds
+    end_time_sec = end_time.days_seconds
+
+    request_from >= start_time_sec && request_to <= end_time_sec
+  end
+
+  def overlapping_break?(request_from, request_to)
+    break_from_sec = break_from.days_seconds
+    break_to_sec = break_to.days_seconds
+
+    !((request_from < break_from_sec && request_to < break_from_sec) ||
+      (request_from > break_to_sec && request_to > break_to_sec))
+  end
+
+  def weekends?(date)
+    weekends.include?(date.wday + 1)
+  end
 end

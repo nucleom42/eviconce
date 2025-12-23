@@ -8,11 +8,13 @@ describe 'TimeSlot model' do
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
         address.save
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com', phone: '+123112123', description: 'description',\
+          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com',
+          phone: '+123112123', description: 'description',\
           address_id: address.id
         )
         company.save
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: "ok#{current_time_ms}@ok.com", phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{current_time_ms}@ok.com", phone: 'phone',
                             password_digest: 'password_digest')
         client.password = 'password_digest'
         client.save
@@ -23,7 +25,7 @@ describe 'TimeSlot model' do
         employee.password = 'password_digest'
         employee.save
         company.add_employees(employee)
-        time_slot = TimeSlot.new(start_time: Time.now, end_time: (Time.now + 3600), client_id: client.id,
+        time_slot = TimeSlot.new(start_time: Time.now, end_time: (Time.now + 60), client_id: client.id,
                                  employee_id: employee.id, company_id: company.id, state: 0, day: Date.today)
         _(time_slot.valid?).must_equal(true)
         _(time_slot.save).must_equal(true)
@@ -36,11 +38,13 @@ describe 'TimeSlot model' do
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
         address.save
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com', phone: '+123112123', description: 'description',\
+          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com',
+          phone: '+123112123', description: 'description',\
           address_id: address.id
         )
         company.save
-        client = Client.new(first_name: 'first_name', last_name: 'last_name', email: "ok#{current_time_ms}@ok.com", phone: 'phone',
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{current_time_ms}@ok.com", phone: 'phone',
                             password_digest: 'password_digest')
         client.password = 'password_digest'
         client.save
