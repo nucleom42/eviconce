@@ -3,11 +3,11 @@ class TimeSlot < Rubee::SequelObject
     :company_id, :state, :created, :updated
 
   STATES = {
-    0 => 'scheduled',
-    1 => 'booked',
-    2 => 'canceled',
-    3 => 'in_progress',
-    4 => 'done',
+    0 => 'scheduled', # scheduled but not confirmed
+    1 => 'booked',    # shcheduled and confirmed
+    2 => 'canceled',  # canceled by employee or client
+    3 => 'frozen',    # placeholder set by employee without ability to book
+    4 => 'done',      # completed
   }.freeze
 
   validate do
@@ -29,7 +29,7 @@ class TimeSlot < Rubee::SequelObject
     attribute(:employee_id).required.type(Integer)
     attribute(:client_id).optional.type(Integer)
     attribute(:company_id).required.type(Integer)
-    attribute(:state).required.type(Integer).condition(-> { [0, 4].include?(state) })
+    attribute(:state).required.type(Integer).condition(-> { (0..4).include?(state) })
   end
 
   holds :employee
@@ -37,17 +37,26 @@ class TimeSlot < Rubee::SequelObject
   holds :company
 
   def booked?
-    STATES[state] == 'booked'
+    status == 'booked'
   end
 
   def scheduled?
-    STATES[state] == 'scheduled'
+    status == 'scheduled'
   end
 
-  def overlapping_booked?(date, request_from, request_to)
-    !scheduled? &&
+  def cancelled?
+    status == 'canceled'
+  end
+
+  def status
+    STATES[state]
+  end
+
+  def overlapping?(date, request_from, request_to)
+    return false if cancelled?
+
     day.to_s == date.to_s &&
-    !((request_from < time_from.days_seconds && request_to < time_from.days_seconds) ||
-      (request_from > time_to.days_seconds && request_to > time_to.days_seconds))
+      !((request_from.days_seconds < start_time.days_seconds && request_to.days_seconds < start_time.days_seconds) ||
+         (request_from.days_seconds > end_time.days_seconds && request_to.days_seconds > end_time.days_seconds))
   end
 end

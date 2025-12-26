@@ -46,6 +46,7 @@ Rubee::Router.draw do |router|
     ],
   })
   router.get('/api/companies/{id}', to: 'companies#show')
+  router.get('/api/companies/{id}/dashboard', to: 'companies#dashboard')
   router.get('/api/companies/new', to: 'companies#new')
   router.post('/api/companies', to: 'companies#create')
   router.get('/api/companies/{id}/edit', to: 'companies#edit')
@@ -71,6 +72,7 @@ Rubee::Router.draw do |router|
     ],
   })
   router.get('/api/employees/{id}', to: 'employees#show')
+  router.get('/api/employees/{id}/availability', to: 'employees#availability')
   router.get('/api/employees/new', to: 'employees#new')
   router.post('/api/employees', to: 'employees#create')
   router.post('/api/employees/logout', to: 'employees#logout')

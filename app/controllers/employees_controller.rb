@@ -19,13 +19,30 @@ class EmployeesController < Rubee::BaseController
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
+  # GET /api/employees/{id}/availability
+  def availability
+    from = params[:from]
+    to = params[:to]
+    employee = Employee.find(params[:id])
+    unless employee
+      response_with object: { errors: :not_found }, type: :json, status: 404
+      return
+    end
+    employee_availability = EmployeeAvailability.new(employee: employee)
+    employee_availability.serialize!(from, to)
+
+    response_with object: employee_availability, type: :json, status: 200
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
   # POST /api/employees/login
   def login
     params[:password_digest] = Employee.digest params[:password]
 
     if authentificate! user_model: Employee, login: :email, password: :password_digest
       response_with(
-        object: { ok: :authentificated, has_companies: auth_user.companies.any? },
+        object: { ok: :authentificated, company_id: auth_user&.my_company&.id },
         type: :json, status: 200, headers: @token_header
       )
     else

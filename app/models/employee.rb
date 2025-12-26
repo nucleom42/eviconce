@@ -2,6 +2,7 @@ class Employee < Rubee::SequelObject
   JWT_KEY = "#{ENV['JWT_KEY']}#{name}" || 'secret'
   attr_accessor :id, :first_name, :last_name, :description,
     :email, :phone, :password_digest, :role, :created, :updated
+  ROLES = { admin: 1, user: 0 }.freeze
 
   validate do
     attribute(:first_name).required('Ім\'я не може бути порожнім')
@@ -41,6 +42,10 @@ class Employee < Rubee::SequelObject
     password_digest
   end
 
+  def my_company
+    companies&.first
+  end
+
   def email_unique?
     ds = Employee.dataset.where(email: email)
     ds = ds.exclude(id: id) if id
@@ -60,26 +65,33 @@ class Employee < Rubee::SequelObject
       .join(:employee_windows, window_id: :id)
       .where(Sequel[:employee_windows][:employee_id] => id)
       .order(Sequel.desc(:effective_date))
+      .where(Sequel[:windows][:end_date] => nil)
+      .or(Sequel[:windows][:end_date] > Time.end_of_today)
       .limit(1).select_all(:windows).all
       .then { |hash| Window.serialize(hash) }.last
   end
 
-  def time_slots(date)
-    TimeSlot.where(employee_id: id, day: date)
+  def time_slots(date_or_range)
+    TimeSlot.where(employee_id: id, day: date_or_range)
   end
 
   def available?(range)
-    request_from = range.begin.days_seconds
-    request_to = range.end.days_seconds
-    request_date = time_from.to_date
+    request_from = range.begin
+    request_to = range.end
+    request_date = range.begin.to_date
+    return false unless current_window
 
     current_window.within_work_hours?(request_from, request_to) &&
     !current_window.overlapping_break?(request_from, request_to) &&
     !current_window.weekends?(request_date) &&
-    time_slots(request_date).none? { |ts| ts.overlapping_booked?(request_date, request_from, request_to) }
+    time_slots(request_date).none? { |ts| ts.overlapping?(request_date, request_from, request_to) }
   end
 
   def add_companies(*companies_args)
+    if ROLES[role] == 'admin' && my_company
+      add_error(:role, error: 'Admin can have only one company')
+      return false
+    end
     companies_args.map { |company| CompanyEmployee.create(employee_id: id, company_id: company.id) }
   end
 

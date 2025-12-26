@@ -2,10 +2,10 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import "./../styles/Sidebar.css";
 
-export default function Sidebar() {
+export default function Sidebar({companyName}) {
   return (
     <aside className="sidebar">
-      <h2 className="sidebar__logo">MyCompany</h2>
+      <h2 className="sidebar__logo">{companyName}</h2>
 
       <nav className="sidebar__nav">
         <NavLink to="/companies/dashboard">Dashboard</NavLink>

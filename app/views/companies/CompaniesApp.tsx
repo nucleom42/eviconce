@@ -20,7 +20,7 @@ export default function CompaniesApp() {
         <Route path="employees/new" element={<EmployeeForm role="employee" />} />
         <Route path="admins/new" element={<EmployeeForm role="admin" />} />
         <Route path="login" element={<LoginEmployee />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route path=":id/dashboard" element={<Dashboard />} />
         <Route path="*" element={<CompanyNotFound />} />
       </Routes>
     </div>

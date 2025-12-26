@@ -122,10 +122,72 @@ describe 'Employee model' do
 
     describe '#available?' do
       describe 'when window is available' do
-        describe 'when there are no booked time slots' do
+        before { employee.add_windows(window_one) }
+
+        describe 'when there are no time slots' do
           it 'should return true' do
-            _(employee.available?(window_one)).must_equal(true)
+            _(employee.available?(Time.new(2020, 1, 1, 10, 0, 0)..Time.new(2020, 1, 1, 11, 0, 0))).must_equal(true)
           end
+        end
+
+        describe 'when there are time slot crossing but not canceled' do
+          let!(:crossing_cancelled_time_slot) do
+            TimeSlot.create(
+              start_time: Time.now, end_time: (Time.now + 60), state: 2,
+              employee_id: employee.id, company_id: company.id, day: Date.today
+            )
+          end
+          it 'should return true' do
+            _(employee.available?(Time.now..(Time.now + 60))).must_equal(true)
+          end
+        end
+
+        describe 'when there are crosing time slots' do
+          let!(:crossing_time_slot) do
+            TimeSlot.create(
+              start_time: Time.now, end_time: (Time.now + 60), state: 0,
+              employee_id: employee.id, company_id: company.id, day: Date.today
+            )
+          end
+          it 'should return false' do
+            _(employee.available?((Time.now - 10)..(Time.now + 50))).must_equal(false)
+          end
+        end
+
+        describe 'when requested time overrides break hours' do
+          it 'should return false' do
+            _(employee.available?(Time.new(2020, 1, 1, 12, 0, 0)..Time.new(2020, 1, 1, 13, 0, 0))).must_equal(false)
+          end
+        end
+
+        describe 'when requested time is outside work hours' do
+          it 'should return false' do
+            _(employee.available?(Time.new(2020, 1, 1, 19, 0, 0)..Time.new(2020, 1, 1, 20, 0, 0))).must_equal(false)
+          end
+        end
+
+        describe 'when requested time is on weekends' do
+          it 'should return false' do
+            _(employee.available?(Time.new(2020, 1, 3, 10, 0, 0)..Time.new(2020, 1, 3, 11, 0, 0))).must_equal(false)
+          end
+        end
+      end
+
+      describe 'when window end date is set in the past' do
+        before do
+          employee.add_windows(window_one)
+
+          window_one.update(effective_date: Date.today - 2, end_date: Date.today - 1)
+        end
+
+        it 'should return false' do
+          _(employee.available?(Time.now..(Time.now + 60))).must_equal(false)
+        end
+      end
+
+      describe 'when window is not available' do
+        it 'should return false' do
+          _(employee.available?(Time.now..(Time.now + 60))).must_equal(false)
         end
       end
     end

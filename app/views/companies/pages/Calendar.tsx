@@ -1,111 +1,208 @@
 import React, { useEffect, useState } from "react";
-
 import EventBlock from "./EventBlock";
 import "./../styles/Calendar.css";
 
-const HOURS = [...Array(24)].map((_, i) => i);
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
+const parseTime = (str) =>
+  new Date(str.replace(" ", "T").replace(" -", "-"));
+
+/* ---------- DATE HELPERS ---------- */
 const startOfDay = (d) => {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
   return x;
 };
 
-export default function Calendar() {
+const addDays = (date, days) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+
+const hourOf = (d) => parseTime(d).getHours();
+
+const isWeekend = (day, weekends = []) => {
+  const wday = day.getDay() === 0 ? 7 : day.getDay();
+  return weekends.includes(wday);
+};
+
+const isWithin = (hour, from, to) => hour >= from && hour < to;
+
+/* ---------- AVAILABILITY (WINDOW ONLY) ---------- */
+const isAvailable = ({ day, hour, window }) => {
+  if (!window) return false;
+
+  if (isWeekend(day, window.weekends)) return false;
+
+  const startHour = hourOf(window.start_time);
+  const endHour = hourOf(window.end_time);
+  if (!isWithin(hour, startHour, endHour)) return false;
+
+  const breakFrom = hourOf(window.break_from);
+  const breakTo = hourOf(window.break_to);
+  if (isWithin(hour, breakFrom, breakTo)) return false;
+
+  return true;
+};
+
+export default function Calendar({ employees }) {
   const [weekStart, setWeekStart] = useState(startOfDay(new Date()));
   const [events, setEvents] = useState([]);
   const [dragging, setDragging] = useState(null);
 
+  const [currentEmployee, setCurrentEmployee] = useState(null);
+  const [availabilityWindow, setAvailabilityWindow] = useState(null);
+  const [timeSlots, setTimeSlots] = useState([]);
+
   /* ---------- DAYS ---------- */
-  const days = [...Array(7)].map((_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   /* ---------- NAV ---------- */
-  const nextWeek = () =>
-    setWeekStart(new Date(weekStart.setDate(weekStart.getDate() + 7)));
-
-  const prevWeek = () =>
-    setWeekStart(new Date(weekStart.setDate(weekStart.getDate() - 7)));
-
+  const nextWeek = () => setWeekStart(addDays(weekStart, 7));
+  const prevWeek = () => setWeekStart(addDays(weekStart, -7));
   const goToday = () => setWeekStart(startOfDay(new Date()));
 
-  /* ---------- API ---------- */
+  /* ---------- AVAILABILITY ---------- */
   useEffect(() => {
+    if (!currentEmployee) return;
+
+    const from = weekStart.toISOString().slice(0, 10);
+    const to = addDays(weekStart, 6).toISOString().slice(0, 10);
+
     fetch(
-      `/api/events?from=${weekStart.toISOString().slice(0, 10)}`
+      `/api/employees/${currentEmployee.id}/availability?from=${from}&to=${to}`
     )
+      .then((r) => r.json())
+      .then((json) => {
+        setAvailabilityWindow(json.employee.window);
+        setTimeSlots(json.employee.time_slots);
+      });
+  }, [currentEmployee, weekStart]);
+
+  /* ---------- EVENTS ---------- */
+  useEffect(() => {
+    const from = weekStart.toISOString().slice(0, 10);
+
+    fetch(`/api/events?from=${from}`)
       .then((r) => r.json())
       .then(setEvents)
       .catch(() => {});
   }, [weekStart]);
 
-  /* ---------- DRAG CREATE ---------- */
+  /* ---------- OCCUPIED ---------- */
+
+const isOccupied = (day, hour) => {
+  const dayStr = day.toISOString().slice(0, 10);
+
+  return timeSlots.some((s) => {
+    if (s.day !== dayStr) return false;
+
+    const start = parseTime(s.start_time);
+    const end = parseTime(s.end_time);
+
+    const hStart = start.getHours() + start.getMinutes() / 60;
+    const hEnd = end.getHours() + end.getMinutes() / 60;
+
+    return hour >= hStart && hour < hEnd;
+  });
+};
+
+
+  /* ---------- DRAG ---------- */
   const startDrag = (day, hour) => {
+    if (isOccupied(day, hour)) return;
+
     setDragging({
-      day: day.toISOString().slice(0, 10),
-      start: hour,
-      end: hour + 1
+      date: day.toISOString().slice(0, 10),
+      startHour: hour,
+      endHour: hour + 1,
+      title: ""
     });
   };
 
   const updateDrag = (hour) => {
     if (!dragging) return;
-    setDragging({ ...dragging, end: hour + 1 });
+    setDragging((d) => ({ ...d, endHour: hour + 1 }));
   };
 
   const endDrag = async () => {
     if (!dragging) return;
 
-    const newEvent = {
-      date: dragging.day,
-      startHour: dragging.start,
-      endHour: dragging.end,
-      title: "New event"
-    };
-
-    setEvents([...events, newEvent]);
+    const event = { ...dragging, title: "New event" };
+    setEvents((e) => [...e, event]);
 
     await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newEvent)
+      body: JSON.stringify(event)
     });
 
     setDragging(null);
   };
 
+  /* ---------- TIME SLOT BLOCKS ---------- */
+
+  const slotEvents = timeSlots.map((slot) => {
+    const start = parseTime(slot.start_time);
+    const end = parseTime(slot.end_time);
+
+    return {
+      id: slot.id,
+      date: slot.day,
+      startHour: start.getHours() + start.getMinutes() / 60,
+      endHour: end.getHours() + end.getMinutes() / 60,
+      title: ""
+    };
+  });
+
+  const slotStartingAt = (day, hour) => {
+    const dayStr = day.toISOString().slice(0, 10);
+
+    return timeSlots.find((s) => {
+      if (s.day !== dayStr) return false;
+
+      const start = parseTime(s.start_time);
+      return start.getHours() === hour;
+    });
+  };
+
+
+
   return (
     <section className="calendar-card">
       {/* ---------- HEADER ---------- */}
       <header className="calendar__header sticky">
-        <div>
-          <h2>
-            {days[0].toLocaleDateString("uk-UA", {
-              day: "numeric",
-              month: "long"
-            })}{" "}
-            –{" "}
-            {days[6].toLocaleDateString("uk-UA", {
-              day: "numeric",
-              month: "long",
-              year: "numeric"
-            })}
-          </h2>
-        </div>
-        <button className="ghost-btn">Відкріти віконце</button>
-        <select className="employee-select">
-          <option></option>
-          <option>Галя</option>
-          <option>Свєта</option>
-          <option>Пєтя</option>
+        <h2>
+          {days[0].toLocaleDateString("uk-UA", { day: "numeric", month: "long" })}
+          {" – "}
+          {days[6].toLocaleDateString("uk-UA", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          })}
+        </h2>
+
+        <select
+          value={currentEmployee?.id || ""}
+          onChange={(e) =>
+            setCurrentEmployee(
+              employees.find((emp) => emp.id === Number(e.target.value))
+            )
+          }
+        >
+          <option value="">Обрати працівника</option>
+          {employees.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.first_name} {e.last_name}
+            </option>
+          ))}
         </select>
+
         <div className="calendar__actions">
-          <button className="ghost-btn" onClick={prevWeek}>←</button>
-          <button className="ghost-btn" onClick={goToday}>Сьогодні</button>
-          <button className="ghost-btn" onClick={nextWeek}>→</button>
+          <button onClick={prevWeek}>←</button>
+          <button onClick={goToday}>Сьогодні</button>
+          <button onClick={nextWeek}>→</button>
 
           <input
             type="date"
@@ -113,61 +210,81 @@ export default function Calendar() {
             onChange={(e) =>
               setWeekStart(startOfDay(new Date(e.target.value)))
             }
-            className="date-picker"
           />
-
         </div>
       </header>
 
       {/* ---------- GRID ---------- */}
       <div className="week-calendar">
-        {/* Day headers */}
         <div className="week-header">
           <div className="time-col" />
           {days.map((d) => (
-            <div key={d} className="day-col-header">
-              <div className="day-name">
-                {d.toLocaleDateString("uk-UA", { weekday: "short" })}
-              </div>
-              <div className="day-number">{d.getDate()}</div>
+            <div key={d.toISOString()} className="day-col-header">
+              <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
+              <div>{d.getDate()}</div>
             </div>
           ))}
         </div>
 
-        {/* Body */}
         <div className="week-body" onMouseUp={endDrag}>
           {HOURS.map((hour) => (
             <div key={hour} className="week-row">
-              <div className="time-col">
-                {hour.toString().padStart(2, "0")}:00
-              </div>
+              <div className="time-col">{hour}:00</div>
 
-              {days.map((day) => (
-                <div
-                  key={`${day}-${hour}`}
-                  className="week-cell"
-                  onMouseDown={() => startDrag(day, hour)}
-                  onMouseEnter={() => updateDrag(hour)}
-                />
-              ))}
+
+              {days.map((day) => {
+                const slot = slotStartingAt(day, hour);
+                const available =
+                  isAvailable({ day, hour, window: availabilityWindow })
+
+                return (
+                  <div
+                    key={`${day}-${hour}`}
+                    className={`week-cell ${available ? "" : "unavailable"}`}
+                    onMouseDown={
+                      available ? () => startDrag(day, hour) : undefined
+                    }
+                    onMouseEnter={
+                      available ? () => updateDrag(hour) : undefined
+                    }
+                  >
+                    {slot && (
+                      <div
+                        className="time-slot-block"
+                        style={{
+                          height: `${
+                            (parseTime(slot.end_time) - parseTime(slot.start_time)) /
+                            (1000 * 60 * 60) *
+                            100
+                          }%`
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+
             </div>
           ))}
 
           {/* EVENTS */}
           {events.map((e, i) => (
-            <EventBlock key={i} event={e} weekStart={weekStart} />
+            <EventBlock key={`event-${i}`} event={e} weekStart={weekStart} />
+          ))}
+
+          {/* TIME SLOTS */}
+          {slotEvents.map((e) => (
+            <EventBlock
+              key={`slot-${e.id}`}
+              event={e}
+              weekStart={weekStart}
+              busy
+            />
           ))}
 
           {/* DRAG PREVIEW */}
           {dragging && (
-            <EventBlock
-              event={{
-                ...dragging,
-                title: ""
-              }}
-              preview
-              weekStart={weekStart}
-            />
+            <EventBlock preview event={dragging} weekStart={weekStart} />
           )}
         </div>
       </div>

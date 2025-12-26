@@ -27,8 +27,8 @@ export default function LoginEmployee() {
         return;
       }
       const data = await response.json();
-      console.log(data.has_companies);
-      data.has_companies ? navigate("/companies/dashboard") : navigate("/companies/new");
+      console.log(data.company_id);
+      data.company_id ? navigate(`/companies/${data.company_id}/dashboard`) : navigate("/companies/new");
 
     } catch (err) {
       console.error(err);

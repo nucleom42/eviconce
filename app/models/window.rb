@@ -23,10 +23,7 @@ class Window < Rubee::SequelObject
   end
 
   def within_work_hours?(request_from, request_to)
-    start_time_sec = start_time.days_seconds
-    end_time_sec = end_time.days_seconds
-
-    request_from.days_seconds >= start_time_sec && request_to.days_seconds <= end_time_sec
+    request_from.days_seconds >= start_time.days_seconds && request_to.days_seconds <= end_time.days_seconds
   end
 
   def overlapping_break?(request_from, request_to)

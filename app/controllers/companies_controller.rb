@@ -1,6 +1,6 @@
 class CompaniesController < Rubee::BaseController
   include Rubee::AuthTokenable
-  auth_methods :create, :index
+  auth_methods :create, :index, :dashboard
 
   # GET /api/companies
   def index
@@ -25,6 +25,21 @@ class CompaniesController < Rubee::BaseController
                e.message
              end
     response_with object: { errors: }, type: :json, status: 422
+  end
+
+  # GET /api/companies/{id}/dashboard
+  def dashboard
+    user = authentificated_user user_model: Employee, login: :email, password: :password_digest
+    company = Company.find(params[:id])
+    employees = company.employees
+    unless user.companies.any? { |c| c.id == company.id }
+      response_with object: { errors: :unauthentificated }, type: :json, status: 401
+      return
+    end
+
+    response_with object: Dashboard.new(employees:, company:, user:), type: :json, status: 200
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   private
