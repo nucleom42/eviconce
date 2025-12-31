@@ -51,11 +51,10 @@ export default function CompanyForm() {
         }
       })
     });
-
+    const body = await response.json();
     if (response.ok) {
-      navigate("/companies/dashboard");
+      navigate(`/companies/${body.id}dashboard`);
     } else {
-      const body = await response.json();
       setErrors(body.errors || {});
     }
   };

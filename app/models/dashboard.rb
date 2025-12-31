@@ -7,7 +7,9 @@ class Dashboard
   after :initialize, :serialize!
 
   def serialize!
-    @employees = employees.map { |e| { id: e.id, first_name: e.first_name, last_name: e.last_name } }
+    @employees = employees.map do |e|
+      { id: e.id, first_name: e.first_name, last_name: e.last_name, services: e.services.map(&:to_h) }
+    end
     @company = { name: company.name }
     @user = { id: user.id, first_name: user.first_name, last_name: user.last_name }
   end

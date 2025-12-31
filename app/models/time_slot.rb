@@ -1,6 +1,6 @@
 class TimeSlot < Rubee::SequelObject
   attr_accessor :id, :start_time, :end_time, :day, :employee_id, :client_id,
-    :company_id, :state, :created, :updated
+    :company_id, :state, :price, :created, :updated
 
   STATES = {
     0 => 'scheduled', # scheduled but not confirmed
@@ -22,7 +22,6 @@ class TimeSlot < Rubee::SequelObject
     attribute(:end_time).required.type(Time)
       .condition(-> {
         start_time < end_time &&
-        end_time < Time.end_of_today &&
         end_time.to_date.to_s == day.to_s
       })
     attribute(:day).required.type(Date).condition(-> { day > (Date.today - 1) })
@@ -30,7 +29,10 @@ class TimeSlot < Rubee::SequelObject
     attribute(:client_id).optional.type(Integer)
     attribute(:company_id).required.type(Integer)
     attribute(:state).required.type(Integer).condition(-> { (0..4).include?(state) })
+    attribute(:price).optional.type(Float).condition(-> { price >= 0.0 })
   end
+
+  before :save, :check_overlapping!
 
   holds :employee
   holds :client
@@ -50,6 +52,15 @@ class TimeSlot < Rubee::SequelObject
 
   def status
     STATES[state]
+  end
+
+  def check_overlapping!
+    return true if employee.time_slots(day).none? do |ts|
+      ts.id != id && ts.overlapping?(day, ts.start_time, ts.end_time)
+    end
+
+    add_error(:day, error: 'overlapping')
+    false
   end
 
   def overlapping?(date, request_from, request_to)

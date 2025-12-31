@@ -538,74 +538,6 @@ STRUCTURE = {
       ruby_default: nil
     }
   },
-  company_employees: {
-    id: {
-      oid: 23,
-      comment: nil,
-      db_type: "integer",
-      default: nil,
-      allow_null: false,
-      primary_key: true,
-      generated: false,
-      type: "integer",
-      auto_increment: true,
-      ruby_default: nil,
-      min_value: -2147483648,
-      max_value: 2147483647
-    },
-    company_id: {
-      oid: 23,
-      comment: nil,
-      db_type: "integer",
-      default: nil,
-      allow_null: false,
-      primary_key: false,
-      generated: false,
-      type: "integer",
-      ruby_default: nil,
-      min_value: -2147483648,
-      max_value: 2147483647
-    },
-    employee_id: {
-      oid: 23,
-      comment: nil,
-      db_type: "integer",
-      default: nil,
-      allow_null: false,
-      primary_key: false,
-      generated: false,
-      type: "integer",
-      ruby_default: nil,
-      min_value: -2147483648,
-      max_value: 2147483647
-    },
-    created: {
-      oid: 1114,
-      comment: nil,
-      db_type: "timestamp without time zone",
-      default: nil,
-      allow_null: true,
-      primary_key: false,
-      generated: false,
-      type: "datetime",
-      min_value: "-4713-11-24 00:00:00 UTC",
-      max_value: "294276-12-31 23:59:59 UTC",
-      ruby_default: nil
-    },
-    updated: {
-      oid: 1114,
-      comment: nil,
-      db_type: "timestamp without time zone",
-      default: nil,
-      allow_null: true,
-      primary_key: false,
-      generated: false,
-      type: "datetime",
-      min_value: "-4713-11-24 00:00:00 UTC",
-      max_value: "294276-12-31 23:59:59 UTC",
-      ruby_default: nil
-    }
-  },
   windows: {
     id: {
       oid: 23,
@@ -710,7 +642,75 @@ STRUCTURE = {
       generated: false,
       type: "smallint_array",
       ruby_default: nil,
-      callable_default: "#<Proc:0x000000010a217a90 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.99.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
+      callable_default: "#<Proc:0x000000010f52f020 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.99.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
+    },
+    created: {
+      oid: 1114,
+      comment: nil,
+      db_type: "timestamp without time zone",
+      default: nil,
+      allow_null: true,
+      primary_key: false,
+      generated: false,
+      type: "datetime",
+      min_value: "-4713-11-24 00:00:00 UTC",
+      max_value: "294276-12-31 23:59:59 UTC",
+      ruby_default: nil
+    },
+    updated: {
+      oid: 1114,
+      comment: nil,
+      db_type: "timestamp without time zone",
+      default: nil,
+      allow_null: true,
+      primary_key: false,
+      generated: false,
+      type: "datetime",
+      min_value: "-4713-11-24 00:00:00 UTC",
+      max_value: "294276-12-31 23:59:59 UTC",
+      ruby_default: nil
+    }
+  },
+  company_employees: {
+    id: {
+      oid: 23,
+      comment: nil,
+      db_type: "integer",
+      default: nil,
+      allow_null: false,
+      primary_key: true,
+      generated: false,
+      type: "integer",
+      auto_increment: true,
+      ruby_default: nil,
+      min_value: -2147483648,
+      max_value: 2147483647
+    },
+    company_id: {
+      oid: 23,
+      comment: nil,
+      db_type: "integer",
+      default: nil,
+      allow_null: false,
+      primary_key: false,
+      generated: false,
+      type: "integer",
+      ruby_default: nil,
+      min_value: -2147483648,
+      max_value: 2147483647
+    },
+    employee_id: {
+      oid: 23,
+      comment: nil,
+      db_type: "integer",
+      default: nil,
+      allow_null: false,
+      primary_key: false,
+      generated: false,
+      type: "integer",
+      ruby_default: nil,
+      min_value: -2147483648,
+      max_value: 2147483647
     },
     created: {
       oid: 1114,
@@ -1066,6 +1066,17 @@ STRUCTURE = {
       ruby_default: 0,
       min_value: -2147483648,
       max_value: 2147483647
+    },
+    price: {
+      oid: 1700,
+      comment: nil,
+      db_type: "numeric",
+      default: nil,
+      allow_null: true,
+      primary_key: false,
+      generated: false,
+      type: "decimal",
+      ruby_default: nil
     },
     created: {
       oid: 1114,

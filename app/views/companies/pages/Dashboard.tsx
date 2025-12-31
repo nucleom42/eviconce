@@ -12,7 +12,7 @@ export default function CompanyDashboard() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-    useEffect(() => {
+  useEffect(() => {
     fetch(`/api/companies/${id}/dashboard`)
       .then((res) => {
         if (res.status === 401) {
@@ -37,7 +37,7 @@ export default function CompanyDashboard() {
         <div className="dashboard__content">
           <TopBar userName={dashboardData.user.first_name}/>
           <main className="dashboard__main">
-            <Calendar employees={dashboardData.employees}/>
+            <Calendar employees={dashboardData.employees} companyId={id}/>
           </main>
         </div>
       </div>

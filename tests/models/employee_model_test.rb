@@ -103,19 +103,21 @@ describe 'Employee model' do
 
     describe '#time_slots' do
       before { TimeSlot.destroy_all }
-      let!(:time_slot) do
-        TimeSlot.create(start_time: Time.now, end_time: (Time.now + 60), state: 0,
-                                           employee_id: employee.id, company_id: company.id, day: Date.today)
+      after { TimeSlot.destroy_all }
+      let(:time_slot) do
+        TimeSlot.create(start_time: Time.tomorrow, end_time: (Time.tomorrow + 60), state: 0,
+                                           employee_id: employee.id, company_id: company.id, day: Date.today + 1)
       end
-      let!(:next_time_slot) do
-        TimeSlot.create(start_time: Time.now + 61, end_time: (Time.now + 121), state: 0,
-                                           employee_id: employee.id, company_id: company.id, day: Date.today)
+      let(:next_time_slot) do
+        TimeSlot.create(start_time: Time.tomorrow.end_of_day - 1000, end_time: (Time.tomorrow.end_of_day - 500), state: 0,
+                                           employee_id: employee.id, company_id: company.id, day: Date.today + 1)
       end
       describe 'whenn there are time slots' do
         it 'should bring them' do
+          TimeSlot.destroy_all
           time_slot
           next_time_slot
-          _(employee.time_slots(Date.today).map(&:id).sort).must_equal([time_slot.id, next_time_slot.id].sort)
+          _(employee.time_slots(Date.today + 1).map(&:id).sort).must_equal([time_slot.id, next_time_slot.id].sort)
         end
       end
     end
@@ -133,12 +135,12 @@ describe 'Employee model' do
         describe 'when there are time slot crossing but not canceled' do
           let!(:crossing_cancelled_time_slot) do
             TimeSlot.create(
-              start_time: Time.now, end_time: (Time.now + 60), state: 2,
+              start_time: Time.today.at(14, 0, 0), end_time: Time.today.at(15, 0, 0), state: 2,
               employee_id: employee.id, company_id: company.id, day: Date.today
             )
           end
           it 'should return true' do
-            _(employee.available?(Time.now..(Time.now + 60))).must_equal(true)
+            _(employee.available?(Time.today.at(14, 0, 0)..Time.today.at(15, 0, 0))).must_equal(true)
           end
         end
 

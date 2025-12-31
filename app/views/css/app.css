@@ -12,6 +12,8 @@
   --text: #2f2a26; /* warm charcoal */
   --accent: #d57a66; /* soft terracotta */
   --accent-muted: #807b58; /* warm olive */
+  --soft-blue: #2f3b81;
+  --deep-blue: #1d2869;
   --border: rgba(80, 70, 60, 0.15);
   --radius: 12px;
   --shadow: 0 4px 14px rgba(80, 70, 60, 0.08);
@@ -116,6 +118,10 @@ textarea:focus {
 }
 
 /* SPACING HELPERS */
+.mt-05 {
+  margin-top: 4px;
+}
+
 .mt-1 {
   margin-top: 8px;
 }
@@ -136,4 +142,53 @@ textarea:focus {
 }
 .t-a-center {
   text-align: center;
+}
+
+.width-25 {
+  width: 25% !important;
+}
+.width-33 {
+  width: 33% !important;
+}
+
+.width-50 {
+  width: 50% !important;
+}
+.width-75 {
+  width: 75% !important;
+}
+.width-100 {
+  width: 100% !important;
+}
+
+.height-25 {
+  height: 25% !important;
+}
+.height-50 {
+  height: 50% !important;
+}
+.height-75 {
+  height: 75% !important;
+}
+.height-100 {
+  height: 100% !important;
+}
+
+.content-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.t-sm {
+  font-size: 12px !important;
+}
+.t-md {
+  font-size: 14px !important;
+}
+.t-lr {
+  font-size: 18px !important;
+}
+.t-xl {
+  font-size: 24px !important;
 }

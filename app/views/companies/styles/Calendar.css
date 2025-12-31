@@ -16,7 +16,11 @@
   display: flex;
   justify-content: center; /* ← center as a group */
   align-items: center;
-  gap: 8px;
+  gap: 1px;
+}
+
+.date__picker {
+  margin-bottom: 0;
 }
 
 /* WEEK GRID */
@@ -109,20 +113,13 @@
   position: relative;
 }
 
-.event-block {
-  position: absolute;
-  width: calc((100% - 60px) / 7 - 6px);
-  margin-left: 3px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 10px;
-  padding: 6px;
-  font-size: 13px;
-  box-shadow: var(--shadow);
+.time-slot-block.preview {
+  border: 1px solid var(--accent);
 }
 
-.event-block.preview {
-  opacity: 0.4;
+.time-slot-block.scheduled {
+  background: var(--accent);
+  color: #fff;
 }
 
 /* Employee select */
@@ -138,7 +135,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 10px;
+  margin-bottom: 0;
 }
 
 /* Remove default ugly outline */
@@ -159,10 +156,130 @@
 
 .time-slot-block {
   position: absolute;
-  top: 0;
-  left: 4px;
-  right: 4px;
-  background: rgba(200, 80, 80, 0.85);
-  border-radius: 6px;
+  top: 1px;
+  left: 1px;
+  right: 1px;
   pointer-events: none;
+  border-radius: 2px;
+  padding: 6px;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.glass-modal {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: pop 0.18s ease-out;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button.danger {
+  background: #ff3b30;
+  color: white;
+}
+button.apply {
+  background: var(--soft-blue);
+  color: white;
+}
+button.apply:hover {
+  background: var(--deep-blue);
+}
+
+.now-line {
+  position: absolute;
+  left: 60px; /* width of time-col */
+  right: 0;
+  height: 2px;
+  background: #ff3b30;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.now-dot {
+  position: absolute;
+  left: -6px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background: #ff3b30;
+  border-radius: 50%;
+}
+
+.time-range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-range-row input[type="time"] {
+  font-size: 14px;
+}
+
+.time-range-row .dash {
+  opacity: 0.6;
+  padding-bottom: 15px;
+}
+.autocomplete {
+  position: relative;
+}
+
+.autocomplete-list {
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.autocomplete-list li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.autocomplete-list li:hover {
+  background: #f2f2f2;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 4px;
 }

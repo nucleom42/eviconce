@@ -30,6 +30,7 @@ class Employee < Rubee::SequelObject
   owns_many :companies, over: :company_employees
   owns_many :windows, over: :employee_windows
   owns_many :time_slots
+  owns_many :services
 
   def password
     ::JWT.decode(password_digest, JWT_KEY, false)[0]['password']
