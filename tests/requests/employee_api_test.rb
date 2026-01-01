@@ -107,6 +107,14 @@ describe 'Employee API' do
     end
 
     describe 'when there are windows and time slots' do
+      let!(:client) do
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                   email: "ok#{current_time_ms}@ok.com", phone: 'phone',
+                   password_digest: 'password_digest')
+        client.password = 'password_digest'
+        client.save
+        client
+      end
       let!(:window) do
         Window.create(
           start_time: Time.new(2020, 1, 1, 9, 0, 0),
@@ -122,6 +130,7 @@ describe 'Employee API' do
           start_time: Time.today.closest_future_working_day.at(10, 0, 0),
           end_time: Time.today.closest_future_working_day.at(10, 30, 0),
           state: 0,
+          client_id: client.id,
           employee_id: auth_employee.id, company_id: company.id, day: Date.today
         )
       end
@@ -130,6 +139,7 @@ describe 'Employee API' do
           start_time: Time.today.closest_future_working_day.at(11, 0, 0),
           end_time: Time.today.closest_future_working_day.at(11, 30, 0),
           state: 0,
+          client_id: client.id,
           employee_id: auth_employee.id, company_id: company.id, day: Date.today
         )
       end

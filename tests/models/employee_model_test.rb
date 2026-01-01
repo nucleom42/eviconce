@@ -104,13 +104,25 @@ describe 'Employee model' do
     describe '#time_slots' do
       before { TimeSlot.destroy_all }
       after { TimeSlot.destroy_all }
+      let!(:client) do
+        client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                            email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
+                            password_digest: 'password_digest')
+        client.password = 'password_digest'
+        client.save
+        client
+      end
       let(:time_slot) do
-        TimeSlot.create(start_time: Time.tomorrow, end_time: (Time.tomorrow + 60), state: 0,
-                                           employee_id: employee.id, company_id: company.id, day: Date.today + 1)
+        TimeSlot.create(
+          start_time: Time.tomorrow.at(14, 0, 0), end_time: Time.tomorrow.at(15, 0, 0), state: 0,
+          client_id: client.id, employee_id: employee.id, company_id: company.id, day: Date.today + 1
+        )
       end
       let(:next_time_slot) do
-        TimeSlot.create(start_time: Time.tomorrow.end_of_day - 1000, end_time: (Time.tomorrow.end_of_day - 500), state: 0,
-                                           employee_id: employee.id, company_id: company.id, day: Date.today + 1)
+        TimeSlot.create(
+          start_time: Time.tomorrow.at(17, 0, 0), end_time: Time.tomorrow.at(18, 0, 0),
+          client_id: client.id, state: 0, employee_id: employee.id, company_id: company.id, day: Date.today + 1
+        )
       end
       describe 'whenn there are time slots' do
         it 'should bring them' do
@@ -145,10 +157,18 @@ describe 'Employee model' do
         end
 
         describe 'when there are crosing time slots' do
+          let!(:client) do
+            client = Client.new(first_name: 'first_name', last_name: 'last_name',
+                                email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
+                                password_digest: 'password_digest')
+            client.password = 'password_digest'
+            client.save
+            client
+          end
           let!(:crossing_time_slot) do
             TimeSlot.create(
               start_time: Time.now, end_time: (Time.now + 60), state: 0,
-              employee_id: employee.id, company_id: company.id, day: Date.today
+              employee_id: employee.id, company_id: company.id, day: Date.today, client_id: client.id
             )
           end
           it 'should return false' do

@@ -135,6 +135,8 @@ export default function Calendar({ employees, companyId }) {
   const [clientResults, setClientResults] = useState([]);
   const [clientLoading, setClientLoading] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [editTimeSlotError, setEditTimeSlotError] = useState(null);
+  const [editTimeSlotSuccess, setEditTimeSlotSuccess] = useState(null);
 
   /* ---------- DAYS ---------- */
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -151,10 +153,7 @@ export default function Calendar({ employees, companyId }) {
   const [selectedServiceCustomPrice, setSelectedServiceCustomPrice] =
     useState(null);
 
-  /* ---------- AVAILABILITY ---------- */
-  useEffect(() => {
-    if (!currentEmployee) return;
-
+  const fetchAvailability = () => {
     const from = weekStart.toISOString().slice(0, 10);
     const to = addDays(weekStart, 6).toISOString().slice(0, 10);
 
@@ -166,6 +165,12 @@ export default function Calendar({ employees, companyId }) {
         setAvailabilityWindow(json.employee.window);
         setTimeSlots(json.employee.time_slots);
       });
+  };
+
+  /* ---------- AVAILABILITY ---------- */
+  useEffect(() => {
+    if (!currentEmployee) return;
+    fetchAvailability();
   }, [currentEmployee, weekStart]);
 
   const [now, setNow] = useState(new Date());
@@ -281,17 +286,46 @@ export default function Calendar({ employees, companyId }) {
       });
   };
 
-  const handleSchedule = () => {
-    console.log(editingSlot);
-    fetch(`/api/time_slots`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editingSlot),
-    })
-      .then((r) => r.json())
-      .then((json) => setTimeSlots([...timeSlots, json]))
-      .then(() => setEditingSlot(null));
+  const handleSchedule = async () => {
+    setEditTimeSlotError(null);
+    if (!editingSlot) return;
+
+    const payload = {
+      ...editingSlot,
+      client_id: editingSlot.client_id ?? previewSlot?.client_id ?? null,
+    };
+
+    console.log("POST payload:", payload);
+
+    try {
+      const res = await fetch("/api/time_slots", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Failed to schedule time slot");
+      }
+
+      const json = await res.json();
+
+      setTimeSlots((prev) => [...prev, json]);
+      setEditTimeSlotSuccess("Time slot scheduled successfully!");
+      setTimeout(() => {
+        setEditTimeSlotSuccess(null);
+        setEditingSlot(null);
+        setClientQuery("");
+        setSelectedClient(null);
+        setPreviewSlot(null);
+      }, 1000);
+
+      fetchAvailability();
+    } catch (err) {
+      setEditTimeSlotError(err.message);
+    }
   };
 
   return (
@@ -455,7 +489,13 @@ export default function Calendar({ employees, companyId }) {
       {editingSlot && (
         <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
           <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Edit time slot</h3>
+            <h3>Edit time slot: {editingSlot.state.toUpperCase()}</h3>
+            {editTimeSlotError && (
+              <div className="form__error">{editTimeSlotError}</div>
+            )}
+            {editTimeSlotSuccess && (
+              <div className="form__success">{editTimeSlotSuccess}</div>
+            )}
             <div className="form-group">
               <label>Service</label>
               <div className="time-range-row">
@@ -595,9 +635,6 @@ export default function Calendar({ employees, companyId }) {
                       editingSlot.start_time,
                       e.target.value,
                     );
-                    editingSlot.start_time = newStart;
-                    editingSlot.end_time = shiftMinutes(newStart, timeStep);
-                    editingSlot.duration = timeStep;
                     setEditingSlot((prev) => ({
                       ...prev,
                       start_time: newStart,
@@ -616,8 +653,6 @@ export default function Calendar({ employees, companyId }) {
                     );
                   }}
                 />
-
-                <span className="dash">–</span>
 
                 <input
                   type="time"

@@ -8,6 +8,16 @@
   font-size: 15px;
 }
 
+.form__success {
+  background: #d4edda;
+  border-left: 4px solid #3c763d;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  color: #3c763d;
+  font-size: 15px;
+}
+
 .field-error {
   color: #b24a3b;
   font-size: 14px;
