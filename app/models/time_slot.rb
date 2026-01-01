@@ -74,10 +74,9 @@ class TimeSlot < Rubee::SequelObject
 
   def overlapping?(date, request_from, request_to)
     return false if cancelled?
+    return false unless day.to_s == date.to_s
 
-    day.to_s == date.to_s &&
-      !((request_from.days_seconds < start_time.days_seconds && request_to.days_seconds < start_time.days_seconds) ||
-         (request_from.days_seconds > end_time.days_seconds && request_to.days_seconds > end_time.days_seconds))
+    (start_time.days_seconds < request_to.days_seconds) && (end_time.days_seconds > request_from.days_seconds)
   end
 
   def serialized_hash

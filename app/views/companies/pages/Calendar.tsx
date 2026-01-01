@@ -327,6 +327,21 @@ export default function Calendar({ employees, companyId }) {
       setEditTimeSlotError(err.message);
     }
   };
+  const slotsInHour = (day, hour) => {
+    const dayStr = day.toISOString().slice(0, 10);
+
+    const cellStart = dateAt(day, hour, 0);
+    const cellEnd = dateAt(day, hour + 1, 0);
+
+    return timeSlots.filter((s) => {
+      if (s.day !== dayStr) return false;
+
+      const start = parseTime(s.start_time);
+      const end = parseTime(s.end_time);
+
+      return overlaps(start, end, cellStart, cellEnd);
+    });
+  };
 
   return (
     <section className="calendar-card">
@@ -413,7 +428,7 @@ export default function Calendar({ employees, companyId }) {
               <div className="time-col">{hour}:00</div>
 
               {days.map((day) => {
-                const slot = slotStartingAt(day, hour);
+                const slots = slotsInHour(day, hour);
                 const available = isAvailable({
                   day,
                   hour,
@@ -422,9 +437,10 @@ export default function Calendar({ employees, companyId }) {
 
                 return (
                   <div
-                    key={`${day}-${hour}`}
+                    key={`${day.toISOString()}-${hour}`}
                     className={`week-cell ${available ? "" : "unavailable"}`}
                     onMouseDown={(e) => {
+                      setEditTimeSlotError(null);
                       if (!available || !currentEmployee) return;
 
                       const rect = e.currentTarget.getBoundingClientRect();
@@ -437,13 +453,14 @@ export default function Calendar({ employees, companyId }) {
                       const clickedStart = dateAt(day, hour, startMinutes);
                       const clickedEnd = dateAt(day, hour, endMinutes);
 
-                      if (slot) {
+                      for (const slot of slots) {
                         const slotStart = parseTime(slot.start_time);
                         const slotEnd = parseTime(slot.end_time);
 
                         if (
                           overlaps(clickedStart, clickedEnd, slotStart, slotEnd)
                         ) {
+                          setSelectedClient(slot);
                           setEditingSlot(slot);
                           return;
                         }
@@ -475,7 +492,10 @@ export default function Calendar({ employees, companyId }) {
                       });
                     }}
                   >
-                    {slot && <TimeSlotBlock timeSlot={slot} />}
+                    {slots.map((slot) => (
+                      <TimeSlotBlock key={slot.id} timeSlot={slot} />
+                    ))}
+
                     {isPreviewHere(day, hour) && (
                       <TimeSlotBlock timeSlot={previewSlot} />
                     )}
@@ -695,8 +715,8 @@ export default function Calendar({ employees, companyId }) {
                   type="text"
                   placeholder="Search client..."
                   value={
-                    selectedClient
-                      ? `${selectedClient.first_name} ${selectedClient.last_name}`
+                    editingSlot?.client
+                      ? `${editingSlot.client.first_name} ${editingSlot.client.last_name}`
                       : clientQuery
                   }
                   onChange={(e) => {
@@ -714,14 +734,14 @@ export default function Calendar({ employees, companyId }) {
                       <li
                         key={client.id}
                         onClick={() => {
-                          setSelectedClient(client);
+                          console.log(client);
                           setClientResults([]);
 
                           setEditingSlot((prev) => ({
                             ...prev,
                             client_id: client.id,
+                            client: { first_name: client.first_name, last_name: client.last_name },
                           }));
-                          console.log(client.id);
                         }}
                       >
                         <strong>
