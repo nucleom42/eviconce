@@ -1,124 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import TimeSlotBlock from "./TimeSlotBlock";
+import CalendarHeader from "./CalendarHeader";
+import TimeSlotForm from "./TimeSlotForm";
 import "./../styles/Calendar.css";
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
-
-const parseTime = (str) => {
-  if (!str) return null;
-
-  return new Date(str.replace(" ", "T").replace(" -", "-"));
-};
-const toLocalISOString = (date) => {
-  if (!date) return null;
-  const pad = (n) => String(n).padStart(2, "0");
-
-  return (
-    date.getFullYear() +
-    "-" +
-    pad(date.getMonth() + 1) +
-    "-" +
-    pad(date.getDate()) +
-    "T" +
-    pad(date.getHours()) +
-    ":" +
-    pad(date.getMinutes()) +
-    ":00"
-  );
-};
-const overlaps = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && bStart < aEnd;
-
-const nextBlockedTime = (day, startTime) => {
-  const dayStr = day.toISOString().slice(0, 10);
-
-  const sameDaySlots = timeSlots
-    .filter((s) => s.day === dayStr)
-    .map((s) => ({
-      start: new Date(s.start_time),
-      end: new Date(s.end_time),
-    }));
-
-  const futureStarts = sameDaySlots
-    .map((s) => s.start)
-    .filter((t) => t > startTime);
-
-  if (futureStarts.length === 0) return null;
-
-  return new Date(Math.min(...futureStarts));
-};
-
-/* ---------- DATE HELPERS ---------- */
-const startOfDay = (d) => {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-};
-
-const dateAt = (d, hours, minutes) => {
-  const x = new Date(d);
-  x.setHours(hours, minutes, 0, 0);
-  return x;
-};
-
-const addDays = (date, days) => {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-};
-
-const hourOf = (d) => {
-  if (!d) return null;
-  return parseTime(d).getHours();
-};
-
-const isWeekend = (day, weekends = []) => {
-  if (!weekends.length) return false;
-  const wday = day.getDay() === 0 ? 7 : day.getDay();
-  return weekends.includes(wday);
-};
-
-const isWithin = (hour, from, to) => hour >= from && hour < to;
-
-const roundToStep = (date, step = 15) => {
-  const d = new Date(date);
-  const minutes = d.getMinutes();
-  const rounded = Math.round(minutes / step) * step;
-  d.setMinutes(rounded, 0, 0);
-  return d;
-};
-
-const addMinutes = (date, mins) => new Date(date.getTime() + mins * 60 * 1000);
-
-/* ---------- AVAILABILITY (WINDOW ONLY) ---------- */
-const isAvailable = ({ day, hour, window }) => {
-  if (!window) return false;
-
-  if (isWeekend(day, window.weekends)) return false;
-
-  const startHour = hourOf(window.start_time);
-  const endHour = hourOf(window.end_time);
-  if (!isWithin(hour, startHour, endHour)) return false;
-
-  const breakFrom = hourOf(window.break_from);
-  const breakTo = hourOf(window.break_to);
-  if (isWithin(hour, breakFrom, breakTo)) return false;
-
-  return true;
-};
-const toTimeValue = (iso) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(
-    d.getMinutes(),
-  ).padStart(2, "0")}`;
-};
-
-const applyTime = (baseISO, hhmm) => {
-  const [h, m] = hhmm.split(":").map(Number);
-  const d = new Date(baseISO);
-  d.setHours(h, m, 0, 0);
-  return toLocalISOString(d);
-};
+import {
+  HOURS,
+  parseTime,
+  toLocalISOString,
+  overlaps,
+  startOfDay,
+  dateAt,
+  addDays,
+  addMinutes,
+  isAvailable,
+} from "./../utils/time";
 
 export default function Calendar({ employees, companyId }) {
   const [weekStart, setWeekStart] = useState(startOfDay(new Date()));
@@ -129,29 +25,9 @@ export default function Calendar({ employees, companyId }) {
   const [timeSlots, setTimeSlots] = useState([]);
   const weekBodyRef = useRef(null);
   const [previewSlot, setPreviewSlot] = useState(null);
-  const [timeStep, setTimeStep] = useState(15);
-  const [selectedService, setSelectedService] = useState(null);
-  const [clientQuery, setClientQuery] = useState("");
-  const [clientResults, setClientResults] = useState([]);
-  const [clientLoading, setClientLoading] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [editTimeSlotError, setEditTimeSlotError] = useState(null);
-  const [editTimeSlotSuccess, setEditTimeSlotSuccess] = useState(null);
-
-  /* ---------- DAYS ---------- */
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-
-  /* ---------- NAV ---------- */
-  const nextWeek = () => setWeekStart(addDays(weekStart, 7));
-  const prevWeek = () => setWeekStart(addDays(weekStart, -7));
-  const goToday = () => setWeekStart(startOfDay(new Date()));
-  const services = () => {
-    if (!currentEmployee) return [];
-    return currentEmployee.services;
-  };
-
-  const [selectedServiceCustomPrice, setSelectedServiceCustomPrice] =
-    useState(null);
 
   const fetchAvailability = () => {
     const from = weekStart.toISOString().slice(0, 10);
@@ -179,7 +55,7 @@ export default function Calendar({ employees, companyId }) {
     const tick = () => setNow(new Date());
 
     tick(); // initial
-    const id = setInterval(tick, 60 * 5 * 1000); // update every 5 minute
+    const id = setInterval(tick, 60 * 5 * 1000); // update every 5 minutes
 
     return () => clearInterval(id);
   }, []);
@@ -217,42 +93,6 @@ export default function Calendar({ employees, companyId }) {
 
   /* ---------- TIME SLOTS ---------- */
 
-  const slotStartingAt = (day, hour) => {
-    const dayStr = day.toISOString().slice(0, 10);
-
-    const cellStart = dateAt(day, hour, 0);
-    const cellEnd = dateAt(day, hour + 1, 0);
-
-    return timeSlots.find((s) => {
-      if (s.day !== dayStr) return false;
-
-      const start = parseTime(s.start_time);
-      const end = parseTime(s.end_time);
-
-      return overlaps(start, end, cellStart, cellEnd);
-    });
-  };
-
-  const onStartTimeChange = (newStart) => {
-    const start = roundToStep(newStart, 15);
-
-    setEditingSlot((s) => ({
-      ...s,
-      start_time: toLocalISOString(start),
-      end_time: toLocalISOString(addMinutes(start, s.duration)),
-    }));
-  };
-
-  const onServiceSelect = (service) => {
-    const start = new Date(editingSlot.start_time);
-
-    setEditingSlot((s) => ({
-      ...s,
-      service_id: service.id,
-      duration: service.duration,
-      end_time: toLocalISOString(addMinutes(start, service.duration)),
-    }));
-  };
   const shiftMinutes = (iso, mins) =>
     toLocalISOString(addMinutes(new Date(iso), mins));
 
@@ -270,63 +110,7 @@ export default function Calendar({ employees, companyId }) {
     return overlaps(slotStart, slotEnd, cellStart, cellEnd);
   };
 
-  const queryClientSearch = (query) => {
-    if (!query) {
-      return [];
-    }
-    if (query.length < 3) {
-      return [];
-    }
-    setClientLoading(true);
-    fetch(`/api/clients?search=${query}`)
-      .then((r) => r.json())
-      .then((json) => {
-        setClientLoading(false);
-        setClientResults(json);
-      });
-  };
 
-  const handleSchedule = async () => {
-    setEditTimeSlotError(null);
-    if (!editingSlot) return;
-
-    const payload = {
-      ...editingSlot,
-      client_id: editingSlot.client_id ?? previewSlot?.client_id ?? null,
-    };
-
-    console.log("POST payload:", payload);
-
-    try {
-      const res = await fetch("/api/time_slots", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || "Failed to schedule time slot");
-      }
-
-      const json = await res.json();
-
-      setTimeSlots((prev) => [...prev, json]);
-      setEditTimeSlotSuccess("Time slot scheduled successfully!");
-      setTimeout(() => {
-        setEditTimeSlotSuccess(null);
-        setEditingSlot(null);
-        setClientQuery("");
-        setSelectedClient(null);
-        setPreviewSlot(null);
-      }, 1000);
-
-      fetchAvailability();
-    } catch (err) {
-      setEditTimeSlotError(err.message);
-    }
-  };
   const slotsInHour = (day, hour) => {
     const dayStr = day.toISOString().slice(0, 10);
 
@@ -346,59 +130,23 @@ export default function Calendar({ employees, companyId }) {
   return (
     <section className="calendar-card">
       {/* ---------- HEADER ---------- */}
-      <header className="calendar__header sticky">
-        <h4>
-          {days[0].toLocaleDateString("uk-UA", {
-            day: "numeric",
-            month: "long",
-          })}
-          {" – "}
-          {days[6].toLocaleDateString("uk-UA", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-        </h4>
-
-        <select
-          className="employee-select"
-          value={currentEmployee?.id || ""}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "") {
-              // Reset everything if "Обрати працівника" is selected
-              setCurrentEmployee(null);
-              setTimeSlots([]);
-              setAvailabilityWindow(null);
-              setPreviewSlot(null);
-            } else {
-              setCurrentEmployee(
-                employees.find((emp) => emp.id === Number(value)),
-              );
-            }
-          }}
-        >
-          <option value="">Обрати працівника</option>
-          {employees.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.first_name} {e.last_name}
-            </option>
-          ))}
-        </select>
-
-        <div className="calendar__actions">
-          <button onClick={prevWeek}>←</button>
-          <button onClick={goToday}>Сьогодні</button>
-          <button onClick={nextWeek}>→</button>
-
-          <input
-            className="date__picker"
-            type="date"
-            value={weekStart.toISOString().slice(0, 10)}
-            onChange={(e) => setWeekStart(startOfDay(new Date(e.target.value)))}
-          />
-        </div>
-      </header>
+      <CalendarHeader
+        days={days}
+        weekStart={weekStart}
+        setWeekStart={setWeekStart}
+        employees={employees}
+        currentEmployee={currentEmployee}
+        setCurrentEmployee={(emp) => {
+          if (!emp) {
+            setCurrentEmployee(null);
+            setTimeSlots([]);
+            setAvailabilityWindow(null);
+            setPreviewSlot(null);
+          } else {
+            setCurrentEmployee(emp);
+          }
+        }}
+      />
 
       {/* ---------- GRID ---------- */}
       <div className="week-calendar">
@@ -507,262 +255,14 @@ export default function Calendar({ employees, companyId }) {
         </div>
       </div>
       {editingSlot && (
-        <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
-          <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Edit time slot: {editingSlot.state.toUpperCase()}</h3>
-            {editTimeSlotError && (
-              <div className="form__error">{editTimeSlotError}</div>
-            )}
-            {editTimeSlotSuccess && (
-              <div className="form__success">{editTimeSlotSuccess}</div>
-            )}
-            <div className="form-group">
-              <label>Service</label>
-              <div className="time-range-row">
-                <select
-                  className="width-100"
-                  onChange={(e) => {
-                    const newDuration = Number(e.target.value);
-                    const start = new Date(editingSlot.start_time);
-                    setTimeStep(newDuration);
-                    setEditingSlot((prev) => ({
-                      ...prev,
-                      duration: newDuration,
-                      end_time: toLocalISOString(
-                        addMinutes(start, newDuration),
-                      ),
-                    }));
-                    setPreviewSlot((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            duration: newDuration,
-                            end_time: toLocalISOString(
-                              addMinutes(start, newDuration),
-                            ),
-                          }
-                        : null,
-                    );
-                    const serviceId = Number(e.target.value);
-                    let foundService = currentEmployee.services.find(
-                      (s) => s.duration === serviceId,
-                    );
-                    if (!foundService) {
-                      foundService = {
-                        duration: newDuration,
-                        name: e.target.name,
-                        price: 0.0,
-                      };
-                    }
-                    setSelectedService(foundService);
-                    setSelectedServiceCustomPrice(null);
-                  }}
-                >
-                  {" "}
-                  <option value="">Select a service</option>
-                  {currentEmployee.services.length === 0 && (
-                    <>
-                      <option value={15} name="quarter">
-                        quarter
-                      </option>
-                      <option value={30} name="half">
-                        half
-                      </option>
-                      <option value={45} name="academic">
-                        academic
-                      </option>
-                      <option value={60} name="hour">
-                        hour
-                      </option>
-                    </>
-                  )}
-                  {currentEmployee.services.map((s) => (
-                    <option key={s.id} value={s.duration}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="form-group">
-              {selectedService && (
-                <>
-                  <div className="time-range-row mt-1 t-sm">
-                    <label>Duration</label>
-                    <input
-                      type="number"
-                      className="width-33"
-                      step={15}
-                      min={15}
-                      value={selectedService.duration}
-                      onChange={(e) => {
-                        const newDuration = Number(e.target.value);
-                        const start = new Date(editingSlot.start_time);
-                        setTimeStep(newDuration);
-                        setEditingSlot((prev) => ({
-                          ...prev,
-                          duration: newDuration,
-                          end_time: toLocalISOString(
-                            addMinutes(start, newDuration),
-                          ),
-                        }));
-                        setPreviewSlot((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                duration: newDuration,
-                                end_time: toLocalISOString(
-                                  addMinutes(start, newDuration),
-                                ),
-                              }
-                            : null,
-                        );
-                        setSelectedService((prev) => ({
-                          ...prev,
-                          duration: newDuration,
-                        }));
-                      }}
-                    />
-                    <label className="content-center">Price</label>
-                    <input
-                      type="number"
-                      className="width-33"
-                      step={0.01}
-                      min={0}
-                      value={
-                        selectedServiceCustomPrice ||
-                        Number(selectedService.price) ||
-                        0
-                      }
-                      onChange={(e) => {
-                        setSelectedServiceCustomPrice(Number(e.target.value));
-                      }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="form-group time-range">
-              <label>Time</label>
-              <div className="time-range-row">
-                <input
-                  type="time"
-                  lang="uk-UA"
-                  step={900}
-                  value={toTimeValue(editingSlot.start_time)}
-                  onChange={(e) => {
-                    const newStart = applyTime(
-                      editingSlot.start_time,
-                      e.target.value,
-                    );
-                    setEditingSlot((prev) => ({
-                      ...prev,
-                      start_time: newStart,
-                      end_time: shiftMinutes(newStart, timeStep),
-                      duration: timeStep,
-                    }));
-                    setPreviewSlot((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            start_time: newStart,
-                            end_time: shiftMinutes(newStart, timeStep),
-                            duration: timeStep,
-                          }
-                        : null,
-                    );
-                  }}
-                />
-
-                <input
-                  type="time"
-                  lang="uk-UA"
-                  step={900}
-                  value={toTimeValue(editingSlot.end_time)}
-                  onChange={(e) => {
-                    const newEnd = applyTime(
-                      editingSlot.end_time,
-                      e.target.value,
-                    );
-                    editingSlot.end_time = newEnd;
-                    editingSlot.start_time = shiftMinutes(newEnd, -timeStep);
-                    editingSlot.duration = timeStep;
-                    setEditingSlot((prev) => ({
-                      ...prev,
-                      end_time: newEnd,
-                      start_time: shiftMinutes(newEnd, -timeStep),
-                      duration: timeStep,
-                    }));
-                    setPreviewSlot((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            end_time: newEnd,
-                            start_time: shiftMinutes(newEnd, -timeStep),
-                            duration: timeStep,
-                          }
-                        : null,
-                    );
-                  }}
-                />
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Client</label>
-
-              <div className="autocomplete">
-                <input
-                  type="text"
-                  placeholder="Search client..."
-                  value={
-                    editingSlot?.client
-                      ? `${editingSlot.client.first_name} ${editingSlot.client.last_name}`
-                      : clientQuery
-                  }
-                  onChange={(e) => {
-                    setSelectedClient(null);
-                    setClientQuery(e.target.value);
-                    queryClientSearch(e.target.value);
-                  }}
-                />
-
-                {clientLoading && <div className="hint">Searching…</div>}
-
-                {clientResults.length > 0 && !selectedClient && (
-                  <ul className="autocomplete-list">
-                    {clientResults.map((client) => (
-                      <li
-                        key={client.id}
-                        onClick={() => {
-                          console.log(client);
-                          setClientResults([]);
-
-                          setEditingSlot((prev) => ({
-                            ...prev,
-                            client_id: client.id,
-                            client: { first_name: client.first_name, last_name: client.last_name },
-                          }));
-                        }}
-                      >
-                        <strong>
-                          {client.first_name} {client.last_name}
-                        </strong>
-                        <div className="muted">{client.email}</div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button onClick={() => setEditingSlot(null)}>Close</button>
-              <button className="apply" onClick={handleSchedule}>
-                Schedule
-              </button>
-            </div>
-          </div>
-        </div>
+        <TimeSlotForm
+          slot={editingSlot}
+          weekStart={weekStart}
+          previewSlot={previewSlot}
+          setPreviewSlot={setPreviewSlot}
+          setTimeSlots={setTimeSlots}
+          currentEmployee={currentEmployee}
+        />
       )}
     </section>
   );

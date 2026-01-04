@@ -1,0 +1,81 @@
+import React from "react";
+import { addDays, startOfDay } from "./../utils/time";
+
+type Props = {
+  days: Date[];
+  weekStart: Date;
+  setWeekStart: (d: Date) => void;
+
+  employees: any[];
+  currentEmployee: any;
+  setCurrentEmployee: (e: any | null) => void;
+};
+
+export default function CalendarHeader({
+  days,
+  weekStart,
+  setWeekStart,
+  employees,
+  currentEmployee,
+  setCurrentEmployee,
+}: Props) {
+  /* ---------- NAV ---------- */
+  const nextWeek = () => setWeekStart(addDays(weekStart, 7));
+  const prevWeek = () => setWeekStart(addDays(weekStart, -7));
+  const goToday = () => setWeekStart(startOfDay(new Date()));
+  return (
+    <header className="calendar__header sticky">
+      <h4>
+        {days[0].toLocaleDateString("uk-UA", {
+          day: "numeric",
+          month: "long",
+        })}
+        {" – "}
+        {days[6].toLocaleDateString("uk-UA", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}
+      </h4>
+
+      <select
+        className="employee-select"
+        value={currentEmployee?.id || ""}
+        onChange={(e) => {
+          const value = e.target.value;
+
+          if (value === "") {
+            setCurrentEmployee(null);
+          } else {
+            setCurrentEmployee(
+              employees.find((emp) => emp.id === Number(value)),
+            );
+          }
+        }}
+      >
+        <option value="">Обрати працівника</option>
+        {employees.map((e) => (
+          <option key={e.id} value={e.id}>
+            {e.first_name} {e.last_name}
+          </option>
+        ))}
+      </select>
+
+      <div className="calendar__actions">
+        <button onClick={prevWeek}>←</button>
+        <button onClick={goToday}>Сьогодні</button>
+        <button onClick={nextWeek}>→</button>
+
+        <input
+          className="date__picker"
+          type="date"
+          value={weekStart.toISOString().slice(0, 10)}
+          onChange={(e) =>
+            setWeekStart(new Date(e.target.value + "T00:00:00"))
+          }
+        />
+      </div>
+    </header>
+  );
+}
+
