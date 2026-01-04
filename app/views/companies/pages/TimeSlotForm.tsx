@@ -8,6 +8,8 @@ import {
   addDays,
 } from "../utils/time";
 
+import "./../styles/TimeSlotForm.css";
+
 type Props = {
   slot: any | null;
   weekStart: Date;
@@ -123,7 +125,12 @@ export default function TimeSlotForm({
   return (
     <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Edit time slot: {editingSlot.state?.toUpperCase()}</h3>
+        <div className="form__title">
+          <div className="form__title-left">Edit time slot:</div>
+          <div className={`form__title-right form__title_${editingSlot.state}`}>
+            {editingSlot.state?.toUpperCase()}
+          </div>
+        </div>
 
         {editTimeSlotError && (
           <div className="form__error">{editTimeSlotError}</div>
@@ -342,6 +349,7 @@ export default function TimeSlotForm({
         <div className="modal-actions">
           <button
             onClick={() => {
+              setEditTimeSlotError(null);
               setEditingSlot(null);
               setClientQuery("");
               setSelectedClient(null);

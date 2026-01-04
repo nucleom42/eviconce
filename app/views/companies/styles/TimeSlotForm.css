@@ -1,0 +1,31 @@
+.form__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form__title-left {
+  font-weight: 500;
+}
+
+.form__title-right {
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.form__title_preview {
+  background: #4e525f;
+  color: #d57a66;
+}
+
+.form__title_scheduled {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.form__title_cancelled {
+  background: #fef2f2;
+  color: #b91c1c;
+}

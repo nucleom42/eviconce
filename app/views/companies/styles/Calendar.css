@@ -114,12 +114,13 @@
 }
 
 .time-slot-block.preview {
-  border: 1px solid var(--accent);
+  border: 1px dashed var(--accent);
 }
 
 .time-slot-block.scheduled {
-  background: var(--accent);
-  color: #fff;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #047857;
 }
 
 /* Employee select */
