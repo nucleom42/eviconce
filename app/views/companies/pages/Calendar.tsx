@@ -261,6 +261,8 @@ export default function Calendar({ employees, companyId }) {
           previewSlot={previewSlot}
           setPreviewSlot={setPreviewSlot}
           setTimeSlots={setTimeSlots}
+          setEditingSlot={setEditingSlot}
+          editingSlot={editingSlot}
           currentEmployee={currentEmployee}
         />
       )}

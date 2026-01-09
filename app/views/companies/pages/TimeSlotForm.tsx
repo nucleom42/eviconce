@@ -16,6 +16,8 @@ type Props = {
   previewSlot: any | null;
   setPreviewSlot: (s: any | null) => void;
   setTimeSlots: (s: any[]) => void;
+  setEditingSlot: (s: any | null) => void;
+  editingSlot: any | null;
   currentEmployee: any;
 };
 
@@ -25,9 +27,10 @@ export default function TimeSlotForm({
   previewSlot,
   setPreviewSlot,
   setTimeSlots,
+  setEditingSlot,
+  editingSlot,
   currentEmployee,
 }: Props) {
-  const [editingSlot, setEditingSlot] = useState<any | null>(slot);
   const [timeStep, setTimeStep] = useState(() => slot?.duration ?? 15);
 
   const [clientQuery, setClientQuery] = useState("");
@@ -122,6 +125,27 @@ export default function TimeSlotForm({
       });
   };
 
+  const buildService = (duration: number, option: HTMLOptionElement) => {
+    const found = currentEmployee.services.find((s) => s.duration === duration);
+
+    if (found) {
+      return {
+        id: found.id,
+        name: found.name,
+        duration: found.duration,
+        price: found.price,
+      };
+    }
+
+    // default service
+    return {
+      id: null,
+      name: option.text,
+      duration,
+      price: 0,
+    };
+  };
+
   return (
     <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
@@ -147,11 +171,19 @@ export default function TimeSlotForm({
               className="width-100"
               onChange={(e) => {
                 const newDuration = Number(e.target.value);
+                if (newDuration === 0) {
+                  setSelectedService(null);
+                  setSelectedServiceCustomPrice(null);
+                  return;
+                }
                 const start = new Date(editingSlot.start_time);
+                const option = e.target.selectedOptions[0];
+                const service = buildService(newDuration, option);
                 setTimeStep(newDuration);
                 setEditingSlot((prev) => ({
                   ...prev,
                   duration: newDuration,
+                  service: service,
                   end_time: toLocalISOString(addMinutes(start, newDuration)),
                 }));
                 setPreviewSlot((prev) =>
@@ -159,45 +191,19 @@ export default function TimeSlotForm({
                     ? {
                         ...prev,
                         duration: newDuration,
+                        service: service,
                         end_time: toLocalISOString(
                           addMinutes(start, newDuration),
                         ),
                       }
                     : null,
                 );
-                const serviceId = Number(e.target.value);
-                let foundService = currentEmployee.services.find(
-                  (s) => s.duration === serviceId,
-                );
-                if (!foundService) {
-                  foundService = {
-                    duration: newDuration,
-                    name: e.target.name,
-                    price: 0.0,
-                  };
-                }
-                setSelectedService(foundService);
+                setSelectedService(service);
                 setSelectedServiceCustomPrice(null);
               }}
             >
               {" "}
-              <option value="">Select a service</option>
-              {currentEmployee.services.length === 0 && (
-                <>
-                  <option value={15} name="quarter">
-                    quarter
-                  </option>
-                  <option value={30} name="half">
-                    half
-                  </option>
-                  <option value={45} name="academic">
-                    academic
-                  </option>
-                  <option value={60} name="hour">
-                    hour
-                  </option>
-                </>
-              )}
+              <option value={'na'}>Select a service</option>
               {currentEmployee.services.map((s) => (
                 <option key={s.id} value={s.duration}>
                   {s.name}
@@ -353,7 +359,6 @@ export default function TimeSlotForm({
               setEditingSlot(null);
               setClientQuery("");
               setSelectedClient(null);
-              setPreviewSlot(null);
             }}
           >
             Close

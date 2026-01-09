@@ -53,7 +53,7 @@ export default function CompanyForm() {
     });
     const body = await response.json();
     if (response.ok) {
-      navigate(`/companies/${body.id}dashboard`);
+      navigate(`/companies/${body.id}/dashboard`);
     } else {
       setErrors(body.errors || {});
     }

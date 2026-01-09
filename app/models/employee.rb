@@ -76,7 +76,7 @@ class Employee < Rubee::SequelObject
     TimeSlot.where(employee_id: id, day: date_or_range)
   end
 
-  def available?(range)
+  def available?(range, time_slot_id_exclude = nil)
     request_from = range.begin
     request_to = range.end
     request_date = range.begin.to_date
@@ -85,7 +85,11 @@ class Employee < Rubee::SequelObject
     current_window.within_work_hours?(request_from, request_to) &&
     !current_window.overlapping_break?(request_from, request_to) &&
     !current_window.weekends?(request_date) &&
-    time_slots(request_date).none? { |ts| ts.overlapping?(request_date, request_from, request_to) }
+    time_slots(request_date).none? do |ts|
+      next if time_slot_id_exclude && ts.id == time_slot_id_exclude
+
+      ts.overlapping?(request_date, request_from, request_to)
+    end
   end
 
   def add_companies(*companies_args)

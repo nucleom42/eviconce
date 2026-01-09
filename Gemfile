@@ -11,7 +11,7 @@ gem 'puma'
 gem 'rack'
 gem 'rackup'
 gem 'rake'
-gem 'ru.Bee'
+gem 'ru.Bee', path: '../rubee'
 gem 'sequel'
 gem 'shrine'
 

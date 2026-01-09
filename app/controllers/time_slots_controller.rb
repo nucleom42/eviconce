@@ -9,7 +9,21 @@ class TimeSlotsController < Rubee::BaseController
 
   # POST /api/time_slots
   def create
-    time_slot = TimeSlot.new(time_slot_params)
+    found_service = if service_params[:id]
+      Service.find(service_params[:id])
+    else
+      Service.where(name: service_params[:name], employee_id: time_slot_params[:employee_id]).first
+    end
+    unless found_service
+      found_service = Service.create(
+        employee_id: time_slot_params[:employee_id],
+        name: service_params[:name],
+        duration: service_params[:duration].to_i,
+        price: service_params[:price].to_f,
+        description: "There is a default description for #{service_params[:name]}",
+      )
+    end
+    time_slot = TimeSlot.new(time_slot_params.merge(service_id: found_service.id))
     if time_slot.valid? && time_slot.save
       response_with object: time_slot.serialized_hash, type: :json, status: 201
     else
@@ -20,6 +34,10 @@ class TimeSlotsController < Rubee::BaseController
   end
 
   private
+
+  def service_params
+    params[:service]
+  end
 
   def time_slot_params
     params.reject do |key, _|
