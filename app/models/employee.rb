@@ -1,5 +1,6 @@
 class Employee < Rubee::SequelObject
   JWT_KEY = "#{ENV['JWT_KEY']}#{name}" || 'secret'
+
   attr_accessor :id, :first_name, :last_name, :description,
     :email, :phone, :password_digest, :role, :created, :updated
   ROLES = { admin: 1, user: 0 }.freeze
@@ -80,21 +81,38 @@ class Employee < Rubee::SequelObject
     request_from = range.begin
     request_to = range.end
     request_date = range.begin.to_date
-    return false unless current_window
-
-    current_window.within_work_hours?(request_from, request_to) &&
-    !current_window.overlapping_break?(request_from, request_to) &&
-    !current_window.weekends?(request_date) &&
-    time_slots(request_date).none? do |ts|
+    unless current_window
+      add_error(:availability, message: 'No windows')
+      return false
+    end
+    unless current_window.within_work_hours?(request_from, request_to)
+      add_error(:availability, message: 'Outside work hours')
+      return false
+    end
+    if current_window.overlapping_break?(request_from, request_to)
+      add_error(:availability, message: 'Within break hours')
+      return false
+    end
+    if current_window.weekends?(request_date)
+      add_error(:availability, message: 'On weekends')
+      return false
+    end
+    overlapps_with_others = time_slots(request_date).any? do |ts|
       next if time_slot_id_exclude && ts.id == time_slot_id_exclude
 
       ts.overlapping?(request_date, request_from, request_to)
     end
+    if overlapps_with_others
+      add_error(:availability, message: 'Overlapping')
+      return false
+    end
+
+    true
   end
 
   def add_companies(*companies_args)
     if ROLES[role] == 'admin' && my_company
-      add_error(:role, error: 'Admin can have only one company')
+      add_error(:role, message: 'Admin can have only one company')
       return false
     end
     companies_args.map { |company| CompanyEmployee.create(employee_id: id, company_id: company.id) }

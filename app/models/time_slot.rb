@@ -33,7 +33,7 @@ class TimeSlot < Rubee::SequelObject
     attribute(:state).required.type(Integer).condition(-> { (0..4).include?(state) })
   end
 
-  before :save, :check_no_overlapping!
+  before :save, :check_overlapping!
 
   holds :employee
   holds :client
@@ -61,26 +61,18 @@ class TimeSlot < Rubee::SequelObject
     (end_time - start_time) / 60
   end
 
-  def price
-    service.price
-  end
-
-  def check_overlapping
-    if employee.available?(start_time..end_time, id)
-      add_error(:day, error: 'overlapping')
+  def employee_available?
+    slots_employee = employee
+    if slots_employee.available?(start_time..end_time, id)
       true
     else
+      add_error(slots_employee.errors.keys.first, slots_employee.errors[:availability])
       false
     end
   end
 
   def check_overlapping!
-    raise Rubee::Validatable::Error, 'overlapping' if check_overlapping
-  end
-
-  def check_no_overlapping!
-    check_overlapping!
-    true
+    raise Rubee::Validatable::Error, errors[:availability] unless employee_available?
   end
 
   def overlapping?(date, request_from, request_to)

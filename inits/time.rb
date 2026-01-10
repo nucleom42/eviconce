@@ -25,8 +25,12 @@ class Time
 
   def closest_future_working_day
     target_day = self
-    target_day = target_day.add_days(1) while target_day.wday == 6 || target_day.wday == 7
+    target_day = target_day.add_days(1) while target_day.wday == 6 || target_day.wday == 0
     target_day
+  end
+
+  def with_current_time
+    at(Time.now.hour, Time.now.min, Time.now.sec)
   end
 
   class << self

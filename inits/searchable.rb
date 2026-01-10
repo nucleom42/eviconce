@@ -38,6 +38,7 @@ module Searchable
         Sequel.ilike(Sequel[base_dataset.first_source][name.to_sym], pattern)
       end
       base_dataset
+        .select(Sequel[base_dataset.first_source].*)
         .where(Sequel.|(*conditions))
         .distinct(Sequel[base_dataset.first_source][:id])
         .all
@@ -47,7 +48,9 @@ module Searchable
     def query_with_limit(fields, pattern, base_dataset)
       fields.each_with_object([]) do |field_hash, result|
         field_hash => { name: name, **opts }
-        pre_limit_query = base_dataset.where(Sequel.ilike(Sequel[base_dataset.first_source][name.to_sym], pattern))
+        pre_limit_query = base_dataset
+          .select(Sequel[base_dataset.first_source].*)
+          .where(Sequel.ilike(Sequel[base_dataset.first_source][name.to_sym], pattern))
         pre_limit_query.limit(opts[:limit]) if opts[:limit]
         result.concat(pre_limit_query.all)
       end.uniq
