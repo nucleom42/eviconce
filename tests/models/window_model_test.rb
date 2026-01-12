@@ -10,7 +10,7 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today - 1,
-          weekends: [6, 7]
+          weekends: [6, 0]
         )
         _(window.valid?).must_equal(true)
       end
@@ -24,7 +24,7 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today,
-          weekends: [6, 7]
+          weekends: [6, 0]
         )
         _(window.valid?).must_equal(false)
       end
@@ -38,7 +38,7 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today - 1,
-          weekends: [6, 7]
+          weekends: [6, 0]
         )
         window.save
         employee = Employee.new(
@@ -61,7 +61,7 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today - 1,
-          weekends: [6, 7]
+          weekends: [6, 0]
         )
       end
       let!(:employee) do

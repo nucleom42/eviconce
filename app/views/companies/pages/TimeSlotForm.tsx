@@ -48,9 +48,20 @@ export default function TimeSlotForm({
 
   useEffect(() => {
     if (!slot) return;
+
     setEditingSlot(slot);
     setTimeStep(slot.duration ?? 15);
-  }, [slot]);
+
+    const service = currentEmployee.services.find(
+      (s) => s.id === slot.service_id,
+    );
+
+    if (service) {
+      setSelectedService(service);
+      const price = slot.price ? Number(slot.price) : null;
+      setSelectedServiceCustomPrice(price);
+    }
+  }, [slot, currentEmployee]);
 
   if (!editingSlot) return null;
 
@@ -68,6 +79,9 @@ export default function TimeSlotForm({
         setClientResults(json);
       });
   };
+
+  const handleUpdate = async () => {};
+  const handleCancel = async () => {};
 
   const handleSchedule = async () => {
     setEditTimeSlotError(null);
@@ -125,30 +139,10 @@ export default function TimeSlotForm({
       });
   };
 
-  const buildService = (duration: number, option: HTMLOptionElement) => {
-    const found = currentEmployee.services.find((s) => s.duration === duration);
-
-    if (found) {
-      return {
-        id: found.id,
-        name: found.name,
-        duration: found.duration,
-        price: found.price,
-      };
-    }
-
-    // default service
-    return {
-      id: null,
-      name: option.text,
-      duration,
-      price: 0,
-    };
-  };
-
   return (
     <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="form__title">{editingSlot.start_time.slice(0, 10)}</div>
         <div className="form__title">
           <div className="form__title-left">Edit time slot:</div>
           <div className={`form__title-right form__title_${editingSlot.state}`}>
@@ -169,43 +163,44 @@ export default function TimeSlotForm({
           <div className="time-range-row">
             <select
               className="width-100"
+              value={editingSlot.service_id ?? ""}
               onChange={(e) => {
-                const newDuration = Number(e.target.value);
-                if (newDuration === 0) {
+                const serviceId = Number(e.target.value);
+                const service = currentEmployee.services.find(
+                  (s) => s.id === serviceId,
+                );
+
+                if (!service) {
                   setSelectedService(null);
                   setSelectedServiceCustomPrice(null);
                   return;
                 }
+
                 const start = new Date(editingSlot.start_time);
-                const option = e.target.selectedOptions[0];
-                const service = buildService(newDuration, option);
-                setTimeStep(newDuration);
-                setEditingSlot((prev) => ({
-                  ...prev,
-                  duration: newDuration,
-                  service: service,
-                  end_time: toLocalISOString(addMinutes(start, newDuration)),
-                }));
+
+                setTimeStep(service.duration);
+
+                const updated = {
+                  service_id: service.id,
+                  duration: service.duration,
+                  price: service.price,
+                  end_time: toLocalISOString(
+                    addMinutes(start, service.duration),
+                  ),
+                };
+
+                setEditingSlot((prev) => ({ ...prev, ...updated }));
                 setPreviewSlot((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        duration: newDuration,
-                        service: service,
-                        end_time: toLocalISOString(
-                          addMinutes(start, newDuration),
-                        ),
-                      }
-                    : null,
+                  prev ? { ...prev, ...updated } : null,
                 );
+
                 setSelectedService(service);
                 setSelectedServiceCustomPrice(null);
               }}
             >
-              {" "}
-              <option value={'na'}>Select a service</option>
+              <option value="">Select a service</option>
               {currentEmployee.services.map((s) => (
-                <option key={s.id} value={s.duration}>
+                <option key={s.id} value={s.id}>
                   {s.name}
                 </option>
               ))}
@@ -213,20 +208,23 @@ export default function TimeSlotForm({
           </div>
         </div>
         <div className="form-group">
+          {/* Time range and price */}
           {selectedService && (
             <>
               <div className="time-range-row mt-1 t-sm">
                 <label>Duration</label>
+
                 <input
                   type="number"
-                  className="width-33"
                   step={15}
                   min={15}
-                  value={selectedService.duration}
+                  value={editingSlot.duration}
                   onChange={(e) => {
                     const newDuration = Number(e.target.value);
                     const start = new Date(editingSlot.start_time);
+
                     setTimeStep(newDuration);
+
                     setEditingSlot((prev) => ({
                       ...prev,
                       duration: newDuration,
@@ -234,6 +232,7 @@ export default function TimeSlotForm({
                         addMinutes(start, newDuration),
                       ),
                     }));
+
                     setPreviewSlot((prev) =>
                       prev
                         ? {
@@ -245,25 +244,27 @@ export default function TimeSlotForm({
                           }
                         : null,
                     );
-                    setSelectedService((prev) => ({
-                      ...prev,
-                      duration: newDuration,
-                    }));
                   }}
                 />
+
                 <label className="content-center">Price</label>
+
                 <input
                   type="number"
-                  className="width-33"
                   step={0.01}
                   min={0}
                   value={
-                    selectedServiceCustomPrice ||
-                    Number(selectedService.price) ||
-                    0
+                    selectedServiceCustomPrice ??
+                    Number(editingSlot.price ?? selectedService?.price ?? 0)
                   }
                   onChange={(e) => {
-                    setSelectedServiceCustomPrice(Number(e.target.value));
+                    const price = Number(e.target.value);
+
+                    setSelectedServiceCustomPrice(price);
+                    setEditingSlot((prev) => ({
+                      ...prev,
+                      price,
+                    }));
                   }}
                 />
               </div>
@@ -320,6 +321,12 @@ export default function TimeSlotForm({
                 : clientQuery
             }
             onChange={(e) => {
+              // If user starts typing → remove selected client
+              setEditingSlot((prev) => ({
+                ...prev,
+                client: null,
+                client_id: null,
+              }));
               setClientQuery(e.target.value);
               queryClientSearch(e.target.value);
             }}
@@ -363,9 +370,21 @@ export default function TimeSlotForm({
           >
             Close
           </button>
-          <button className="apply" onClick={handleSchedule}>
-            Schedule
-          </button>
+          {editingSlot.state === "preview" && (
+            <button className="apply" onClick={handleSchedule}>
+              Schedule
+            </button>
+          )}
+          {editingSlot.state === "scheduled" && (
+            <button className="apply" onClick={handleUpdate}>
+              Update
+            </button>
+          )}
+          {editingSlot.state === "scheduled" && (
+            <button className="danger" onClick={handleCancel}>
+              Cancel
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -110,6 +110,13 @@ export default function Calendar({ employees, companyId }) {
     return overlaps(slotStart, slotEnd, cellStart, cellEnd);
   };
 
+  const slotStartsInThisHour = (slot, day, hour) => {
+    const start = parseTime(slot.start_time);
+    if (!start) return false;
+    return (
+      start.getHours() === hour && slot.day === day.toISOString().slice(0, 10)
+    );
+  };
 
   const slotsInHour = (day, hour) => {
     const dayStr = day.toISOString().slice(0, 10);
@@ -240,13 +247,16 @@ export default function Calendar({ employees, companyId }) {
                       });
                     }}
                   >
-                    {slots.map((slot) => (
-                      <TimeSlotBlock key={slot.id} timeSlot={slot} />
-                    ))}
+                    {slots
+                      .filter((slot) => slotStartsInThisHour(slot, day, hour))
+                      .map((slot) => (
+                        <TimeSlotBlock key={slot.id} timeSlot={slot} />
+                      ))}
 
-                    {isPreviewHere(day, hour) && (
-                      <TimeSlotBlock timeSlot={previewSlot} />
-                    )}
+                    {previewSlot &&
+                      slotStartsInThisHour(previewSlot, day, hour) && (
+                        <TimeSlotBlock timeSlot={previewSlot} />
+                      )}
                   </div>
                 );
               })}

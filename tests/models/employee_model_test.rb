@@ -65,7 +65,7 @@ describe 'Employee model' do
         break_from: Time.new(2020, 1, 1, 12, 0, 0),
         break_to: Time.new(2020, 1, 1, 13, 0, 0),
         effective_date: Date.today - 1,
-        weekends: [6, 7]
+        weekends: [6, 0]
       )
     end
     let(:window_two) do
@@ -75,7 +75,7 @@ describe 'Employee model' do
         break_from: Time.new(2020, 1, 1, 12, 0, 0),
         break_to: Time.new(2020, 1, 1, 13, 0, 0),
         effective_date: Date.today,
-        weekends: [6, 7]
+        weekends: [6, 0]
       )
     end
     let(:company) do
@@ -179,8 +179,9 @@ describe 'Employee model' do
           end
           let!(:crossing_time_slot) do
             TimeSlot.create(
-              start_time: Time.today.closest_future_working_day.with_current_time,
-              end_time: (Time.today.closest_future_working_day.with_current_time + 60), state: 0,
+              start_time: Time.today.closest_future_working_day.at(10, 0, 0),
+              end_time: Time.today.closest_future_working_day.at(11, 0, 0),
+              state: 0,
               employee_id: employee.id, company_id: company.id,
               day: Time.today.closest_future_working_day.to_date, client_id: client.id
             )
@@ -188,9 +189,9 @@ describe 'Employee model' do
           it 'should return false' do
             _(employee.available?(
               (
-                Time.today.closest_future_working_day.with_current_time - 10
+                Time.today.closest_future_working_day.at(10, 0, 0) - 10
               )..(
-                Time.today.closest_future_working_day.with_current_time + 50
+                Time.today.closest_future_working_day.at(11, 0, 0) + 50
               )
             )).must_equal(false)
           end
@@ -208,9 +209,15 @@ describe 'Employee model' do
           end
         end
 
-        describe 'when requested time is on weekends' do
+        describe 'when requested time is on Saturday' do
           it 'should return false' do
-            _(employee.available?(Time.new(2020, 1, 3, 10, 0, 0)..Time.new(2020, 1, 3, 11, 0, 0))).must_equal(false)
+            _(employee.available?(Time.new(2025, 1, 10, 10, 0, 0)..Time.new(2020, 1, 10, 11, 0, 0))).must_equal(false)
+          end
+        end
+
+        describe 'when requested time is on Sunday' do
+          it 'should return false' do
+            _(employee.available?(Time.new(2025, 1, 11, 10, 0, 0)..Time.new(2020, 1, 11, 11, 0, 0))).must_equal(false)
           end
         end
       end

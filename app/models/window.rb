@@ -1,9 +1,14 @@
 class Window < Rubee::SequelObject
-  WEEKS = [1, 2, 3, 4, 5, 6, 7].freeze
+  WEEKS = [0, 1, 2, 3, 4, 5, 6].freeze
+  WEEKENDS = [5, 6].freeze
   attr_accessor :id, :start_time, :end_time, :break_from, :break_to,
     :weekends, :effective_date, :end_date, :created, :updated
 
   before :save, ->(m) { m.weekends = Sequel.pg_array(m.weekends) }
+  # around :assign_attributes, ->(_, attrs, &block) {
+  #   attrs.first[:weekends] = Sequel.pg_array(attrs.first[:weekends])
+  #   block.call(attrs)
+  # }, if: ->(m) { m.persisted? }
 
   validate do
     attribute(:start_time).required.type(Time).condition(-> { start_time < end_time })
@@ -35,6 +40,6 @@ class Window < Rubee::SequelObject
   end
 
   def weekends?(date)
-    weekends.include?(date.wday + 1)
+    WEEKENDS.include?(date.wday)
   end
 end

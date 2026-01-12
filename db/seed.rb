@@ -37,7 +37,7 @@ class Seed
       effective_date: Date.today - 1,
     )
     unless window.persisted?
-      window.weekends = [6, 7]
+      window.weekends = [7, 0]
       window.save
       Rubee::Logger.debug object: window, message: 'Window created'
       # add window to employee

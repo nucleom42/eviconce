@@ -122,7 +122,7 @@ describe 'Employee API' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today - 1,
-          weekends: [6, 7]
+          weekends: [6, 0]
         )
       end
       let!(:time_slot) do
@@ -131,7 +131,7 @@ describe 'Employee API' do
           end_time: Time.today.closest_future_working_day.at(10, 30, 0),
           state: 0,
           client_id: client.id,
-          employee_id: auth_employee.id, company_id: company.id, day: Date.today
+          employee_id: auth_employee.id, company_id: company.id, day: Time.today.closest_future_working_day.to_date
         )
       end
       let!(:next_time_slot) do
@@ -140,7 +140,7 @@ describe 'Employee API' do
           end_time: Time.today.closest_future_working_day.at(11, 30, 0),
           state: 0,
           client_id: client.id,
-          employee_id: auth_employee.id, company_id: company.id, day: Date.today
+          employee_id: auth_employee.id, company_id: company.id, day: Time.today.closest_future_working_day.to_date
         )
       end
       before do
