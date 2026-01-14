@@ -102,8 +102,6 @@ describe 'Employee model' do
     end
 
     describe '#time_slots' do
-      before { TimeSlot.destroy_all }
-      after { TimeSlot.destroy_all }
       let!(:client) do
         client = Client.new(first_name: 'first_name', last_name: 'last_name',
                             email: "ok#{Time.now.to_i}@ok.com", phone: 'phone',
@@ -132,7 +130,6 @@ describe 'Employee model' do
       end
       describe 'when there are time slots' do
         it 'should bring them' do
-          TimeSlot.destroy_all
           time_slot
           next_time_slot
           _(

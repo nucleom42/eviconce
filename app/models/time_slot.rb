@@ -5,7 +5,7 @@ class TimeSlot < Rubee::SequelObject
   STATES = {
     0 => 'scheduled', # scheduled but not confirmed
     1 => 'booked',    # shcheduled and confirmed
-    2 => 'canceled',  # canceled by employee or client
+    2 => 'cancelled', # canceled by employee or client
     3 => 'frozen',    # placeholder set by employee without ability to book
     4 => 'done',      # completed
   }.freeze
@@ -35,6 +35,14 @@ class TimeSlot < Rubee::SequelObject
 
   before :save, :check_overlapping!
 
+  after :run_validations, ->(m) do
+    m.add_error(:state, message: "Time slot with status #{m.status} can't be updated")
+  end, if: ->(m) { m.persisted? && !['booked', 'scheduled', 'frozen'].include?(m.status) }
+
+  before :destroy, ->(m) do
+    raise Rubee::Validatable::Error, "Time slot with status #{m.status} can't be deleted"
+  end, if: ->(m) { !['booked', 'scheduled', 'frozen'].include?(m.status) }
+
   holds :employee
   holds :client
   holds :company
@@ -49,7 +57,7 @@ class TimeSlot < Rubee::SequelObject
   end
 
   def cancelled?
-    status == 'canceled'
+    status == 'cancelled'
   end
 
   def status
@@ -96,7 +104,11 @@ class TimeSlot < Rubee::SequelObject
   end
 
   class << self
-    def status_to_state(status)
+    def status(state)
+      STATES[state]
+    end
+
+    def state(status)
       return unless status.is_a?(String)
       return 0 if status == 'preview'
 

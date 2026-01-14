@@ -42,6 +42,10 @@ class Time
       today.add_days(1)
     end
 
+    def yesterday
+      today.subtract_days(1)
+    end
+
     def beginning_of_today
       new(Time.now.year, Time.now.month, Time.now.day, 0, 0, 0)
     end

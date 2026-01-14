@@ -37,15 +37,23 @@ def current_time_ms
   Process.clock_gettime(Process::CLOCK_REALTIME, :millisecond)
 end
 
-class Minitest::Test
-  extend MinitestLet
-  class << self
-    def before_suite
-      DatabaseCleaner.truncate!
+module Minitest
+  class Spec
+    class << self
+      alias_method :context, :describe
     end
+  end
 
-    def after_suite
-      DatabaseCleaner.truncate!
+  class Test
+    extend MinitestLet
+    class << self
+      def before_suite
+        DatabaseCleaner.truncate!
+      end
+
+      def after_suite
+        DatabaseCleaner.truncate!
+      end
     end
   end
 end
