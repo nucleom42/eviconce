@@ -43,6 +43,20 @@
   padding: 10px 0;
 }
 
+.day-col-header.today {
+  background: rgba(59, 130, 246, 0.12); /* soft blue */
+  border-bottom: 2px solid #3b82f6;
+  font-weight: 600;
+}
+
+.day-col-header.today div:first-child {
+  color: #2563eb; /* weekday text */
+}
+
+.day-col-header.today div:last-child {
+  color: #1e40af; /* date number */
+}
+
 .day-name {
   font-size: 12px;
   color: #777;

@@ -28,6 +28,7 @@ export default function Calendar({ employees, companyId }) {
   const [selectedClient, setSelectedClient] = useState(null);
   const [editTimeSlotError, setEditTimeSlotError] = useState(null);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const today = new Date();
 
   const fetchAvailability = () => {
     const from = weekStart.toISOString().slice(0, 10);
@@ -160,7 +161,9 @@ export default function Calendar({ employees, companyId }) {
         <div className="week-header">
           <div className="time-col" />
           {days.map((d) => (
-            <div key={d.toISOString()} className="day-col-header">
+            <div key={d.toISOString()}
+              className={`day-col-header ${d.toDateString() === today.toDateString() ? "today" : ""}`}
+            >
               <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
               <div>{d.getDate()}</div>
             </div>

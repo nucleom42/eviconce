@@ -80,8 +80,73 @@ export default function TimeSlotForm({
       });
   };
 
-  const handleUpdate = async () => {};
-  const handleCancel = async () => {};
+  const handleUpdate = async () => {
+    setEditTimeSlotError(null);
+    if (!editingSlot) return;
+
+    try {
+      const res = await fetch(`/api/time_slots/${editingSlot.id}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingSlot),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Failed to update time slot");
+      }
+
+      const json = await res.json();
+
+      setTimeSlots((prev) =>
+        prev.map((s) => (s.id === json.id ? json : s)),
+      );
+      setEditTimeSlotSuccess("Time slot updated successfully!");
+      setTimeout(() => {
+        setEditTimeSlotSuccess(null);
+        setEditingSlot(null);
+        setClientQuery("");
+        setSelectedClient(null);
+        setPreviewSlot(null);
+      }, 1000);
+      fetchAvailability();
+    } catch (err) {
+      setEditTimeSlotError(err.message);
+    }
+  };
+
+  const handleCancel = async () => {
+    setEditTimeSlotError(null);
+    if (!editingSlot) return;
+
+    try {
+      const res = await fetch(`/api/time_slots/${editingSlot.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || "Failed to delete time slot");
+      }
+
+      const json = await res.json();
+
+      setTimeSlots((prev) => prev.filter((s) => s.id !== json.id));
+      setEditTimeSlotSuccess("Time slot deleted successfully!");
+      setTimeout(() => {
+        setEditTimeSlotSuccess(null);
+        setEditingSlot(null);
+        setClientQuery("");
+        setSelectedClient(null);
+        setPreviewSlot(null);
+      }, 1000);
+      fetchAvailability();
+    } catch (err) {
+      setEditTimeSlotError(err.message);
+    }
+  };
 
   const handleSchedule = async () => {
     setEditTimeSlotError(null);
