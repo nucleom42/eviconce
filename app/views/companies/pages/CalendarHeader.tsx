@@ -1,5 +1,7 @@
 import React from "react";
+import { useState } from "react";
 import { addDays, startOfDay } from "./../utils/time";
+import WindowModalForm from "./WindowModalForm";
 
 type Props = {
   days: Date[];
@@ -23,6 +25,8 @@ export default function CalendarHeader({
   const nextWeek = () => setWeekStart(addDays(weekStart, 7));
   const prevWeek = () => setWeekStart(addDays(weekStart, -7));
   const goToday = () => setWeekStart(startOfDay(new Date()));
+  const [windowModalOpen, setWindowModalOpen] = useState(false);
+  const hasWindow = currentEmployee?.window;
   return (
     <header className="calendar__header sticky">
       <h4>
@@ -60,6 +64,22 @@ export default function CalendarHeader({
           </option>
         ))}
       </select>
+      {currentEmployee && (
+        <button className="secondary" onClick={() => setWindowModalOpen(true)}>
+          {hasWindow ? "Редагувати віконце" : "Відкрити віконце"}
+        </button>
+      )}
+      {currentEmployee && (
+        <WindowModalForm
+          open={windowModalOpen}
+          employee={currentEmployee}
+          window={currentEmployee.window}
+          onClose={() => setWindowModalOpen(false)}
+          onSaved={(window) => {
+            setCurrentEmployee((prev) => (prev ? { ...prev, window } : prev));
+          }}
+        />
+      )}
 
       <div className="calendar__actions">
         <button onClick={prevWeek}>←</button>
@@ -70,12 +90,9 @@ export default function CalendarHeader({
           className="date__picker"
           type="date"
           value={weekStart.toISOString().slice(0, 10)}
-          onChange={(e) =>
-            setWeekStart(new Date(e.target.value + "T00:00:00"))
-          }
+          onChange={(e) => setWeekStart(new Date(e.target.value + "T00:00:00"))}
         />
       </div>
     </header>
   );
 }
-

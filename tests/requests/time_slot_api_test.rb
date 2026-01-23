@@ -65,9 +65,9 @@ describe 'Employee API' do
       let(:valid_params) do
         {
           "id": 16,
-          "start_time": "2026-01-15 10:00:00 -0500",
-          "end_time": "2026-01-15 10:45:00 -0500",
-          "day": "2026-01-15",
+          "start_time": Time.today.closest_future_working_day.at(10, 0, 0).strftime("%Y-%m-%d %H:%M:%S %z"),
+          "end_time": Time.today.closest_future_working_day.at(10, 30, 0).strftime("%Y-%m-%d %H:%M:%S %z"),
+          "day": Time.today.closest_future_working_day.strftime("%Y-%m-%d"),
           "employee_id": auth_employee.id,
           "client_id": client.id,
           "company_id": company.id,

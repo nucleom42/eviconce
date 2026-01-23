@@ -1,0 +1,23 @@
+.client-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: #2563eb;
+}
+
+.glass-modal.small {
+  max-width: 360px;
+}

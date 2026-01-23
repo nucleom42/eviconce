@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import TimeSlotBlock from "./TimeSlotBlock";
 import CalendarHeader from "./CalendarHeader";
 import TimeSlotForm from "./TimeSlotForm";
+import WindowModalForm from "./WindowModalForm";
+
 import "./../styles/Calendar.css";
 
 import {

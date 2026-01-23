@@ -1,12 +1,17 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   addMinutes,
   applyTime,
   toLocalISOString,
   toTimeValue,
   addDays,
+  dateAt,
 } from "../utils/time";
+import ConfirmModal from "./ConfirmModal";
+import ClientModalForm from "./ClientModalForm";
+import ServiceModalForm from "./ServiceModalForm";
+import WindowModalForm from "./WindowModalForm";
 
 import "./../styles/TimeSlotForm.css";
 
@@ -32,7 +37,6 @@ export default function TimeSlotForm({
   currentEmployee,
 }: Props) {
   const [timeStep, setTimeStep] = useState(() => slot?.duration ?? 15);
-
   const [clientQuery, setClientQuery] = useState("");
   const [clientResults, setClientResults] = useState<any[]>([]);
   const [clientLoading, setClientLoading] = useState(false);
@@ -40,12 +44,14 @@ export default function TimeSlotForm({
   const [editTimeSlotError, setEditTimeSlotError] = useState(null);
   const [editTimeSlotSuccess, setEditTimeSlotSuccess] = useState(null);
   const [availabilityWindow, setAvailabilityWindow] = useState(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const [selectedService, setSelectedService] = useState<any | null>(null);
   const [selectedServiceCustomPrice, setSelectedServiceCustomPrice] = useState<
     number | null
   >(null);
-
+  const [clientModalOpen, setClientModalOpen] = useState(false);
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
   useEffect(() => {
     if (!slot) return;
 
@@ -68,16 +74,24 @@ export default function TimeSlotForm({
   const shiftMinutes = (iso: string, mins: number) =>
     toLocalISOString(addMinutes(new Date(iso), mins));
 
+  const searchTimeout = useRef<number | null>(null);
+
   const queryClientSearch = (query: string) => {
     if (!query || query.length < 3) return;
-    setClientLoading(true);
 
-    fetch(`/api/clients?search=${query}`)
-      .then((r) => r.json())
-      .then((json) => {
-        setClientLoading(false);
-        setClientResults(json);
-      });
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = window.setTimeout(async () => {
+      setClientLoading(true);
+
+      const res = await fetch(`/api/clients?search=${query}`);
+      const json = await res.json();
+
+      setClientResults(json);
+      setClientLoading(false);
+    }, 250);
   };
 
   const handleUpdate = async () => {
@@ -99,9 +113,7 @@ export default function TimeSlotForm({
 
       const json = await res.json();
 
-      setTimeSlots((prev) =>
-        prev.map((s) => (s.id === json.id ? json : s)),
-      );
+      setTimeSlots((prev) => prev.map((s) => (s.id === json.id ? json : s)));
       setEditTimeSlotSuccess("Time slot updated successfully!");
       setTimeout(() => {
         setEditTimeSlotSuccess(null);
@@ -207,11 +219,10 @@ export default function TimeSlotForm({
   return (
     <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="form__title">{editingSlot.start_time.slice(0, 10)}</div>
         <div className="form__title">
           <div className="form__title-left">Edit time slot:</div>
           <div className={`form__title-right form__title_${editingSlot.state}`}>
-            {editingSlot.state?.toUpperCase()}
+            {editingSlot.state}
           </div>
         </div>
 
@@ -222,54 +233,104 @@ export default function TimeSlotForm({
           <div className="form__success">{editTimeSlotSuccess}</div>
         )}
 
+        {/* ---------- DATE ---------- */}
+        <div className="form-group mt-3">
+          <div className="time-range-row">
+            <label>Date</label>
+            <input
+              type="date"
+              className="date__picker"
+              value={editingSlot.day}
+              onChange={(e) => {
+                const day = e.target.value;
+
+                setEditingSlot((prev) => ({
+                  ...prev,
+                  day,
+                  start_time: `${day}${prev.start_time.slice(10)}`,
+                  end_time: `${day}${prev.end_time.slice(10)}`,
+                }));
+              }}
+            />
+          </div>
+        </div>
+
         {/* ---------- SERVICE ---------- */}
-        <div className="form-group">
+        <div className="form-group mt-2">
           <label>Service</label>
           <div className="time-range-row">
-            <select
-              className="width-100"
-              value={editingSlot.service_id ?? ""}
-              onChange={(e) => {
-                const serviceId = Number(e.target.value);
-                const service = currentEmployee.services.find(
-                  (s) => s.id === serviceId,
-                );
+            <div className="input-with-button">
+              <select
+                className="width-100"
+                value={editingSlot.service_id ?? ""}
+                onChange={(e) => {
+                  const serviceId = Number(e.target.value);
+                  const service = currentEmployee.services.find(
+                    (s) => s.id === serviceId,
+                  );
 
-                if (!service) {
-                  setSelectedService(null);
+                  if (!service) {
+                    setSelectedService(null);
+                    setSelectedServiceCustomPrice(null);
+                    return;
+                  }
+
+                  const start = new Date(editingSlot.start_time);
+
+                  setTimeStep(service.duration);
+
+                  const updated = {
+                    service_id: service.id,
+                    duration: service.duration,
+                    price: service.price,
+                    end_time: toLocalISOString(
+                      addMinutes(start, service.duration),
+                    ),
+                  };
+
+                  setEditingSlot((prev) => ({ ...prev, ...updated }));
+                  setPreviewSlot((prev) =>
+                    prev ? { ...prev, ...updated } : null,
+                  );
+
+                  setSelectedService(service);
                   setSelectedServiceCustomPrice(null);
-                  return;
-                }
+                }}
+              >
+                <option value="">Select a service</option>
+                {currentEmployee.services.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <div
+                className="input-button content-center"
+                title="Add service"
+                onClick={() => setServiceModalOpen(true)}
+              >
+                +
+              </div>
+            </div>
+            <ServiceModalForm
+              open={serviceModalOpen}
+              employee={currentEmployee}
+              onClose={() => setServiceModalOpen(false)}
+              onCreated={(service) => {
+                // add to employee services
+                currentEmployee.services.push(service);
 
-                const start = new Date(editingSlot.start_time);
-
-                setTimeStep(service.duration);
-
-                const updated = {
+                setEditingSlot((prev) => ({
+                  ...prev,
                   service_id: service.id,
                   duration: service.duration,
                   price: service.price,
-                  end_time: toLocalISOString(
-                    addMinutes(start, service.duration),
-                  ),
-                };
-
-                setEditingSlot((prev) => ({ ...prev, ...updated }));
-                setPreviewSlot((prev) =>
-                  prev ? { ...prev, ...updated } : null,
-                );
+                }));
 
                 setSelectedService(service);
-                setSelectedServiceCustomPrice(null);
+                setServiceModalOpen(false);
               }}
-            >
-              <option value="">Select a service</option>
-              {currentEmployee.services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+            />
           </div>
         </div>
         <div className="form-group">
@@ -377,23 +438,43 @@ export default function TimeSlotForm({
         {/* ---------- CLIENT ---------- */}
         <div className="form-group">
           <label>Client</label>
-          <input
-            type="text"
-            placeholder="Search client..."
-            value={
-              editingSlot?.client
-                ? `${editingSlot.client.first_name} ${editingSlot.client.last_name}`
-                : clientQuery
-            }
-            onChange={(e) => {
-              // If user starts typing → remove selected client
+          <div className="input-with-button">
+            <input
+              type="text"
+              placeholder="Search client..."
+              value={
+                editingSlot?.client
+                  ? `${editingSlot.client.first_name} ${editingSlot.client.last_name}`
+                  : clientQuery
+              }
+              onChange={(e) => {
+                // If user starts typing → remove selected client
+                setEditingSlot((prev) => ({
+                  ...prev,
+                  client: null,
+                  client_id: null,
+                }));
+                setClientQuery(e.target.value);
+                queryClientSearch(e.target.value);
+              }}
+            />
+            <div
+              className="input-button content-center"
+              onClick={() => setClientModalOpen(true)}
+              title="Add client"
+            >
+              +
+            </div>
+          </div>
+          <ClientModalForm
+            open={clientModalOpen}
+            onClose={() => setClientModalOpen(false)}
+            onCreated={(client) => {
               setEditingSlot((prev) => ({
                 ...prev,
-                client: null,
-                client_id: null,
+                client_id: client.id,
+                client,
               }));
-              setClientQuery(e.target.value);
-              queryClientSearch(e.target.value);
             }}
           />
 
@@ -440,14 +521,30 @@ export default function TimeSlotForm({
               Schedule
             </button>
           )}
+
+          {editingSlot.state === "scheduled" && (
+            <>
+              <button className="danger" onClick={() => setConfirmOpen(true)}>
+                Delete
+              </button>
+
+              <ConfirmModal
+                open={confirmOpen}
+                title="Delete time slot"
+                message="Are you sure you want to delete this time slot?"
+                confirmText="Yes"
+                cancelText="No"
+                onConfirm={() => {
+                  setConfirmOpen(false);
+                  handleCancel();
+                }}
+                onCancel={() => setConfirmOpen(false)}
+              />
+            </>
+          )}
           {editingSlot.state === "scheduled" && (
             <button className="apply" onClick={handleUpdate}>
               Update
-            </button>
-          )}
-          {editingSlot.state === "scheduled" && (
-            <button className="danger" onClick={handleCancel}>
-              Cancel
             </button>
           )}
         </div>

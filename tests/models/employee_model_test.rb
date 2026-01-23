@@ -208,13 +208,13 @@ describe 'Employee model' do
 
         describe 'when requested time is on Saturday' do
           it 'should return false' do
-            _(employee.available?(Time.new(2025, 1, 10, 10, 0, 0)..Time.new(2020, 1, 10, 11, 0, 0))).must_equal(false)
+            _(employee.available?(Time.new(2026, 1, 17, 10, 0, 0)..Time.new(2026, 1, 17, 11, 0, 0))).must_equal(false)
           end
         end
 
         describe 'when requested time is on Sunday' do
           it 'should return false' do
-            _(employee.available?(Time.new(2025, 1, 11, 10, 0, 0)..Time.new(2020, 1, 11, 11, 0, 0))).must_equal(false)
+            _(employee.available?(Time.new(2026, 1, 17, 10, 0, 0)..Time.new(2026, 1, 17, 11, 0, 0))).must_equal(false)
           end
         end
       end

@@ -1,0 +1,207 @@
+import React, { useState, useEffect } from "react";
+import { toTimeValue } from "../utils/time";
+import "./../styles/WindowModalForm.css";
+
+type Props = {
+  open: boolean;
+  employee: any;
+  window?: any | null; // existing window (for edit)
+  onClose: () => void;
+  onSaved: (window: any) => void;
+};
+
+export default function WindowModalForm({
+  open,
+  employee,
+  window,
+  onClose,
+  onSaved,
+}: Props) {
+  const [form, setForm] = useState({
+    start_time: "",
+    end_time: "",
+    break_from: "",
+    break_to: "",
+    weekends: false,
+    effective_date: "",
+    end_date: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const WEEKDAYS = [
+    { id: 0, label: "Пн" },
+    { id: 1, label: "Вт" },
+    { id: 2, label: "Ср" },
+    { id: 3, label: "Чт" },
+    { id: 4, label: "Пт" },
+    { id: 5, label: "Сб" },
+    { id: 6, label: "Нд" },
+  ];
+
+  /* ---------- PREFILL ON EDIT ---------- */
+  useEffect(() => {
+    if (window) {
+      setForm({
+        start_time: window.start_time || "",
+        end_time: window.end_time || "",
+        break_from: window.break_from || "",
+        break_to: window.break_to || "",
+        weekends: window.weekends || [],
+        effective_date: window.effective_date || "",
+        end_date: window.end_date || "",
+      });
+    }
+  }, [window]);
+
+  useEffect(() => {
+    setError(null);
+    setSuccessMessage(null);
+  });
+
+  if (!open) return null;
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+
+    const payload = {
+      ...form,
+      employee_id: employee.id,
+      id: window?.id,
+    };
+
+    try {
+      const res = await fetch(
+        `/api/windows/upsert`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      const savedWindow = await res.json();
+
+      setSuccessMessage(window ? "Віконце оновлено" : "Віконце створено");
+
+      setTimeout(() => {
+        setSuccessMessage(null);
+        onSaved(savedWindow);
+        onClose();
+      }, 800);
+    } catch (e: any) {
+      setError(e.message || "Failed to save window");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    form && (
+      <>
+        <div className="confirm-overlay" onClick={onClose}>
+          <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{window ? "Редагувати віконце" : "Відкрити віконце"}</h3>
+
+            {error && <div className="form__error">{error}</div>}
+            {successMessage && (
+              <div className="form__success">{successMessage}</div>
+            )}
+
+            <label>Start time</label>
+            <input
+              type="time"
+              value={toTimeValue(form.start_time)}
+              onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+            />
+
+            <label>End time</label>
+            <input
+              type="time"
+              value={toTimeValue(form.end_time)}
+              onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+            />
+
+            <label>Break from</label>
+            <input
+              type="time"
+              value={toTimeValue(form.break_from)}
+              onChange={(e) => setForm({ ...form, break_from: e.target.value })}
+            />
+
+            <label>Break to</label>
+            <input
+              type="time"
+              value={toTimeValue(form.break_to)}
+              onChange={(e) => setForm({ ...form, break_to: e.target.value })}
+            />
+
+            <div className="weekday-picker">
+              <label className="form-label">Вихідні</label>
+
+              <div className="weekday-grid">
+                {WEEKDAYS.map((day) => {
+                  const checked = form.weekends?.includes(day.id);
+
+                  return (
+                    <label key={day.id} className="weekday-checkbox mb-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          setForm((prev) => ({
+                            ...prev,
+                            weekends: checked
+                              ? prev.weekends.filter((d) => d !== day.id)
+                              : [...prev.weekends, day.id],
+                          }));
+                        }}
+                      />
+                      <span>{day.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            <label>Effective date</label>
+            <input
+              type="date"
+              value={form.effective_date}
+              onChange={(e) =>
+                setForm({ ...form, effective_date: e.target.value })
+              }
+            />
+
+            <label>End date</label>
+            <input
+              type="date"
+              value={form.end_date}
+              onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+            />
+
+            <div className="modal-actions">
+              <button onClick={onClose} disabled={loading}>
+                Cancel
+              </button>
+              <button
+                className="apply"
+                onClick={handleSubmit}
+                disabled={loading}
+              >
+                {window ? "Update" : "Create"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  );
+}

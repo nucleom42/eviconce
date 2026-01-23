@@ -30,3 +30,31 @@
   color: #d57a66;
   border: solid;
 }
+
+.input-with-button {
+  position: relative;
+  width: 80%;
+}
+
+.input-with-button input {
+  padding-right: 42px; /* space for button */
+}
+
+.input-button {
+  position: absolute;
+  top: 40%;
+  right: -46px;
+  transform: translateY(-50%);
+  height: 36px;
+  width: 36px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.input-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}

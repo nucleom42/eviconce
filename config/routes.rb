@@ -166,6 +166,7 @@ Rubee::Router.draw do |router|
       { name: 'updated', type: 'datetime' },
     ],
   })
+  router.post('/api/windows/upsert', to: 'windows#upsert')
   ### END WINDOW API ###
 
   ### START employee_windows ###

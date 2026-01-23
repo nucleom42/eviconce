@@ -1,14 +1,10 @@
 class Window < Rubee::SequelObject
   WEEKS = [0, 1, 2, 3, 4, 5, 6].freeze
-  WEEKENDS = [5, 6].freeze
+  WEEKENDS = [0, 6].freeze
   attr_accessor :id, :start_time, :end_time, :break_from, :break_to,
     :weekends, :effective_date, :end_date, :created, :updated
 
   before :save, ->(m) { m.weekends = Sequel.pg_array(m.weekends) }
-  # around :assign_attributes, ->(_, attrs, &block) {
-  #   attrs.first[:weekends] = Sequel.pg_array(attrs.first[:weekends])
-  #   block.call(attrs)
-  # }, if: ->(m) { m.persisted? }
 
   validate do
     attribute(:start_time).required.type(Time).condition(-> { start_time < end_time })
@@ -22,6 +18,13 @@ class Window < Rubee::SequelObject
   end
 
   owns_many :employees, over: :employee_windows
+
+  def has_time_slots?
+    !!TimeSlot
+      .dataset
+      .where(employee_id: employees.map(&:id), day: effective_date..end_date)
+      .get(1)
+  end
 
   def add_employees(*employees)
     employees.map { |e| EmployeeWindow.create(employee_id: e.id, window_id: id) }
