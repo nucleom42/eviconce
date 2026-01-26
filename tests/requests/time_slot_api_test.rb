@@ -45,7 +45,7 @@ describe 'Employee API' do
       end_time: Time.new(2020, 1, 1, 18, 0, 0),
       break_from: Time.new(2020, 1, 1, 12, 0, 0),
       break_to: Time.new(2020, 1, 1, 13, 0, 0),
-      effective_date: Date.today - 1,
+      effective_date: Date.today,
       weekends: [6, 0]
     )
   end

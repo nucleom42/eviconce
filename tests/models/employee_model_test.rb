@@ -64,11 +64,31 @@ describe 'Employee model' do
         end_time: Time.new(2020, 1, 1, 18, 0, 0),
         break_from: Time.new(2020, 1, 1, 12, 0, 0),
         break_to: Time.new(2020, 1, 1, 13, 0, 0),
-        effective_date: Date.today - 1,
+        effective_date: Date.today,
         weekends: [6, 0]
       )
     end
     let(:window_two) do
+      Window.create(
+        start_time: Time.new(2020, 1, 1, 9, 0, 0),
+        end_time: Time.new(2020, 1, 1, 18, 0, 0),
+        break_from: Time.new(2020, 1, 1, 12, 0, 0),
+        break_to: Time.new(2020, 1, 1, 13, 0, 0),
+        effective_date: Date.today,
+        weekends: [6, 0]
+      )
+    end
+    let(:window_three) do
+      Window.create(
+        start_time: Time.new(2020, 1, 1, 9, 0, 0),
+        end_time: Time.new(2020, 1, 1, 18, 0, 0),
+        break_from: Time.new(2020, 1, 1, 12, 0, 0),
+        break_to: Time.new(2020, 1, 1, 13, 0, 0),
+        effective_date: Date.today + 1,
+        weekends: [6, 0]
+      )
+    end
+    let(:same_day_window) do
       Window.create(
         start_time: Time.new(2020, 1, 1, 9, 0, 0),
         end_time: Time.new(2020, 1, 1, 18, 0, 0),
@@ -92,11 +112,35 @@ describe 'Employee model' do
         end
       end
 
-      describe 'when  there is more than one window' do
+      describe 'when there is more than one window' do
         it 'should return latest window by effective_date' do
           employee.add_windows(window_one, window_two)
 
           _(employee.current_window.id).must_equal(window_two.id)
+        end
+      end
+
+      context 'when there are no windows' do
+        it 'should return nil' do
+          Window.destroy_all
+
+          assert_nil employee.current_window
+        end
+      end
+
+      context 'when there is a window with effective date in the future' do
+        it 'should return window with effective_date today' do
+          employee.add_windows(window_one, window_three)
+
+          assert_equal employee.current_window.id, window_one.id
+        end
+      end
+
+      context 'when there is a window with effective_date today' do
+        it 'should return this window' do
+          employee.add_windows(window_one, same_day_window)
+
+          assert_equal employee.current_window.id, same_day_window.id
         end
       end
     end
@@ -223,7 +267,7 @@ describe 'Employee model' do
         before do
           employee.add_windows(window_one)
 
-          window_one.update(effective_date: Date.today - 2, end_date: Date.today - 1)
+          Window.dataset.where(id: window_one.id).update(effective_date: Date.today - 2, end_date: Date.today - 1)
         end
 
         it 'should return false' do

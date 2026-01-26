@@ -13,7 +13,7 @@ class Dashboard
         first_name: e.first_name,
         last_name: e.last_name,
         services: e.services.map(&:to_h),
-        window: e.current_window.to_h,
+        window: e.current_window,
       }
     end
     @company = { name: company.name }

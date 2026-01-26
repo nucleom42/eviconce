@@ -24,7 +24,26 @@ export const toLocalISOString = (date) => {
   );
 };
 
-export const overlaps = (aStart, aEnd, bStart, bEnd) => aStart < bEnd && bStart < aEnd;
+export const windowForDay = (day, windows) => {
+  const dayOnly = startOfDay(day);
+
+  return (
+    windows
+      .filter((w) => {
+        const from = parseDateOnly(w?.effective_date);
+        const to = parseDateOnly(w?.end_date);
+        if (from && from > dayOnly) return false;
+        if (to && to < dayOnly) return false;
+        return true;
+      })
+      .sort(
+        (a, b) => parseDateOnly(b?.effective_date) - parseDateOnly(a?.effective_date),
+      )[0] || null
+  );
+};
+
+export const overlaps = (aStart, aEnd, bStart, bEnd) =>
+  aStart < bEnd && bStart < aEnd;
 
 export const nextBlockedTime = (day, startTime) => {
   const dayStr = day.toISOString().slice(0, 10);
@@ -85,11 +104,26 @@ export const roundToStep = (date, step = 15) => {
   return d;
 };
 
-export const addMinutes = (date, mins) => new Date(date.getTime() + mins * 60 * 1000);
+export const addMinutes = (date, mins) =>
+  new Date(date.getTime() + mins * 60 * 1000);
+
+const dateOnly = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+const parseDateOnly = (str) => {
+  if (!str) return null;
+  const [y, m, d] = str.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
 
 /* ---------- AVAILABILITY (WINDOW ONLY) ---------- */
 export const isAvailable = ({ day, hour, window }) => {
   if (!window) return false;
+  if (day < startOfDay(new Date())) return false;
+
+  const effective_date = parseDateOnly(window.effective_date);
+  const effective_end = parseDateOnly(window.end_date);
+  if (effective_date && effective_date > day) return false;
+  if (effective_end && effective_end < day) return false;
 
   if (isWeekend(day, window.weekends)) return false;
 
@@ -102,6 +136,23 @@ export const isAvailable = ({ day, hour, window }) => {
   if (isWithin(hour, breakFrom, breakTo)) return false;
 
   return true;
+};
+
+export const isAvailableForDay = ({ day, hour, windows }) => {
+  const window = windowForDay(day, windows);
+  if (!window) return false;
+
+  return isAvailable({ day, hour, window });
+};
+
+
+/* ---------- AVAILABILITY (WINDOW LIST) ---------- */
+export const isAvailableInAny = ({ day, hour, windows }) => {
+  if (!windows || windows.length === 0) return false;
+
+  return windows.some((window) => {
+    return isAvailable({ day, hour, window });
+  });
 };
 
 export const toTimeValue = (iso) => {
@@ -118,4 +169,3 @@ export const applyTime = (baseISO, hhmm) => {
   d.setHours(h, m, 0, 0);
   return toLocalISOString(d);
 };
-

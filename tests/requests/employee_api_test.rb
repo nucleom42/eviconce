@@ -106,6 +106,22 @@ describe 'Employee API' do
       header 'Cookie', "jwt=#{jwt}"
     end
 
+    describe 'when there are no windows and time slots' do
+      describe 'valid params' do
+        it 'should return 200' do
+          Window.destroy_all
+
+          params = {
+            from: Time.beginning_of_today.strftime("%Y-%m-%d"),
+            to: Time.end_of_today.add_days(7).strftime("%Y-%m-%d"),
+          }
+          get("/api/employees/#{auth_employee.id}/availability", params)
+
+          assert_equal(200, last_response.status)
+        end
+      end
+    end
+
     describe 'when there are windows and time slots' do
       let!(:client) do
         client = Client.new(first_name: 'first_name', last_name: 'last_name',
@@ -121,7 +137,7 @@ describe 'Employee API' do
           end_time: Time.new(2020, 1, 1, 18, 0, 0),
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
-          effective_date: Date.today - 1,
+          effective_date: Date.today,
           weekends: [6, 0]
         )
       end

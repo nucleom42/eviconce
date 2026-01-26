@@ -53,5 +53,9 @@ class Time
     def end_of_today
       new(Time.now.year, Time.now.month, Time.now.day, 23, 59, 59)
     end
+
+    def start_of_today
+      new(Time.now.year, Time.now.month, Time.now.day, 0, 0, 0)
+    end
   end
 end

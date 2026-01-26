@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { toTimeValue } from "../utils/time";
+import { toTimeValue, applyTime, toLocalISOString } from "../utils/time";
 import "./../styles/WindowModalForm.css";
 
 type Props = {
@@ -22,8 +22,8 @@ export default function WindowModalForm({
     end_time: "",
     break_from: "",
     break_to: "",
-    weekends: false,
-    effective_date: "",
+    weekends: [] as number[],
+    effective_date: new Date().toISOString().slice(0, 10),
     end_date: "",
   });
 
@@ -41,24 +41,39 @@ export default function WindowModalForm({
   ];
 
   /* ---------- PREFILL ON EDIT ---------- */
+
   useEffect(() => {
+    if (!open) return;
+
     if (window) {
       setForm({
         start_time: window.start_time || "",
         end_time: window.end_time || "",
         break_from: window.break_from || "",
         break_to: window.break_to || "",
-        weekends: window.weekends || [],
+        weekends: Array.isArray(window.weekends) ? window.weekends : [],
         effective_date: window.effective_date || "",
         end_date: window.end_date || "",
       });
+    } else {
+      setForm(emptyForm);
     }
-  }, [window]);
+  }, [window, open]);
+
+  const emptyForm = {
+    start_time: "",
+    end_time: "",
+    break_from: "",
+    break_to: "",
+    weekends: [] as number[],
+    effective_date: new Date().toISOString().slice(0, 10),
+    end_date: "",
+  };
 
   useEffect(() => {
     setError(null);
     setSuccessMessage(null);
-  });
+  }, [open]);
 
   if (!open) return null;
 
@@ -73,15 +88,12 @@ export default function WindowModalForm({
     };
 
     try {
-      const res = await fetch(
-        `/api/windows/upsert`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+      const res = await fetch(`/api/windows/upsert`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) {
         throw new Error(await res.text());
@@ -119,28 +131,40 @@ export default function WindowModalForm({
             <input
               type="time"
               value={toTimeValue(form.start_time)}
-              onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+              onChange={(e) => {
+                const newTime = applyTime(form.start_time || new Date().toISOString(), e.target.value);
+                setForm((prev) => ({ ...prev, start_time: newTime }));
+              }}
             />
 
             <label>End time</label>
             <input
               type="time"
               value={toTimeValue(form.end_time)}
-              onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+              onChange={(e) => {
+                const newTime = applyTime(form.end_time || new Date().toISOString(), e.target.value);
+                setForm((prev) => ({ ...prev, end_time: newTime }));
+              }}
             />
 
             <label>Break from</label>
             <input
               type="time"
               value={toTimeValue(form.break_from)}
-              onChange={(e) => setForm({ ...form, break_from: e.target.value })}
+              onChange={(e) => {
+                const newTime = applyTime(form.break_from || new Date().toISOString(), e.target.value);
+                setForm((prev) => ({ ...prev, break_from: newTime }));
+              }}
             />
 
             <label>Break to</label>
             <input
               type="time"
               value={toTimeValue(form.break_to)}
-              onChange={(e) => setForm({ ...form, break_to: e.target.value })}
+              onChange={(e) => {
+                const newTime = applyTime(form.break_to || new Date().toISOString(), e.target.value);
+                setForm((prev) => ({ ...prev, break_to: newTime }));
+              }}
             />
 
             <div className="weekday-picker">

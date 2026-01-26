@@ -10,25 +10,27 @@ class WindowsController < Rubee::BaseController
 
   # POST /api/windows/upsert
   def upsert
-    window = window_params[:id] && Window.find(window_params[:id])
-    if window && !window.has_time_slots? # update
-      employee = Employee.find(window_params[:employee_id])
-      window.assign_attributes(window_params.except(:id, :employee_id))
-      if window.valid? && window.save && employee.add_windows(window)
-        response_with object: window, type: :json, status: 200
+    Rubee::SequelObject::DB.transaction do
+      found_window = window_params[:id] && Window.find(window_params[:id])
+      window = if found_window && !found_window.has_time_slots?
+        found_window.assign_attributes(window_params.except(:id, :employee_id))
+        found_window
       else
-        response_with object: { errors: window.errors }, type: :json, status: 422
+        Window.new(window_params.except(:id, :employee_id))
       end
-    else # create
-      window = Window.new(window_params.except(:id, :employee_id))
-      if window.valid? && window.save
-        response_with object: window, type: :json, status: 201
-      else
-        response_with object: { errors: window.errors }, type: :json, status: 422
-      end
+
+      found_employee = Employee.find(window_params[:employee_id])
+      new_window_record = !window.persisted?
+      window.save
+
+      found_employee.add_windows(window).then do
+        window.any_windows_with_effective_date_eq_or_later!
+      end if new_window_record
+
+      response_with object: window, type: :json, status: (new_window_record ? 201 : 200)
     end
   rescue StandardError => e
-    response_with object: { errors: e.message }, type: :json, status: 500
+    response_with object: { errors: e.message }, type: :json, status: 422
   end
 
   def window_params

@@ -16,6 +16,8 @@ import {
   addDays,
   addMinutes,
   isAvailable,
+  isAvailableInAny,
+  isAvailableForDay,
 } from "./../utils/time";
 
 export default function Calendar({ employees, companyId }) {
@@ -24,6 +26,7 @@ export default function Calendar({ employees, companyId }) {
 
   const [currentEmployee, setCurrentEmployee] = useState(null);
   const [availabilityWindow, setAvailabilityWindow] = useState(null);
+  const [upcomingWindows, setUpcomingWindows] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
   const weekBodyRef = useRef(null);
   const [previewSlot, setPreviewSlot] = useState(null);
@@ -42,6 +45,7 @@ export default function Calendar({ employees, companyId }) {
       .then((r) => r.json())
       .then((json) => {
         setAvailabilityWindow(json.employee.window);
+        setUpcomingWindows(json.employee.upcoming_windows);
         setTimeSlots(json.employee.time_slots);
       });
   };
@@ -152,6 +156,7 @@ export default function Calendar({ employees, companyId }) {
             setTimeSlots([]);
             setAvailabilityWindow(null);
             setPreviewSlot(null);
+            setUpcomingWindows([]);
           } else {
             setCurrentEmployee(emp);
           }
@@ -163,8 +168,11 @@ export default function Calendar({ employees, companyId }) {
         <div className="week-header">
           <div className="time-col" />
           {days.map((d) => (
-            <div key={d.toISOString()}
-              className={`day-col-header ${d.toDateString() === today.toDateString() ? "today" : ""}`}
+            <div
+              key={d.toISOString()}
+              className={`day-col-header ${
+                d.toDateString() === today.toDateString() ? "today" : ""
+              }`}
             >
               <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
               <div>{d.getDate()}</div>
@@ -189,10 +197,11 @@ export default function Calendar({ employees, companyId }) {
 
               {days.map((day) => {
                 const slots = slotsInHour(day, hour);
-                const available = isAvailable({
+
+                const available = isAvailableForDay({
                   day,
                   hour,
-                  window: availabilityWindow,
+                  windows: [availabilityWindow, ...upcomingWindows],
                 });
 
                 return (

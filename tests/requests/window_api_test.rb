@@ -35,7 +35,7 @@ describe 'Window API' do
       end_time: Time.new(2020, 1, 1, 18, 0, 0),
       break_from: Time.new(2020, 1, 1, 12, 0, 0),
       break_to: Time.new(2020, 1, 1, 13, 0, 0),
-      effective_date: Date.today - 1,
+      effective_date: Date.today,
       weekends: [6, 0]
     )
   end
@@ -92,7 +92,7 @@ describe 'Window API' do
           "end_time": "2026-01-15 10:45:00 -0500",
           "break_from": "2026-01-15 12:45:00 -0500",
           "break_to": "2026-01-15 13:45:00 -0500",
-          "effective_date": "2026-01-15",
+          "effective_date": Time.today.closest_future_working_day.to_date,
           "weekends": [6, 0],
           "employee_id": auth_employee.id,
         }
@@ -118,24 +118,45 @@ describe 'Window API' do
         end
       end
 
-      describe 'when there is window with time slots' do
+      describe 'when there is window with time slots in the future' do
         before do
           auth_employee.add_windows(window)
         end
 
-        it 'should return 201' do
+        it 'should return 422' do
           TimeSlot.create(
-            start_time: Time.today.closest_future_working_day.at(10, 0, 0),
-            end_time: Time.today.closest_future_working_day.at(10, 30, 0),
+            start_time: Time.tomorrow.closest_future_working_day.at(10, 0, 0),
+            end_time: Time.tomorrow.closest_future_working_day.at(10, 30, 0),
             state: 0,
             client_id: client.id,
             employee_id: auth_employee.id,
             company_id: company.id,
-            day: Time.today.closest_future_working_day.to_date,
+            day: Time.tomorrow.closest_future_working_day.to_date,
+          )
+          post('/api/windows/upsert', valid_params.merge(id: window.id, effective_date: window.effective_date))
+
+          assert_equal(422, last_response.status)
+        end
+      end
+
+      describe 'when there is window with time slots in the past' do
+        before do
+          auth_employee.add_windows(window)
+        end
+
+        it 'should return 200' do
+          TimeSlot.dataset.insert(
+            start_time: Time.today.subtract_days(5).closest_future_working_day.at(10, 0, 0),
+            end_time: Time.today.subtract_days(5).closest_future_working_day.at(10, 30, 0),
+            state: 0,
+            client_id: client.id,
+            employee_id: auth_employee.id,
+            company_id: company.id,
+            day: Time.today.subtract_days(5).closest_future_working_day.to_date,
           )
           post('/api/windows/upsert', valid_params.merge(id: window.id))
 
-          assert_equal(201, last_response.status)
+          assert_equal(200, last_response.status)
         end
       end
     end

@@ -62,14 +62,43 @@ class Employee < Rubee::SequelObject
     Employee.find(id).email != email
   end
 
+  def upcoming_windows
+    EmployeeWindow.dataset
+      .join(:windows, id: :window_id)
+      .where(Sequel[:employee_windows][:employee_id] => id)
+      .where(Sequel[:windows][:effective_date] >= Date.today)
+      .select_all(:windows).all.then { |hash| Window.serialize(hash) }
+  end
+
   def current_window
-    @current_window ||= Window.dataset
+    @current_window ||= today_or_past_window || earliest_future_window
+  end
+
+  def today_or_past_window
+    Window.dataset
       .join(:employee_windows, window_id: :id)
       .where(Sequel[:employee_windows][:employee_id] => id)
-      .order(Sequel.desc(:effective_date))
-      .where(Sequel[:windows][:end_date] => nil)
-      .or(Sequel[:windows][:end_date] > Time.end_of_today)
-      .limit(1).select_all(:windows).all
+      .where(Sequel[:windows][:effective_date] <= Date.today)
+      .where(Sequel.|(
+        Sequel.expr(Sequel[:windows][:end_date] => nil),
+          Sequel[:windows][:end_date] > Date.today
+      ))
+      .order(Sequel.desc(:effective_date), Sequel.desc(:created))
+      .limit(1)
+      .select_all(:windows)
+      .all
+      .then { |hash| Window.serialize(hash) }.last
+  end
+
+  def earliest_future_window
+    Window.dataset
+      .join(:employee_windows, window_id: :id)
+      .where(Sequel[:employee_windows][:employee_id] => id)
+      .where(Sequel[:windows][:effective_date] > Date.today)
+      .order(Sequel.asc(:effective_date), Sequel.asc(:created))
+      .limit(1)
+      .select_all(:windows)
+      .all
       .then { |hash| Window.serialize(hash) }.last
   end
 

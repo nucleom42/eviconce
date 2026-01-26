@@ -30,7 +30,6 @@ class EmployeesController < Rubee::BaseController
     end
     employee_availability = EmployeeAvailability.new(employee: employee)
     employee_availability.serialize!(from, to)
-
     response_with object: employee_availability, type: :json, status: 200
   rescue StandardError => e
     response_with object: { errors: e.message }, type: :json, status: 500
