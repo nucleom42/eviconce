@@ -15,9 +15,8 @@ import {
   dateAt,
   addDays,
   addMinutes,
-  isAvailable,
-  isAvailableInAny,
   isAvailableForDay,
+  windowForDay,
 } from "./../utils/time";
 
 export default function Calendar({ employees, companyId }) {
@@ -32,6 +31,9 @@ export default function Calendar({ employees, companyId }) {
   const [previewSlot, setPreviewSlot] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [editTimeSlotError, setEditTimeSlotError] = useState(null);
+  const [windowModalOpen, setWindowModalOpen] = useState(false);
+  const [clickedDay, setClickedDay] = useState(null);
+
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const today = new Date();
 
@@ -173,11 +175,33 @@ export default function Calendar({ employees, companyId }) {
               className={`day-col-header ${
                 d.toDateString() === today.toDateString() ? "today" : ""
               }`}
+              onClick={() => {
+                setClickedDay(d);
+                setWindowModalOpen(true);
+              }}
             >
               <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
               <div>{d.getDate()}</div>
             </div>
           ))}
+          {currentEmployee && clickedDay && (
+            <WindowModalForm
+              open={windowModalOpen}
+              employee={currentEmployee}
+              window={windowForDay(clickedDay, [
+                availabilityWindow, ...(upcomingWindows || []),
+              ])}
+              onClose={() => {
+                setClickedDay(null);
+                setWindowModalOpen(false);
+              }}
+              onSaved={(window) => {
+                setCurrentEmployee((prev) =>
+                  prev ? { ...prev, window } : prev,
+                );
+              }}
+            />
+          )}
         </div>
 
         <div className="week-body" ref={weekBodyRef}>

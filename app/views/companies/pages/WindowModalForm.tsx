@@ -73,7 +73,7 @@ export default function WindowModalForm({
   useEffect(() => {
     setError(null);
     setSuccessMessage(null);
-  }, [open]);
+  }, [open, window]);
 
   if (!open) return null;
 
