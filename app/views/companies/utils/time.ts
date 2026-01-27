@@ -37,7 +37,8 @@ export const windowForDay = (day, windows) => {
         return true;
       })
       .sort(
-        (a, b) => parseDateOnly(b?.effective_date) - parseDateOnly(a?.effective_date),
+        (a, b) =>
+          parseDateOnly(b?.effective_date) - parseDateOnly(a?.effective_date),
       )[0] || null
   );
 };
@@ -88,11 +89,16 @@ export const hourOf = (d) => {
   return parseTime(d).getHours();
 };
 
+
 export const isWeekend = (day, weekends = []) => {
   if (!weekends.length) return false;
-  const wday = day.getDay() === 0 ? 7 : day.getDay();
-  return weekends.includes(wday);
+
+  const jsDay = day.getDay();        // 0–6 (Sun–Sat)
+  const monFirst = (jsDay + 6) % 7;  // 0–6 (Mon–Sun)
+
+  return weekends.includes(monFirst);
 };
+
 
 export const isWithin = (hour, from, to) => hour >= from && hour < to;
 

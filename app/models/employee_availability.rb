@@ -10,16 +10,12 @@ class EmployeeAvailability
       window: if employee.current_window.nil?
                 nil
               else
-                employee.current_window.to_h.tap do |window|
-                  window[:weekends] = window[:weekends].map { |day_number| (day_number + 1) }
-                end
+                employee.current_window.to_h
               end,
       upcoming_windows: employee.upcoming_windows.map do |window|
         next if window.id == employee.current_window&.id
 
-        window.to_h.tap do |w|
-          w[:weekends] = w[:weekends].map { |day_number| (day_number + 1) }
-        end
+        window.to_h
       end,
       time_slots: TimeSlot
         .dataset

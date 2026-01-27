@@ -64,9 +64,9 @@ export default function CalendarHeader({
           </option>
         ))}
       </select>
-      {currentEmployee && (
+      {currentEmployee && !hasWindow && (
         <button className="secondary" onClick={() => setWindowModalOpen(true)}>
-          {hasWindow ? "Редагувати віконце" : "Відкрити віконце"}
+          Відкрити віконце
         </button>
       )}
       {currentEmployee && (

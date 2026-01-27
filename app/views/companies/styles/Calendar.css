@@ -42,6 +42,7 @@
 .day-col-header {
   text-align: center;
   padding: 10px 0;
+  position: relative;
 }
 
 .day-col-header.today {
@@ -56,6 +57,68 @@
 
 .day-col-header.today div:last-child {
   color: #1e40af; /* date number */
+}
+
+/* bubble */
+.day-col-header::after {
+  content: attr(data-tooltip);
+  position: absolute;
+
+  /* POSITIONING */
+  top: calc(100% + 10px);
+  left: 6px; /* left-aligned instead of center */
+
+  background: #111827; /* dark chat bubble */
+  color: #fff;
+
+  padding: 8px 12px;
+  border-radius: 10px;
+
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  white-space: pre-line;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+
+  z-index: 50;
+}
+
+.day-col-header::before {
+  content: "";
+  position: absolute;
+
+  top: 100%;
+  left: 18px; /* aligns tail near date number */
+
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #111827 transparent;
+
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  z-index: 51;
+}
+
+/* show tooltip */
+.day-col-header:hover::after,
+.day-col-header:hover::before {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* optional: no tooltip if empty */
+.day-col-header[data-tooltip=""]::after,
+.day-col-header[data-tooltip=""]::before {
+  display: none;
 }
 
 .day-name {
@@ -303,4 +366,19 @@ button.apply:hover {
   padding: 6px 10px;
   font-size: 13px;
   border-radius: 8px;
+}
+.window-a {
+  border-top: 3px solid #4caf50;
+}
+.window-b {
+  border-top: 3px solid #2196f3;
+}
+.window-c {
+  border-top: 3px solid #ff9800;
+}
+.window-d {
+  border-top: 3px solid #9c27b0;
+}
+.window-e {
+  border-top: 3px solid #009688;
 }

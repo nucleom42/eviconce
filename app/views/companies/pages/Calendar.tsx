@@ -82,6 +82,25 @@ export default function Calendar({ employees, companyId }) {
   const nowMinutes = now.getMinutes();
 
   const nowTop = hourHeight * nowHour + (hourHeight * nowMinutes) / 60;
+  const WINDOW_CLASSES = [
+    "window-a",
+    "window-b",
+    "window-c",
+    "window-d",
+    "window-e",
+  ];
+
+  const dayWindowClass = (day: Date) => {
+    const win = windowForDay(day, [
+      availabilityWindow,
+      ...(upcomingWindows || []),
+    ]);
+
+    if (!win) return "";
+
+    const idx = win.id % WINDOW_CLASSES.length;
+    return WINDOW_CLASSES[idx];
+  };
 
   const isTodayVisible = days.some(
     (d) => d.toISOString().slice(0, 10) === nowDayStr,
@@ -172,8 +191,20 @@ export default function Calendar({ employees, companyId }) {
           {days.map((d) => (
             <div
               key={d.toISOString()}
-              className={`day-col-header ${
-                d.toDateString() === today.toDateString() ? "today" : ""
+              className={`day-col-header
+                ${d.toDateString() === today.toDateString() ? "today" : ""}
+                ${dayWindowClass(d)}
+              `}
+              data-tooltip={`Edit window Starting ${
+                windowForDay(d, [
+                  availabilityWindow,
+                  ...(upcomingWindows || []),
+                ])?.effective_date
+              }\nEnding ${
+                windowForDay(d, [
+                  availabilityWindow,
+                  ...(upcomingWindows || []),
+                ])?.end_date
               }`}
               onClick={() => {
                 setClickedDay(d);
@@ -189,7 +220,8 @@ export default function Calendar({ employees, companyId }) {
               open={windowModalOpen}
               employee={currentEmployee}
               window={windowForDay(clickedDay, [
-                availabilityWindow, ...(upcomingWindows || []),
+                availabilityWindow,
+                ...(upcomingWindows || []),
               ])}
               onClose={() => {
                 setClickedDay(null);

@@ -132,7 +132,10 @@ export default function WindowModalForm({
               type="time"
               value={toTimeValue(form.start_time)}
               onChange={(e) => {
-                const newTime = applyTime(form.start_time || new Date().toISOString(), e.target.value);
+                const newTime = applyTime(
+                  form.start_time || new Date().toISOString(),
+                  e.target.value,
+                );
                 setForm((prev) => ({ ...prev, start_time: newTime }));
               }}
             />
@@ -142,7 +145,10 @@ export default function WindowModalForm({
               type="time"
               value={toTimeValue(form.end_time)}
               onChange={(e) => {
-                const newTime = applyTime(form.end_time || new Date().toISOString(), e.target.value);
+                const newTime = applyTime(
+                  form.end_time || new Date().toISOString(),
+                  e.target.value,
+                );
                 setForm((prev) => ({ ...prev, end_time: newTime }));
               }}
             />
@@ -152,7 +158,10 @@ export default function WindowModalForm({
               type="time"
               value={toTimeValue(form.break_from)}
               onChange={(e) => {
-                const newTime = applyTime(form.break_from || new Date().toISOString(), e.target.value);
+                const newTime = applyTime(
+                  form.break_from || new Date().toISOString(),
+                  e.target.value,
+                );
                 setForm((prev) => ({ ...prev, break_from: newTime }));
               }}
             />
@@ -162,7 +171,10 @@ export default function WindowModalForm({
               type="time"
               value={toTimeValue(form.break_to)}
               onChange={(e) => {
-                const newTime = applyTime(form.break_to || new Date().toISOString(), e.target.value);
+                const newTime = applyTime(
+                  form.break_to || new Date().toISOString(),
+                  e.target.value,
+                );
                 setForm((prev) => ({ ...prev, break_to: newTime }));
               }}
             />
