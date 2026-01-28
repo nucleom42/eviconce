@@ -195,7 +195,7 @@ export default function Calendar({ employees, companyId }) {
                 ${d.toDateString() === today.toDateString() ? "today" : ""}
                 ${dayWindowClass(d)}
               `}
-              data-tooltip={`Edit window Starting ${
+              data-tooltip={!currentEmployee ? "" : `Window\nStarting ${
                 windowForDay(d, [
                   availabilityWindow,
                   ...(upcomingWindows || []),
