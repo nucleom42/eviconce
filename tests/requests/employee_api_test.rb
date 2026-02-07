@@ -109,7 +109,7 @@ describe 'Employee API' do
     describe 'when there are no windows and time slots' do
       describe 'valid params' do
         it 'should return 200' do
-          Window.destroy_all
+          Window.dataset.delete
 
           params = {
             from: Time.beginning_of_today.strftime("%Y-%m-%d"),

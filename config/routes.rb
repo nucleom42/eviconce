@@ -167,6 +167,7 @@ Rubee::Router.draw do |router|
     ],
   })
   router.post('/api/windows/upsert', to: 'windows#upsert')
+  router.delete('/api/windows/{id}', to: 'windows#destroy')
   ### END WINDOW API ###
 
   ### START employee_windows ###

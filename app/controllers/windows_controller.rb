@@ -1,6 +1,6 @@
 class WindowsController < Rubee::BaseController
   include Rubee::AuthTokenable
-  auth_methods :index, :upsert
+  auth_methods :index, :upsert, :destroy
   before :set_company
 
   # GET /api/windows
@@ -12,7 +12,8 @@ class WindowsController < Rubee::BaseController
   def upsert
     Rubee::SequelObject::DB.transaction do
       found_window = window_params[:id] && Window.find(window_params[:id])
-      window = if found_window && !found_window.has_time_slots?
+      window = if (found_window && TimeSlot.any_in_range?(window_params[:effective_date], window_params[:end_date])) ||
+          (found_window && !found_window.has_time_slots?)
         found_window.assign_attributes(window_params.except(:id, :employee_id))
         found_window
       else
@@ -23,14 +24,34 @@ class WindowsController < Rubee::BaseController
       new_window_record = !window.persisted?
       window.save
 
-      found_employee.add_windows(window).then do
-        window.any_windows_with_effective_date_eq_or_later!
-      end if new_window_record
+      if new_window_record
+        found_employee.add_windows(window)
+        prev_endless = window.previous_endless
+        prev_endless&.update(end_date: window.effective_date - 1)
+        raise Rubee::Validatable::Error, "Window intersects with another window" if window.any_windows_intersects?
+      else
+        unless window.all_time_slots_available?
+          raise Rubee::Validatable::Error,
+            "There are time_slot(s) which will become unavailable, please move them first"
+        end
+      end
 
       response_with object: window, type: :json, status: (new_window_record ? 201 : 200)
     end
   rescue StandardError => e
     response_with object: { errors: e.message }, type: :json, status: 422
+  end
+
+  # DELETE /api/windows/{id}
+  def destroy
+    window = Window.find(params[:id])
+    if window&.destroy
+      response_with object: { ok: :deleted }, type: :json, status: 200
+    else
+      response_with object: { errors: window.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   def window_params

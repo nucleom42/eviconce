@@ -79,6 +79,13 @@ class TimeSlot < Rubee::SequelObject
     end
   end
 
+  def available?
+    target_window = employee.window_for_date(day)
+    return false unless target_window
+
+    employee.available?(start_time..end_time, id, target_window)
+  end
+
   def check_overlapping!
     raise Rubee::Validatable::Error, errors[:availability] unless employee_available?
   end
@@ -104,6 +111,14 @@ class TimeSlot < Rubee::SequelObject
   end
 
   class << self
+    def in_range(from_date, to_date)
+      where(day: from_date..to_date)
+    end
+
+    def any_in_range?(from_date, to_date)
+      in_range(from_date, to_date).any?
+    end
+
     def status(state)
       STATES[state]
     end

@@ -122,7 +122,7 @@ describe 'Employee model' do
 
       context 'when there are no windows' do
         it 'should return nil' do
-          Window.destroy_all
+          Window.dataset.delete
 
           assert_nil employee.current_window
         end

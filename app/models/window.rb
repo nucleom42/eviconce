@@ -7,40 +7,66 @@ class Window < Rubee::SequelObject
   before :save, ->(m) { m.weekends = Sequel.pg_array(m.weekends) }
 
   validate do
-    attribute(:start_time).required.type(Time).condition(-> { start_time < end_time })
-    attribute(:end_time).required.type(Time).condition(-> { start_time < end_time })
-    attribute(:break_from).required.type(Time).condition(-> { break_from < break_to })
-    attribute(:break_to).required.type(Time).condition(-> { break_from < break_to })
+    attribute(:start_time).required.type(Time)
+      .condition(-> { start_time < end_time }, "Start time can't be greater than end time")
+    attribute(:end_time).required.type(Time)
+    attribute(:break_from).required.type(Time)
+      .condition(-> { break_from < break_to }, "Break from can't be greater than break to")
+    attribute(:break_to).required.type(Time)
     attribute(:effective_date).required.type(Date)
       .condition(
-        -> { !end_date || end_date && effective_date.to_time < end_date.to_time.end_of_day },
+        -> { !end_date || end_date && effective_date.to_time <= end_date.to_time.end_of_day },
         'End date can not be less than effective date'
       )
       .condition(
-        -> { effective_date.to_time >= Date.today.to_time.beginning_of_day },
+        -> { persisted? || effective_date.to_time >= Date.today.to_time.beginning_of_day },
         'Effective date can not be in the past'
       )
-      .condition(
-        -> { !any_windows_with_effective_date_eq_or_later? },
-        "Window with effective date greater or eq than #{effective_date} already exists"
-      )
-      .condition(-> { !has_time_slots? }, 'Window has time slots')
-    attribute(:end_date).optional.type(Date).condition(-> { effective_date < end_date })
+    attribute(:end_date).optional.type(Date)
+      .condition(-> { effective_date <= end_date })
+      .condition(-> { !persisted? || persisted? && !any_windows_intersects? }, 'Window intersects with another window')
     attribute(:weekends).required
       .condition(-> { weekends.uniq.size == weekends.size && weekends.all? { |w| WEEKS.include?(w) } })
   end
 
+  before :destroy, ->(m) do
+    raise Rubee::Validatable::Error, 'Window has time slots, remove them first' if m.has_time_slots?
+  end
+
+  def all_time_slots_available?
+    # We want to make sure all time slots within the window are available
+    TimeSlot.where(employee_id: employees.map(&:id), day: (effective_date..end_date)).all?(&:available?)
+  end
+
   owns_many :employees, over: :employee_windows
 
-  def any_windows_with_effective_date_eq_or_later?
+  def any_windows_intersects?
     employee_ids = employees.map(&:id)
     return false if employee_ids.empty?
 
-    !!Window.dataset.join(:employee_windows, window_id: :id)
-      .where(Sequel[:windows][:effective_date] >= effective_date)
-      .where(Sequel[:employee_windows][:employee_id] => employee_ids)
-      .exclude(Sequel[:windows][:id] => id)
-      .get(1)
+    sql = <<~SQL
+      SELECT EXISTS (
+        SELECT 1
+        FROM windows
+        JOIN employee_windows
+          ON employee_windows.window_id = windows.id
+        WHERE employee_windows.employee_id IN ?
+          AND windows.id != ?
+          AND windows.effective_date <= ?
+          AND (
+            windows.end_date IS NULL
+            OR windows.end_date >= ?
+          )
+      ) AS intersects
+      SQL
+
+    Rubee::SequelObject::DB.fetch(
+      sql,
+      employee_ids,
+      id,
+      end_date || Date.new(9999, 12, 31),
+      effective_date
+    ).get(:intersects)
   end
 
   def any_windows_with_effective_date_eq_or_later!
@@ -54,6 +80,17 @@ class Window < Rubee::SequelObject
       .dataset
       .where(employee_id: employees.map(&:id), day: effective_date..end_date)
       .get(1)
+  end
+
+  def previous_endless
+    Window
+      .dataset
+      .where(end_date: nil)
+      .join(:employee_windows, window_id: :id)
+      .where(Sequel[:employee_windows][:employee_id] => employees.map(&:id))
+      .where(Sequel[:windows][:effective_date] < effective_date)
+      .order(Sequel.desc(:effective_date)).select_all(:windows)
+      .limit(1).then { |ds| Window.serialize(ds) }&.first
   end
 
   def add_employees(*employees)

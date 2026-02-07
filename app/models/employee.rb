@@ -102,27 +102,42 @@ class Employee < Rubee::SequelObject
       .then { |hash| Window.serialize(hash) }.last
   end
 
+  def window_for_date(date)
+    Window.dataset
+      .join(:employee_windows, window_id: :id)
+      .where(Sequel[:employee_windows][:employee_id] => id)
+      .where(Sequel[:windows][:effective_date] <= date)
+      .where(Sequel.|(
+        Sequel.expr(Sequel[:windows][:end_date] => nil),
+          Sequel[:windows][:end_date] > date
+      ))
+      .select_all(:windows)
+      .all
+      .then { |hash| Window.serialize(hash) }.last
+  end
+
   def time_slots(date_or_range)
     TimeSlot.where(employee_id: id, day: date_or_range)
   end
 
-  def available?(range, time_slot_id_exclude = nil)
+  def available?(range, time_slot_id_exclude = nil, target_window = nil)
     request_from = range.begin
     request_to = range.end
     request_date = range.begin.to_date
-    unless current_window
+    target_window ||= current_window
+    unless target_window
       add_error(:availability, message: 'No windows')
       return false
     end
-    unless current_window.within_work_hours?(request_from, request_to)
+    unless target_window.within_work_hours?(request_from, request_to)
       add_error(:availability, message: 'Outside work hours')
       return false
     end
-    if current_window.overlapping_break?(request_from, request_to)
+    if target_window.overlapping_break?(request_from, request_to)
       add_error(:availability, message: 'Within break hours')
       return false
     end
-    if current_window.weekends?(request_date)
+    if target_window.weekends?(request_date)
       add_error(:availability, message: 'On weekends')
       return false
     end

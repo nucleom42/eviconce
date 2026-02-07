@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toTimeValue, applyTime, toLocalISOString } from "../utils/time";
+import ConfirmModal from "./ConfirmModal";
 import "./../styles/WindowModalForm.css";
+
 
 type Props = {
   open: boolean;
@@ -39,6 +41,7 @@ export default function WindowModalForm({
     { id: 5, label: "Сб" },
     { id: 6, label: "Нд" },
   ];
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   /* ---------- PREFILL ON EDIT ---------- */
 
@@ -112,6 +115,25 @@ export default function WindowModalForm({
       setError(e.message || "Failed to save window");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window) return;
+    try {
+    const res = await fetch(`/api/windows/${window.id}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
+    setSuccessMessage("Віконце видалено");
+
+    setTimeout(() => {
+      setSuccessMessage(null);
+      onSaved(null);
+      onClose();
+    }, 800);
+    } catch (e: any) {
+      setError(e.message || "Failed to delete window");
     }
   };
 
@@ -227,6 +249,29 @@ export default function WindowModalForm({
               <button onClick={onClose} disabled={loading}>
                 Cancel
               </button>
+              {window && (
+                <>
+                  <button
+                    className="danger"
+                    onClick={() => setConfirmOpen(true)}
+                  >
+                    Delete
+                  </button>
+
+                  <ConfirmModal
+                    open={confirmOpen}
+                    title="Delete window"
+                    message="Are you sure you want to delete this window?"
+                    confirmText="Yes"
+                    cancelText="No"
+                    onConfirm={() => {
+                      setConfirmOpen(false);
+                      handleDelete();
+                    }}
+                    onCancel={() => setConfirmOpen(false)}
+                  />
+                </>
+              )}
               <button
                 className="apply"
                 onClick={handleSubmit}
