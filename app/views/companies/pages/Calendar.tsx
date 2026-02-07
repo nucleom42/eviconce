@@ -188,33 +188,39 @@ export default function Calendar({ employees, companyId }) {
       <div className="week-calendar">
         <div className="week-header">
           <div className="time-col" />
-          {days.map((d) => (
-            <div
-              key={d.toISOString()}
-              className={`day-col-header
-                ${d.toDateString() === today.toDateString() ? "today" : ""}
-                ${dayWindowClass(d)}
-              `}
-              data-tooltip={!currentEmployee ? "" : `Window\nStarting ${
-                windowForDay(d, [
-                  availabilityWindow,
-                  ...(upcomingWindows || []),
-                ])?.effective_date
-              }\nEnding ${
-                windowForDay(d, [
-                  availabilityWindow,
-                  ...(upcomingWindows || []),
-                ])?.end_date
-              }`}
-              onClick={() => {
-                setClickedDay(d);
-                setWindowModalOpen(true);
-              }}
-            >
-              <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
-              <div>{d.getDate()}</div>
-            </div>
-          ))}
+          {days.map((d) => {
+            const windowForTheDay = windowForDay(d, [
+              availabilityWindow,
+              ...(upcomingWindows || []),
+            ]);
+
+            return (
+              <div
+                key={d.toISOString()}
+                className={`day-col-header
+                          ${
+                            d.toDateString() === today.toDateString()
+                              ? "today"
+                              : ""
+                          }
+                          ${dayWindowClass(d)}
+                        `}
+                data-tooltip={
+                  !currentEmployee || !windowForTheDay?.effective_date
+                    ? ""
+                    : `Window\nStarting ${windowForTheDay?.effective_date}\nEnding ${windowForTheDay?.end_date || "∞"}`
+                }
+                onClick={() => {
+                  setClickedDay(d);
+                  setWindowModalOpen(true);
+                }}
+              >
+                {(currentEmployee && windowForTheDay) && <span className="edit-icon">✏️  </span>}
+                <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
+                <div>{d.getDate()}</div>
+              </div>
+            );
+          })}
           {currentEmployee && clickedDay && (
             <WindowModalForm
               open={windowModalOpen}
@@ -253,6 +259,7 @@ export default function Calendar({ employees, companyId }) {
 
               {days.map((day) => {
                 const slots = slotsInHour(day, hour);
+                const isPast = day < startOfDay(new Date());
 
                 const available = isAvailableForDay({
                   day,
@@ -263,7 +270,9 @@ export default function Calendar({ employees, companyId }) {
                 return (
                   <div
                     key={`${day.toISOString()}-${hour}`}
-                    className={`week-cell ${available ? "" : "unavailable"}`}
+                    className={`week-cell ${
+                      available ? "" : (isPast ? "past" : "unavailable")
+                    }`}
                     onMouseDown={(e) => {
                       setEditTimeSlotError(null);
                       if (!available || !currentEmployee) return;

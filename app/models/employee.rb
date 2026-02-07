@@ -101,7 +101,7 @@ class Employee < Rubee::SequelObject
       .all
       .then { |hash| Window.serialize(hash) }.last
   end
-
+  # Cehck why it's not retunring window
   def window_for_date(date)
     Window.dataset
       .join(:employee_windows, window_id: :id)
@@ -109,7 +109,7 @@ class Employee < Rubee::SequelObject
       .where(Sequel[:windows][:effective_date] <= date)
       .where(Sequel.|(
         Sequel.expr(Sequel[:windows][:end_date] => nil),
-          Sequel[:windows][:end_date] > date
+          Sequel[:windows][:end_date] >= date
       ))
       .select_all(:windows)
       .all

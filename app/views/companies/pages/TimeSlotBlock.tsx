@@ -1,13 +1,14 @@
 import React from "react";
 export default function TimeSlotBlock({ timeSlot }) {
-  const parseTime = (val) =>
-    val instanceof Date ? val : new Date(val);
+  const parseTime = (val) => (val instanceof Date ? val : new Date(val));
 
   const start = parseTime(timeSlot.start_time);
   const end = parseTime(timeSlot.end_time);
 
   const durationHours = (end - start) / (1000 * 60 * 60);
+  const durationMinutes = (end - start) / (1000 * 60);
   const offsetMinutes = start.getMinutes(); // 0 or 30
+  const clientName = timeSlot.client?.first_name;
 
   return (
     <div
@@ -20,7 +21,16 @@ export default function TimeSlotBlock({ timeSlot }) {
         right: 0,
       }}
     >
-      {timeSlot.state}
+      {clientName ? (
+        <div className="client-name">{clientName}&nbsp;</div>
+      ) : (
+        <div className="client-name">{timeSlot.state}&nbsp;</div>
+      )}
+      {
+        <div className="time-label">
+          {timeSlot.service_name} ({durationMinutes} min)
+        </div>
+      }
     </div>
   );
 }

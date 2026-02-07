@@ -36,6 +36,7 @@ class EmployeeAvailability
             last_name: original_ts['last_name'],
           }
           ts['duration'] = TimeSlot.new(ts.slice(*serialize_fields)).duration
+          ts['service_name'] = Service.find(ts['service_id'])&.name
           ts
         end,
     }

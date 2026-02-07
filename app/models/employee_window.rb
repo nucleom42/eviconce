@@ -3,10 +3,4 @@ class EmployeeWindow < Rubee::SequelObject
 
   holds :employee
   holds :window
-
-  # after :save, ->(m) do
-  #   if m.window.any_windows_intersects?
-  #     raise Rubee::Validatable::Error, "Window intersects with another window"
-  #   end
-  # end
 end

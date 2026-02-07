@@ -16,14 +16,12 @@
   text-transform: uppercase;
 }
 .form__title_preview {
-  color: #d57a66;
-  border: solid;
+  border: 1px dashed var(--accent);
 }
 
 .form__title_scheduled {
-  background: #ecfdf5;
-  color: #047857;
-  border: solid;
+  background: #047857;
+  color: white;
 }
 
 .form__title_cancelled {

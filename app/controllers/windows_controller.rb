@@ -12,6 +12,7 @@ class WindowsController < Rubee::BaseController
   def upsert
     Rubee::SequelObject::DB.transaction do
       found_window = window_params[:id] && Window.find(window_params[:id])
+      # Update if window is found and there are time slots in range or no time slotss
       window = if (found_window && TimeSlot.any_in_range?(window_params[:effective_date], window_params[:end_date])) ||
           (found_window && !found_window.has_time_slots?)
         found_window.assign_attributes(window_params.except(:id, :employee_id))
@@ -21,15 +22,20 @@ class WindowsController < Rubee::BaseController
       end
 
       found_employee = Employee.find(window_params[:employee_id])
+      # Define whether the record is new
       new_window_record = !window.persisted?
       window.save
 
       if new_window_record
+        # Add window to employee
         found_employee.add_windows(window)
+        # Noramlize in case of previous endless
         prev_endless = window.previous_endless
         prev_endless&.update(end_date: window.effective_date - 1)
+        # Final check if there is any intersections
         raise Rubee::Validatable::Error, "Window intersects with another window" if window.any_windows_intersects?
       else
+        # Check whether all time slots are avaible..
         unless window.all_time_slots_available?
           raise Rubee::Validatable::Error,
             "There are time_slot(s) which will become unavailable, please move them first"

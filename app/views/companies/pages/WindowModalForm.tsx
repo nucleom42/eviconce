@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { toTimeValue, applyTime, toLocalISOString } from "../utils/time";
 import ConfirmModal from "./ConfirmModal";
 import "./../styles/WindowModalForm.css";
-
 
 type Props = {
   open: boolean;
@@ -44,6 +43,10 @@ export default function WindowModalForm({
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   /* ---------- PREFILL ON EDIT ---------- */
+  const [initialDates, setInitialDates] = useState({
+    effective_date: "",
+    end_date: "",
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -57,6 +60,11 @@ export default function WindowModalForm({
         weekends: Array.isArray(window.weekends) ? window.weekends : [],
         effective_date: window.effective_date || "",
         end_date: window.end_date || "",
+      });
+
+      setInitialDates({
+        effective_date: window.effective_date?.slice(0, 10) || "",
+        end_date: window.end_date?.slice(0, 10) || "",
       });
     } else {
       setForm(emptyForm);
@@ -121,17 +129,20 @@ export default function WindowModalForm({
   const handleDelete = async () => {
     if (!window) return;
     try {
-    const res = await fetch(`/api/windows/${window.id}`, { method: "DELETE", credentials: "include" });
-    if (!res.ok) {
-      throw new Error(await res.text());
-    }
-    setSuccessMessage("Віконце видалено");
+      const res = await fetch(`/api/windows/${window.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+      setSuccessMessage("Віконце видалено");
 
-    setTimeout(() => {
-      setSuccessMessage(null);
-      onSaved(null);
-      onClose();
-    }, 800);
+      setTimeout(() => {
+        setSuccessMessage(null);
+        onSaved(null);
+        onClose();
+      }, 800);
     } catch (e: any) {
       setError(e.message || "Failed to delete window");
     }
@@ -143,7 +154,25 @@ export default function WindowModalForm({
         <div className="confirm-overlay" onClick={onClose}>
           <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
             <h3>{window ? "Редагувати віконце" : "Відкрити віконце"}</h3>
+            <div>
+              ( {initialDates.effective_date} .. {initialDates.end_date} )
+            </div>
+            <br></br>
+            <label>Effective date</label>
+            <input
+              type="date"
+              value={form.effective_date}
+              onChange={(e) =>
+                setForm({ ...form, effective_date: e.target.value })
+              }
+            />
 
+            <label>End date</label>
+            <input
+              type="date"
+              value={form.end_date}
+              onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+            />
             {error && <div className="form__error">{error}</div>}
             {successMessage && (
               <div className="form__success">{successMessage}</div>
@@ -228,22 +257,6 @@ export default function WindowModalForm({
                 })}
               </div>
             </div>
-
-            <label>Effective date</label>
-            <input
-              type="date"
-              value={form.effective_date}
-              onChange={(e) =>
-                setForm({ ...form, effective_date: e.target.value })
-              }
-            />
-
-            <label>End date</label>
-            <input
-              type="date"
-              value={form.end_date}
-              onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-            />
 
             <div className="modal-actions">
               <button onClick={onClose} disabled={loading}>
