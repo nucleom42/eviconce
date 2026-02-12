@@ -45,7 +45,7 @@ Rubee::Router.draw do |router|
       { name: 'updated', type: 'datetime' },
     ],
   })
-  router.get('/api/companies/{id}', to: 'companies#show')
+  router.get('/api/companies/{name}', to: 'companies#show_by_name')
   router.get('/api/companies/{id}/dashboard', to: 'companies#dashboard')
   router.get('/api/companies/new', to: 'companies#new')
   router.post('/api/companies', to: 'companies#create')

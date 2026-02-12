@@ -7,6 +7,7 @@ import LoginEmployee from "./pages/LoginEmployee";
 import CompanyNotFound from "./pages/CompanyNotFound";
 import Dashboard from "./pages/Dashboard";
 import Welcome from "./pages/Welcome";
+import Employees from "./pages/Employees";
 
 import "./styles/Companies.css";
 
@@ -21,6 +22,11 @@ export default function CompaniesApp() {
         <Route path="admins/new" element={<EmployeeForm role="admin" />} />
         <Route path="login" element={<LoginEmployee />} />
         <Route path=":id/dashboard" element={<Dashboard />} />
+        <Route path=":id/employees" element={<Dashboard />} />
+        <Route path=":id/clients" element={<Dashboard />} />
+        <Route path=":id/edit" element={<Dashboard />} />
+        <Route path=":id/settings" element={<Dashboard />} />
+
         <Route path="*" element={<CompanyNotFound />} />
       </Routes>
     </div>

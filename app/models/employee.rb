@@ -33,6 +33,18 @@ class Employee < Rubee::SequelObject
   owns_many :time_slots
   owns_many :services
 
+  around :destroy, ->(m, &origianl_destroy) do
+    Rubee::SequelObject::DB.transaction do
+      # Progrmaticall cascade deletion
+      Service.where(employee_id: m.id).map(&:destroy)
+      TimeSlot.where(employee_id: m.id).map(&:destroy)
+      CompanyEmployee.where(employee_id: m.id).map(&:destroy)
+      EmployeeWindow.where(employee_id: m.id).map(&:destroy)
+
+      origianl_destroy.call
+    end
+  end
+
   def password
     ::JWT.decode(password_digest, JWT_KEY, false)[0]['password']
   end
@@ -101,6 +113,7 @@ class Employee < Rubee::SequelObject
       .all
       .then { |hash| Window.serialize(hash) }.last
   end
+
   # Cehck why it's not retunring window
   def window_for_date(date)
     Window.dataset

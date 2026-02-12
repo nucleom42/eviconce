@@ -2,6 +2,7 @@
   padding: 20px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  width: 100%;
 }
 
 /* HEADER */

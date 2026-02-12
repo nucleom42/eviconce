@@ -189,6 +189,7 @@ export default function Calendar({ employees, companyId }) {
         <div className="week-header">
           <div className="time-col" />
           {days.map((d) => {
+            const isPast = d < today;
             const windowForTheDay = windowForDay(d, [
               availabilityWindow,
               ...(upcomingWindows || []),
@@ -208,14 +209,22 @@ export default function Calendar({ employees, companyId }) {
                 data-tooltip={
                   !currentEmployee || !windowForTheDay?.effective_date
                     ? ""
-                    : `Window\nStarting ${windowForTheDay?.effective_date}\nEnding ${windowForTheDay?.end_date || "∞"}`
+                    : `Window\nStarting ${windowForTheDay?.effective_date}\nEnding ${
+                        windowForTheDay?.end_date || "∞"
+                      }`
                 }
                 onClick={() => {
+                  if (isPast) return;
                   setClickedDay(d);
                   setWindowModalOpen(true);
                 }}
               >
-                {(currentEmployee && windowForTheDay) && <span className="edit-icon">✏️  </span>}
+                {currentEmployee && !isPast && (
+                  <span className="edit-icon">
+                    {windowForTheDay ? "⚙️" : "➕"}
+                  </span>
+                )}
+
                 <div>{d.toLocaleDateString("uk-UA", { weekday: "short" })}</div>
                 <div>{d.getDate()}</div>
               </div>
@@ -271,7 +280,7 @@ export default function Calendar({ employees, companyId }) {
                   <div
                     key={`${day.toISOString()}-${hour}`}
                     className={`week-cell ${
-                      available ? "" : (isPast ? "past" : "unavailable")
+                      available ? "" : isPast ? "past" : "unavailable"
                     }`}
                     onMouseDown={(e) => {
                       setEditTimeSlotError(null);

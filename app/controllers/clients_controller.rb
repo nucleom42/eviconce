@@ -15,7 +15,7 @@ class ClientsController < Rubee::BaseController
   def create
     Rubee::SequelObject::DB.transaction do
       client = Client.new(client_params)
-      client.password = client.first_name
+      client.password = client_params[:password] || client.first_name
       if client.valid? && client.save && @company.add_clients(client)
         response_with object: client, type: :json, status: 201
       else
@@ -26,8 +26,35 @@ class ClientsController < Rubee::BaseController
     response_with object: { errors: e.message }, type: :json, status: 422
   end
 
+  # PUT /api/clients/{id}
+  def update
+    client = Client.find(params[:id])
+    client.assign_attributes(client_params.except(:id))
+    client.password = client_params[:password] if client_params[:password]
+
+    if client.valid? && client.save
+      response_with object: client, type: :json, status: 200
+    else
+      response_with object: { errors: client.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
+  def destroy
+    client = Client.find(params[:id])
+    if client.destroy
+      response_with object: { ok: :deleted }, type: :json, status: 200
+    else
+      response_with object: { errors: client.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
   def client_params
-    params.reject { |_, val| val.nil? }
+    target_hash = params[:client] || params
+    @client_params ||= target_hash.reject { |_, val| val.nil? }
   end
 
   def set_company

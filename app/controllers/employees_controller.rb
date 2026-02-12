@@ -1,9 +1,28 @@
 class EmployeesController < Rubee::BaseController
   include Rubee::AuthTokenable
 
+  auth_methods :index, :update, :create, :destroy, :availability
+
   # GET /api/employees
   def index
-    response_with
+    response_with object: @auth_user.my_company.employees, type: :json, status: 200
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
+  # PUT /api/employees
+  def update
+    employee = Employee.find(params[:id])
+    employee.assign_attributes(employee_params.except(:id))
+    employee.password = employee_params[:password] if employee_params[:password]
+
+    if employee.valid? && employee.save
+      response_with object: employee, type: :json, status: 200
+    else
+      response_with object: { errors: employee.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   # POST /api/employees
@@ -11,7 +30,20 @@ class EmployeesController < Rubee::BaseController
     employee = Employee.new(employee_params)
 
     if employee.valid? && employee.save
+      auth_user.my_company.add_employees(employee)
       response_with object: employee, type: :json, status: 201
+    else
+      response_with object: { errors: employee.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
+  # DELETE /api/employees/{id}
+  def destroy
+    employee = Employee.find(params[:id])
+    if employee&.destroy
+      response_with object: { ok: :deleted }, type: :json, status: 200
     else
       response_with object: { errors: employee.errors }, type: :json, status: 422
     end
@@ -61,7 +93,7 @@ class EmployeesController < Rubee::BaseController
   private
 
   def auth_user
-    authentificated_user user_model: Employee, login: :email, password: :password_digest
+    @auth_user ||= authentificated_user user_model: Employee, login: :email, password: :password_digest
   end
 
   def employee_params

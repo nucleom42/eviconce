@@ -9,12 +9,22 @@ class Client < Rubee::SequelObject
       .condition(-> { email.match?(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/) }, message: 'invalid email')
     attribute(:phone).optional.type(String)
     attribute(:password_digest).required.type(String)
-      .condition(-> { @__encoded }, message: "password should be set over 'password=' method")
+      .condition(
+        -> { password_digest || !persisted? && @__encoded },
+        message: "password should be set over 'password=' method"
+      )
     attribute(:address_id).optional.type(Integer)
   end
 
   holds :address
   owns_many :companies, over: :company_clients
+
+  around :destroy do |client, &origianl_destroy|
+    Rubee::SequelObject::DB.transaction do
+      client.address&.destroy
+      origianl_destroy.call
+    end
+  end
 
   def password=(value)
     self.password_digest = ::JWT.encode({ password: value }, JWT_KEY, 'HS256')

@@ -2,6 +2,18 @@ class CompaniesController < Rubee::BaseController
   include Rubee::AuthTokenable
   auth_methods :create, :index, :dashboard
 
+  # GET /api/companies/{name}
+  def show_by_name
+    found_company = Company.where(params).last
+    if found_company
+      response_with object: found_company, type: :json, status: 200
+    else
+      response_with object: { errors: :not_found }, type: :json, status: 404
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
   # GET /api/companies
   def index
     owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
@@ -25,6 +37,24 @@ class CompaniesController < Rubee::BaseController
                e.message
              end
     response_with object: { errors: }, type: :json, status: 422
+  end
+
+  # PUT /api/companies/{id}
+  def update
+    Rubee::SequelObject::DB.transaction do
+      company = Company.find(params[:id])
+      company.assign_attributes(companny_params)
+      address = company.address
+      address.assign_attributes(address_params)
+
+      if company.valid? && company.save && address.valid? && address.save
+        response_with object: company, type: :json, status: 200
+      else
+        response_with object: { errors: company.errors }, type: :json, status: 422
+      end
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   # GET /api/companies/{id}/dashboard

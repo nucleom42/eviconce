@@ -8,6 +8,31 @@ describe 'Employee API' do
   end
 
   describe 'POST /api/employees' do
+    let!(:company) do
+      Company.create(
+        name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+        phone: '+123112123', description: 'description'
+      )
+    end
+
+    let!(:auth_employee) do
+      employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
+                                  email: "L4qyWi2i123#{current_time_ms}@example.com",
+                                  password_digest: '123456', description: 'nail specialist', phone: '1234567890',
+                                  role: 1)
+      employee.password = '123456'
+      employee.save
+      employee
+    end
+
+    before do
+      company.add_employees(auth_employee)
+      auth_params = { email: auth_employee.email, password: auth_employee.password }
+      post('/api/employees/login', auth_params)
+      jwt = last_response.cookies['jwt'].value[0]
+      set_cookie "jwt=#{jwt}"
+    end
+
     describe 'valid params' do
       it 'should create a new employee' do
         valid_params = { employee: { first_name: 'Hren', last_name: 'Hrenon',
@@ -63,7 +88,7 @@ describe 'Employee API' do
   end
 
   describe 'POST /api/employees/logout' do
-    describe 'valid params' do
+        describe 'valid params' do
       it 'should logout employee' do
         employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                 email: "L4qyWi42342#{current_time_ms}@example.com",

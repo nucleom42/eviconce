@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import './../styles/Form.css';
 
-export default function EmployeeForm({ role }) {
+export default function EmployeeForm({ role, employee, onSave, onCancel, isModal = false }) {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -13,38 +11,67 @@ export default function EmployeeForm({ role }) {
     email: "",
     phone: "",
     password: "",
-    role: ""
+    role: role === "admin" ? 1 : 0 // Default based on prop
   });
-
   const [errors, setErrors] = useState({});
 
+  // Prefill form if editing
+  useEffect(() => {
+    if (employee) {
+      setForm({
+        first_name: employee.first_name || "",
+        last_name: employee.last_name || "",
+        description: employee.description || "",
+        email: employee.email || "",
+        phone: employee.phone || "",
+        password: "", // Don't prefill password
+        role: employee.role ?? (role === "admin" ? 1 : 0)
+      });
+    }
+  }, [employee, role]);
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const value = e.target.name === 'role' ? parseInt(e.target.value) : e.target.value;
+    setForm({ ...form, [e.target.name]: value });
     setErrors((prev) => ({ ...prev, [e.target.name]: null }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("/api/employees", {
-      method: "POST",
+    const payload = {
+      employee: {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        description: form.description,
+        email: form.email,
+        phone: form.phone,
+        role: form.role
+      }
+    };
+
+    // Only include password if it's set (for create or update)
+    if (form.password) {
+      payload.employee.password = form.password;
+    }
+
+    const url = employee ? `/api/employees/${employee.id}` : "/api/employees";
+    const method = employee ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        employee: {
-          first_name: form.first_name,
-          last_name: form.last_name,
-          description: form.description,
-          email: form.email,
-          phone: form.phone,
-          password: form.password,
-          role: role === "admin" ? 1 : 0
-        }
-      })
+      body: JSON.stringify(payload)
     });
 
     if (response.ok) {
-      navigate("/companies/welcome"); // or "/companies/login" if this is signup
+      const data = await response.json();
+      if (isModal && onSave) {
+        onSave(data);
+      } else {
+        navigate("/companies/welcome");
+      }
     } else {
       const body = await response.json();
       setErrors(body.errors || {});
@@ -54,9 +81,11 @@ export default function EmployeeForm({ role }) {
   const errorFor = (field) => errors[field]?.message;
 
   return (
-    <div className="employee-form container">
-      <h1>Створити {role === "admin" ? "адміністратора" : "працівника"}</h1>
-
+    <div className={isModal ? "employee-form-modal" : "employee-form container"}>
+      <h1>
+        {employee ? "Редагувати" : "Створити"}{" "}
+        {form.role === 1 ? "адміністратора" : "працівника"}
+      </h1>
       <form onSubmit={handleSubmit}>
         {errorFor("first_name") && <div className="field-error">{errorFor("first_name")}</div>}
         <input
@@ -97,8 +126,8 @@ export default function EmployeeForm({ role }) {
           type="password"
           value={form.password}
           onChange={handleChange}
-          placeholder="Пароль"
-          required
+          placeholder={employee ? "Новий пароль (залиште порожнім, щоб не змінювати)" : "Пароль"}
+          required={!employee}
         />
 
         {errorFor("description") && <div className="field-error">{errorFor("description")}</div>}
@@ -109,9 +138,30 @@ export default function EmployeeForm({ role }) {
           placeholder="Опис"
         />
 
-        <button type="submit">Створити</button>
+        {errorFor("role") && <div className="field-error">{errorFor("role")}</div>}
+        <label htmlFor="role">Роль</label>
+        <select
+          id="role"
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+          required
+        >
+          <option value={0}>Працівник</option>
+          <option value={1}>Адміністратор</option>
+        </select>
+
+        <div className="form-actions">
+          {isModal && onCancel && (
+            <button type="button" onClick={onCancel}>
+              Скасувати
+            </button>
+          )}
+          <button type="submit">
+            {employee ? "Оновити" : "Створити"}
+          </button>
+        </div>
       </form>
     </div>
   );
 }
-

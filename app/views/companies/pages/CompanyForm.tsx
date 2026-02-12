@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import './../styles/Form.css';
 
-export default function CompanyForm() {
+export default function CompanyForm({ company, onSave, onCancel, isModal = false }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -21,6 +20,25 @@ export default function CompanyForm() {
 
   const [errors, setErrors] = useState({});
 
+  // Prefill form if editing
+  useEffect(() => {
+    if (company) {
+      setForm({
+        name: company.name || "",
+        email: company.email || "",
+        website: company.website || "",
+        phone: company.phone || "",
+        description: company.description || "",
+        city: company.address?.city || "",
+        country: company.address?.country || "",
+        postal: company.address?.postal || "",
+        region: company.address?.region || "",
+        street_line1: company.address?.street_line1 || "",
+        street_line2: company.address?.street_line2 || ""
+      });
+    }
+  }, [company]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors((prev) => ({ ...prev, [e.target.name]: null }));
@@ -29,31 +47,42 @@ export default function CompanyForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("/api/companies", {
-      method: "POST",
+    const payload = {
+      company: {
+        name: form.name,
+        email: form.email,
+        website: form.website,
+        phone: form.phone,
+        description: form.description
+      },
+      address: {
+        city: form.city,
+        country: form.country,
+        postal: form.postal,
+        region: form.region,
+        street_line1: form.street_line1,
+        street_line2: form.street_line2
+      }
+    };
+
+    const url = company ? `/api/companies/${company.id}` : "/api/companies";
+    const method = company ? "PUT" : "POST";
+
+    const response = await fetch(url, {
+      method,
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        company: {
-          name: form.name,
-          email: form.email,
-          website: form.website,
-          phone: form.phone,
-          description: form.description
-        },
-        address: {
-          city: form.city,
-          country: form.country,
-          postal: form.postal,
-          region: form.region,
-          street_line1: form.street_line1,
-          street_line2: form.street_line2
-        }
-      })
+      body: JSON.stringify(payload)
     });
+
     const body = await response.json();
+
     if (response.ok) {
-      navigate(`/companies/${body.id}/dashboard`);
+      if (isModal && onSave) {
+        onSave(body);
+      } else {
+        navigate(`/companies/${body.id}/dashboard`);
+      }
     } else {
       setErrors(body.errors || {});
     }
@@ -62,8 +91,8 @@ export default function CompanyForm() {
   const errorFor = (field) => errors[field]?.message;
 
   return (
-    <div className="company-form container">
-      <h1>Створити компанію</h1>
+    <div className={isModal ? "company-form-modal" : "company-form container"}>
+      <h1>{company ? "Редагувати компанію" : "Створити компанію"}</h1>
 
       <form onSubmit={handleSubmit}>
         <p>Компанія</p>
@@ -103,7 +132,16 @@ export default function CompanyForm() {
         {errorFor("street_line2") && <div className="field-error">{errorFor("street_line2")}</div>}
         <input name="street_line2" value={form.street_line2} onChange={handleChange} placeholder="Адреса 2" />
 
-        <button type="submit">Створити компанію</button>
+        <div className="form-actions">
+          {isModal && onCancel && (
+            <button type="button" onClick={onCancel}>
+              Скасувати
+            </button>
+          )}
+          <button type="submit">
+            {company ? "Оновити" : "Створити компанію"}
+          </button>
+        </div>
       </form>
     </div>
   );

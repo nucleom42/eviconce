@@ -22,15 +22,17 @@ export default function TimeSlotBlock({ timeSlot }) {
       }}
     >
       {clientName ? (
-        <div className="client-name">{clientName}&nbsp;</div>
+        <>
+          <div className="client-name">{clientName}</div>
+          <div className="time-label">
+            {timeSlot.service_name} ({durationMinutes} min)
+          </div>
+        </>
       ) : (
-        <div className="client-name">{timeSlot.state}&nbsp;</div>
+        <>
+          <div>{timeSlot.state}</div>
+        </>
       )}
-      {
-        <div className="time-label">
-          {timeSlot.service_name} ({durationMinutes} min)
-        </div>
-      }
     </div>
   );
 }

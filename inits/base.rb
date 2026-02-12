@@ -3,3 +3,6 @@ Rubee::SequelObject.validate_before_persist!
 
 require_relative 'searchable'
 Rubee::SequelObject.include Searchable
+
+# Enable pagination extension
+Sequel.extension :pagination

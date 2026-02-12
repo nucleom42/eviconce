@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./css/app.css";
-import ClientsApp from "./clients/ClientsApp";
+import CompanyWebsite from "./clients/CompanyWebsite";
 import CompaniesApp from "./companies/CompaniesApp";
 import Welcome from "./Welcome";
 
@@ -12,8 +12,10 @@ export function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Welcome />} />
-        <Route path="/clients/*" element={<ClientsApp />} />
+        {/** Company dashboard **/}
         <Route path="/companies/*" element={<CompaniesApp />} />
+        {/** Companies websites (clients part) **/}
+        <Route path="/w/:companyName" element={<CompanyWebsite />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

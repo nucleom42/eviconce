@@ -3,11 +3,11 @@ import "./../styles/TopBar.css";
 
 export default function TopBar({ userName }) {
   const logout = async () => {
-    await fetch("/api/logout", {
+    await fetch("/api/employees/logout", {
       method: "POST",
       credentials: "include"
     });
-    window.location.href = "/login";
+    window.location.href = "/companies/welcome";
   };
 
   return (
