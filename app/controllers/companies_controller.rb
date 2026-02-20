@@ -6,7 +6,11 @@ class CompaniesController < Rubee::BaseController
   def show_by_name
     found_company = Company.where(params).last
     if found_company
-      response_with object: found_company, type: :json, status: 200
+      response_with(
+        object: WebsiteCompany.new(company: found_company, employees: found_company.employees),
+        type: :json,
+        status: 200,
+      )
     else
       response_with object: { errors: :not_found }, type: :json, status: 404
     end
@@ -42,12 +46,13 @@ class CompaniesController < Rubee::BaseController
   # PUT /api/companies/{id}
   def update
     Rubee::SequelObject::DB.transaction do
+      binding.pry
       company = Company.find(params[:id])
       company.assign_attributes(companny_params)
       address = company.address
       address.assign_attributes(address_params)
-
       if company.valid? && company.save && address.valid? && address.save
+        persist_images! company
         response_with object: company, type: :json, status: 200
       else
         response_with object: { errors: company.errors }, type: :json, status: 422
@@ -74,8 +79,33 @@ class CompaniesController < Rubee::BaseController
 
   private
 
+  def persist_images!(company)
+    if images_file_params&.any?
+      images_file_params.each do |image|
+        image = Image.new(image: image)
+        image.image_type = :photo
+        image.save
+        company.add_images(image)
+      end
+    end
+    if logo_file_params
+      logo_image = Image.new(image: logo_file_params)
+      logo_image.image_type = :logo
+      logo_image.save
+      company.add_images(logo_image)
+    end
+  end
+
+  def logo_file_params
+    params[:company][:logo]
+  end
+
+  def images_file_params
+    params[:images]
+  end
+
   def companny_params
-    params[:company].reject { |_, val| val.strip == '' }
+    params[:company].reject { |k, val| k == :logo || (val.is_a?(String) && val.strip == '') }
   end
 
   def address_params

@@ -488,6 +488,106 @@ STRUCTURE = {
       }
     ]
   },
+  company_images: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      company_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      image_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      }
+    },
+    foreign_keys: [
+      {
+        name: "company_images_company_id_fkey",
+        columns: [
+          "company_id"
+        ],
+        references: {
+          table: "companies",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      },
+      {
+        name: "company_images_image_id_fkey",
+        columns: [
+          "image_id"
+        ],
+        references: {
+          table: "images",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      }
+    ]
+  },
   employees: {
     columns: {
       id: {
@@ -717,7 +817,7 @@ STRUCTURE = {
         generated: false,
         type: "smallint_array",
         ruby_default: nil,
-        callable_default: "#<Proc:0x000000012b6f3728 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.100.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
+        callable_default: "#<Proc:0x000000011e509078 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.101.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
       },
       created: {
         oid: 1114,
@@ -947,62 +1047,6 @@ STRUCTURE = {
         on_update: "no_action"
       }
     ]
-  },
-  images: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      image_data: {
-        oid: 3802,
-        comment: nil,
-        db_type: "jsonb",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: nil,
-        ruby_default: nil
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      }
-    },
-    foreign_keys: []
   },
   services: {
     columns: {
@@ -1339,5 +1383,74 @@ STRUCTURE = {
         on_update: "no_action"
       }
     ]
+  },
+  images: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      image_data: {
+        oid: 3802,
+        comment: nil,
+        db_type: "jsonb",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: nil,
+        ruby_default: nil
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      type: {
+        oid: 21,
+        comment: nil,
+        db_type: "smallint",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -32768,
+        max_value: 32767
+      }
+    },
+    foreign_keys: []
   }
 }

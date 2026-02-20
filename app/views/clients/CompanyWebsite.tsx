@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import './CompanyWebsite.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import "./CompanyWebsite.css";
 
 export default function CompanyWebsite() {
-  const { companyName } = useParams(); // Get company name from URL
+  const { companyName } = useParams();
   const [company, setCompany] = useState(null);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
+  const [activeTab, setActiveTab] = useState("services");
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -16,11 +18,12 @@ export default function CompanyWebsite() {
         const response = await fetch(`/api/companies/${companyName}`);
 
         if (!response.ok) {
-          throw new Error('Company not found');
+          throw new Error("Company not found");
         }
 
         const data = await response.json();
-        setCompany(data);
+        setCompany(data.company);
+        setEmployees(data.employees);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -55,187 +58,336 @@ export default function CompanyWebsite() {
     return null;
   }
 
+  // Flatten all services from all employees
+  const allServices =
+    employees?.flatMap(
+      (employee) =>
+        employee.services?.map((service) => ({
+          ...service,
+          employee: employee,
+        })) || [],
+    ) || [];
+
+  // Format price helper
+  const formatPrice = (price) => {
+    if (!price) return "0";
+    const num = parseFloat(price);
+    return num.toFixed(0);
+  };
+
   return (
     <div className="company-website">
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-overlay">
-          <div className="hero-content">
+      {/* Header */}
+      <header className="site-header">
+        <div className="header-container">
+          <div className="logo-section">
             {company.logo && (
-              <img src={company.logo} alt={company.name} className="company-logo" />
+              <img
+                src={company.logo}
+                alt={company.name}
+                className="header-logo"
+              />
             )}
-            <h1 className="company-name">{company.name}</h1>
-            {company.tagline && <p className="tagline">{company.tagline}</p>}
-            <button className="cta-button" onClick={() => {
-              document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
-            }}>
-              Переглянути послуги
-            </button>
+            <h1>{company.name}</h1>
+          </div>
+          <button className="book-now-btn">Записатися</button>
+        </div>
+      </header>
+
+      {/* Hero Banner */}
+      <section className="hero-banner">
+        <div className="hero-content-wrapper">
+          <div className="hero-text">
+            <h1 className="hero-title">{company.name}</h1>
+            {company.address && (
+              <p className="hero-location">
+                📍 {company.address.street_line1}, {company.address.city}
+              </p>
+            )}
+            <div className="hero-actions">
+              <button
+                className="primary-btn"
+                onClick={() => setActiveTab("services")}
+              >
+                Переглянути послуги
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="about-section">
-        <div className="container">
-          <h2>Про нас</h2>
-          <p className="about-description">{company.description || 'Ласкаво просимо до нашої компанії!'}</p>
+      {/* Navigation Tabs */}
+      <nav className="tab-navigation">
+        <div className="tab-container">
+          <button
+            className={`tab-btn ${activeTab === "services" ? "active" : ""}`}
+            onClick={() => setActiveTab("services")}
+          >
+            Послуги
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "team" ? "active" : ""}`}
+            onClick={() => setActiveTab("team")}
+          >
+            Команда
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "about" ? "active" : ""}`}
+            onClick={() => setActiveTab("about")}
+          >
+            Про нас
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "gallery" ? "active" : ""}`}
+            onClick={() => setActiveTab("gallery")}
+          >
+            Галерея
+          </button>
+        </div>
+      </nav>
 
-          {company.address && (
-            <div className="contact-info">
-              <div className="contact-item">
-                <span className="icon">📍</span>
-                <div>
-                  <strong>Адреса:</strong>
+      {/* Main Content */}
+      <main className="main-content">
+        <div className="content-container">
+          {/* Services Tab */}
+          {activeTab === "services" && (
+            <section className="services-content">
+              <h2>Послуги</h2>
+
+              {allServices.length > 0 ? (
+                <div className="service-list">
+                  {allServices.map((service, index) => (
+                    <div key={index} className="service-item">
+                      <div className="service-info">
+                        <h3 className="service-name">{service.name}</h3>
+                        <p className="service-description">
+                          {service.description}
+                        </p>
+                        <div className="service-meta">
+                          <span className="service-duration">
+                            {service.duration} хв
+                          </span>
+                          <span className="service-provider">
+                            з {service.employee.first_name}{" "}
+                            {service.employee.last_name}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="service-booking">
+                        <div className="service-price">
+                          {formatPrice(service.price)} грн
+                        </div>
+                        <button
+                          className="book-service-btn"
+                          onClick={() => setSelectedService(service)}
+                        >
+                          Записатися
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-message">Наразі немає доступних послуг</p>
+              )}
+            </section>
+          )}
+
+          {/* Team Tab */}
+          {activeTab === "team" && (
+            <section className="team-content">
+              <h2>Наша команда</h2>
+
+              {employees.length > 0 ? (
+                <div className="team-list">
+                  {employees.map((employee) => (
+                    <div key={employee.id} className="team-item">
+                      <div className="team-member-info">
+                        <div className="member-photo">
+                          {employee.photo ? (
+                            <img
+                              src={employee.photo}
+                              alt={`${employee.first_name} ${employee.last_name}`}
+                            />
+                          ) : (
+                            <div className="photo-placeholder">
+                              {employee.first_name[0]}
+                              {employee.last_name[0]}
+                            </div>
+                          )}
+                        </div>
+                        <div className="member-details">
+                          <h3>
+                            {employee.first_name} {employee.last_name}
+                          </h3>
+                          {employee.description && (
+                            <p className="member-bio">{employee.description}</p>
+                          )}
+                          {employee.services &&
+                            employee.services.length > 0 && (
+                              <div className="member-services-list">
+                                <p className="services-label">Спеціалізація:</p>
+                                <ul>
+                                  {employee.services.map((service, idx) => (
+                                    <li key={idx}>{service.name}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-message">Інформація про команду відсутня</p>
+              )}
+            </section>
+          )}
+
+          {/* About Tab */}
+          {activeTab === "about" && (
+            <section className="about-content">
+              <h2>Про нас</h2>
+
+              <div className="about-details">
+                <div className="about-description">
+                  <h3>Опис</h3>
                   <p>
-                    {company.address.street_line1}
-                    {company.address.street_line2 && `, ${company.address.street_line2}`}
-                    <br />
-                    {company.address.city}, {company.address.region} {company.address.postal}
-                    <br />
-                    {company.address.country}
+                    {company.description ||
+                      "Ласкаво просимо до нашої компанії!"}
                   </p>
                 </div>
-              </div>
 
-              {company.phone && (
-                <div className="contact-item">
-                  <span className="icon">📞</span>
-                  <div>
-                    <strong>Телефон:</strong>
-                    <p><a href={`tel:${company.phone}`}>{company.phone}</a></p>
-                  </div>
-                </div>
-              )}
+                <div className="contact-details">
+                  <h3>Контактна інформація</h3>
 
-              {company.email && (
-                <div className="contact-item">
-                  <span className="icon">✉️</span>
-                  <div>
-                    <strong>Email:</strong>
-                    <p><a href={`mailto:${company.email}`}>{company.email}</a></p>
-                  </div>
-                </div>
-              )}
+                  {company.address && (
+                    <div className="contact-row">
+                      <span className="contact-label">Адреса</span>
+                      <span className="contact-value">
+                        {company.address.street_line1}
+                        {company.address.street_line2 &&
+                          `, ${company.address.street_line2}`}
+                        <br />
+                        {company.address.city}, {company.address.region}{" "}
+                        {company.address.postal}
+                      </span>
+                    </div>
+                  )}
 
-              {company.website && (
-                <div className="contact-item">
-                  <span className="icon">🌐</span>
-                  <div>
-                    <strong>Веб-сайт:</strong>
-                    <p><a href={company.website} target="_blank" rel="noopener noreferrer">{company.website}</a></p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
+                  {company.phone && (
+                    <div className="contact-row">
+                      <span className="contact-label">Телефон</span>
+                      <span className="contact-value">
+                        <a href={`tel:${company.phone}`}>{company.phone}</a>
+                      </span>
+                    </div>
+                  )}
 
-      {/* Gallery Section */}
-      {company.photos && company.photos.length > 0 && (
-        <section id="gallery" className="gallery-section">
-          <div className="container">
-            <h2>Галерея</h2>
-            <div className="photo-grid">
-              {company.photos.map((photo, index) => (
-                <div key={index} className="photo-item">
-                  <img src={photo.url} alt={photo.caption || `Photo ${index + 1}`} />
-                  {photo.caption && <p className="photo-caption">{photo.caption}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+                  {company.email && (
+                    <div className="contact-row">
+                      <span className="contact-label">Email</span>
+                      <span className="contact-value">
+                        <a href={`mailto:${company.email}`}>{company.email}</a>
+                      </span>
+                    </div>
+                  )}
 
-      {/* Services Section */}
-      <section id="services" className="services-section">
-        <div className="container">
-          <h2>Наші послуги</h2>
-          {company.employees && company.employees.length > 0 ? (
-            <div className="services-grid">
-              {company.employees.flatMap(employee =>
-                employee.services?.map(service => ({
-                  ...service,
-                  employeeName: `${employee.first_name} ${employee.last_name}`
-                })) || []
-              ).map((service, index) => (
-                <div key={index} className="service-card">
-                  <div className="service-header">
-                    <h3>{service.name}</h3>
-                    <span className="service-price">{service.price} грн</span>
-                  </div>
-                  <p className="service-description">{service.description}</p>
-                  <div className="service-footer">
-                    <span className="service-duration">⏱️ {service.duration} хв</span>
-                    <span className="service-provider">👤 {service.employeeName}</span>
-                  </div>
-                  <button
-                    className="book-button"
-                    onClick={() => setSelectedService(service)}
-                  >
-                    Записатися
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="no-services">Наразі немає доступних послуг</p>
-          )}
-        </div>
-      </section>
-
-      {/* Team Section */}
-      {company.employees && company.employees.length > 0 && (
-        <section id="team" className="team-section">
-          <div className="container">
-            <h2>Наша команда</h2>
-            <div className="team-grid">
-              {company.employees.map((employee) => (
-                <div key={employee.id} className="team-member">
-                  <div className="member-avatar">
-                    {employee.photo ? (
-                      <img src={employee.photo} alt={`${employee.first_name} ${employee.last_name}`} />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        {employee.first_name[0]}{employee.last_name[0]}
-                      </div>
-                    )}
-                  </div>
-                  <h3>{employee.first_name} {employee.last_name}</h3>
-                  {employee.description && <p className="member-bio">{employee.description}</p>}
-                  {employee.services && employee.services.length > 0 && (
-                    <div className="member-services">
-                      <strong>Послуги:</strong>
-                      <ul>
-                        {employee.services.map((service, idx) => (
-                          <li key={idx}>{service.name}</li>
-                        ))}
-                      </ul>
+                  {company.website && (
+                    <div className="contact-row">
+                      <span className="contact-label">Веб-сайт</span>
+                      <span className="contact-value">
+                        <a
+                          href={company.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {company.website}
+                        </a>
+                      </span>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+              </div>
+            </section>
+          )}
+
+          {/* Gallery Tab */}
+          {activeTab === "gallery" && (
+            <section className="gallery-content">
+              <h2>Галерея</h2>
+
+              {company.photos && company.photos.length > 0 ? (
+                <div className="gallery-grid">
+                  {company.photos.map((photo, index) => (
+                    <div key={index} className="gallery-item">
+                      <img
+                        src={photo.url}
+                        alt={photo.caption || `Photo ${index + 1}`}
+                      />
+                      {photo.caption && (
+                        <p className="gallery-caption">{photo.caption}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-message">Фотографії відсутні</p>
+              )}
+            </section>
+          )}
+        </div>
+      </main>
 
       {/* Footer */}
-      <footer className="website-footer">
-        <div className="container">
-          <p>&copy; {new Date().getFullYear()} {company.name}. Всі права захищено.</p>
+      <footer className="site-footer">
+        <div className="footer-container">
+          <p>
+            &copy; {new Date().getFullYear()} {company.name}. Всі права
+            захищено.
+          </p>
         </div>
       </footer>
 
-      {/* Booking Modal Placeholder */}
+      {/* Booking Modal */}
       {selectedService && (
-        <div className="booking-modal-overlay" onClick={() => setSelectedService(null)}>
-          <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setSelectedService(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close"
+              onClick={() => setSelectedService(null)}
+            >
+              ×
+            </button>
             <h3>Записатися на {selectedService.name}</h3>
-            <p>Функціонал бронювання буде доданий наступним кроком</p>
-            <button onClick={() => setSelectedService(null)}>Закрити</button>
+            <p className="modal-description">{selectedService.description}</p>
+            <div className="modal-details">
+              <div className="detail-item">
+                <span>Тривалість:</span>
+                <strong>{selectedService.duration} хв</strong>
+              </div>
+              <div className="detail-item">
+                <span>Ціна:</span>
+                <strong>{selectedService.price} грн</strong>
+              </div>
+              <div className="detail-item">
+                <span>Майстер:</span>
+                <strong>
+                  {selectedService.employee.first_name}{" "}
+                  {selectedService.employee.last_name}
+                </strong>
+              </div>
+            </div>
+            <p className="coming-soon">
+              Функціонал бронювання буде доданий найближчим часом
+            </p>
+            <button
+              className="modal-btn"
+              onClick={() => setSelectedService(null)}
+            >
+              Закрити
+            </button>
           </div>
         </div>
       )}

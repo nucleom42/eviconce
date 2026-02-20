@@ -1,27 +1,58 @@
 class Image < Rubee::SequelObject
-  include ImageUploader::Attachment(:image)
+  attr_accessor :id, :created, :image_data, :type, :updated
+  TYPES_MAP = {
+    0 => :photo,
+    1 => :logo,
+  }
+  # Virtual attribute for image (Shrine provides this)
+  def image
+    return unless image_data
 
-  attr_accessor :id, :image_data, :created, :updated
-
-  after :initialize, :image_data_jsonify
-  after :image_data=, :image_data_jsonify
-
-  validate do
-    attribute(:image_data).required.type(String)
+    ImageUploader::Attacher.from_data(image_data)&.file
   end
 
-  # Hashed mage_data getter
-  def image_data_h
-    return unless image_data&.is_a?(String)
-
-    JSON.parse(image_data)
+  def image_type
+    TYPES_MAP[type]
   end
 
-  def image_data_jsonify
-    return unless image_data&.is_a?(Hash)
+  def image_type=(type)
+    self.type = TYPES_MAP.key(type)
+  end
 
-    @image_data = image_data.to_json
-  rescue => e
-    errors.add_error(:image_data, message: e.message)
+  # Setter for virtual image attribute - this is what you should use
+  def image=(file)
+    file = file[:tempfile] if file.is_a?(Hash) && file[:tempfile]
+
+    attacher = ImageUploader::Attacher.new
+    attacher.assign(file)
+
+    self.image_data = attacher.data.to_json
+  end
+
+  # Helper to get URL
+  def image_url
+    image&.url
+  end
+
+  def serializable_hash
+    {
+      id: id,
+      image_url: image_url,
+      image_name: image_filename,
+      image_size: image_size,
+      type: image_type,
+    }
+  end
+
+  def image_filename
+    image&.metadata&.[]("filename") || image&.original_filename
+  end
+
+  def image_size
+    image&.metadata&.[]("size")
+  end
+
+  def image_mime_type
+    image&.metadata&.[]("mime_type")
   end
 end

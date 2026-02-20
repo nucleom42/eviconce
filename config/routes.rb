@@ -1,4 +1,8 @@
 Rubee::Router.draw do |router|
+  # Register Shrine mages routes
+  router.get('/images/uploads/cache/{filename}', to: 'base#image', namespace: 'Rubee')
+  router.get('/images/uploads/{filename}', to: 'base#image', namespace: 'Rubee')
+
   ### ADDRESSES API ###
   router.get('/api/addresses', to: 'addresses#index', model: {
     name: 'address',

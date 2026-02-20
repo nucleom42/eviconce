@@ -22,6 +22,7 @@ class Company < Rubee::SequelObject
   holds :address
   owns_many :employees, over: :company_employees
   owns_many :clients, over: :company_clients
+  owns_many :images, over: :company_images
 
   def add_employees(*employees)
     employees.map { |e| CompanyEmployee.create(employee_id: e.id, company_id: id) }
@@ -29,6 +30,10 @@ class Company < Rubee::SequelObject
 
   def add_clients(*clients)
     clients.map { |c| CompanyClient.create(client_id: c.id, company_id: id) }
+  end
+
+  def add_images(*images)
+    images.map { |i| CompanyImage.create(image_id: i.id, company_id: id) }
   end
 
   def email_changed?

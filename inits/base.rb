@@ -6,3 +6,4 @@ Rubee::SequelObject.include Searchable
 
 # Enable pagination extension
 Sequel.extension :pagination
+Sequel.extension :pg_json
