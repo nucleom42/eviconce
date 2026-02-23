@@ -4,6 +4,8 @@ class Image < Rubee::SequelObject
     0 => :photo,
     1 => :logo,
   }
+  after :destroy, :rm_file
+
   # Virtual attribute for image (Shrine provides this)
   def image
     return unless image_data
@@ -27,6 +29,13 @@ class Image < Rubee::SequelObject
     attacher.assign(file)
 
     self.image_data = attacher.data.to_json
+  end
+
+  def rm_file
+    return unless image_data
+
+    attacher = ImageUploader::Attacher.from_data(image_data)
+    attacher.destroy
   end
 
   # Helper to get URL
