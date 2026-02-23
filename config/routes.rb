@@ -3,6 +3,9 @@ Rubee::Router.draw do |router|
   router.get('/images/uploads/cache/{filename}', to: 'base#image', namespace: 'Rubee')
   router.get('/images/uploads/{filename}', to: 'base#image', namespace: 'Rubee')
 
+  # Images API
+  router.delete('/api/images/{id}', to: 'base#destroy')
+
   ### ADDRESSES API ###
   router.get('/api/addresses', to: 'addresses#index', model: {
     name: 'address',

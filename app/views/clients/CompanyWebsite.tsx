@@ -83,7 +83,7 @@ export default function CompanyWebsite() {
           <div className="logo-section">
             {company.logo && (
               <img
-                src={company.logo}
+                src={'/images' + company.logo}
                 alt={company.name}
                 className="header-logo"
               />
@@ -318,16 +318,16 @@ export default function CompanyWebsite() {
             <section className="gallery-content">
               <h2>Галерея</h2>
 
-              {company.photos && company.photos.length > 0 ? (
+              {company.images && company.images.length > 0 ? (
                 <div className="gallery-grid">
-                  {company.photos.map((photo, index) => (
+                  {company.images.map((url, index) => (
                     <div key={index} className="gallery-item">
                       <img
-                        src={photo.url}
-                        alt={photo.caption || `Photo ${index + 1}`}
+                        src={'/images' + url}
+                        alt={`Фотографія ${index + 1}`}
                       />
-                      {photo.caption && (
-                        <p className="gallery-caption">{photo.caption}</p>
+                      {url && (
+                        <p className="gallery-caption">{index + 1}</p>
                       )}
                     </div>
                   ))}

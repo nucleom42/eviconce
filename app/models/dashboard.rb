@@ -28,6 +28,7 @@ class Dashboard
       address: company.address,
       website: company.website,
       description: company.description,
+      logo: company.logo&.serializable_hash,
       images: company.images.map(&:serializable_hash),
     }
     @user = { id: user.id, first_name: user.first_name, last_name: user.last_name }

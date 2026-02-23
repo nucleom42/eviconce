@@ -46,7 +46,6 @@ class CompaniesController < Rubee::BaseController
   # PUT /api/companies/{id}
   def update
     Rubee::SequelObject::DB.transaction do
-      binding.pry
       company = Company.find(params[:id])
       company.assign_attributes(companny_params)
       address = company.address
@@ -89,6 +88,7 @@ class CompaniesController < Rubee::BaseController
       end
     end
     if logo_file_params
+      company.logo&.destroy
       logo_image = Image.new(image: logo_file_params)
       logo_image.image_type = :logo
       logo_image.save

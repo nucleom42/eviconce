@@ -28,6 +28,10 @@ class Company < Rubee::SequelObject
     employees.map { |e| CompanyEmployee.create(employee_id: e.id, company_id: id) }
   end
 
+  def logo
+    images.where(type: Image::TYPES_MAP[:logo]).first
+  end
+
   def add_clients(*clients)
     clients.map { |c| CompanyClient.create(client_id: c.id, company_id: id) }
   end

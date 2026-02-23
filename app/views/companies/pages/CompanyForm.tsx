@@ -25,6 +25,7 @@ export default function CompanyForm({
 
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [logoId, setLogoId] = useState(null);
   const [cachedLogoData, setCachedLogoData] = useState("");
 
   // Images state
@@ -52,19 +53,11 @@ export default function CompanyForm({
       });
 
       // Set existing logo
-      // if (company.logo_url) {
-      //   setLogoPreview(company.logo_url);
-      // }
-      // if (company.cached_logo_data) {
-      //   setCachedLogoData(company.cached_logo_data);
-      // }
-      // filter logo from images
       if (company.images && company.images.length > 0) {
-        const logo = company.images.find(
-          (img) => img.type === "logo"
-        );
+        const logo = company.images.find((img) => img.type === "logo");
         if (logo) {
           setLogoPreview(logo.image_url);
+          setLogoId(logo.id);
         }
       }
 
@@ -94,10 +87,35 @@ export default function CompanyForm({
     }
   };
 
-  const handleRemoveLogo = () => {
-    setLogoFile(null);
-    setLogoPreview(null);
-    setCachedLogoData("");
+  const handleRemoveLogo = async () => {
+    if (!logoId) {
+      // Just remove preview if it's a new upload
+      setLogoFile(null);
+      setLogoPreview(null);
+      setCachedLogoData("");
+      return;
+    }
+
+    // Remove existing logo from server
+    if (!window.confirm("Видалити логотип?")) return;
+
+    try {
+      const response = await fetch(`/api/images/${logoId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setLogoFile(null);
+        setLogoPreview(null);
+        setLogoId(null);
+        setCachedLogoData("");
+      } else {
+        alert("Помилка при видаленні логотипу");
+      }
+    } catch (error) {
+      alert("Помилка при видаленні логотипу");
+    }
   };
 
   // Handle multiple image uploads
@@ -111,7 +129,10 @@ export default function CompanyForm({
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setImagePreviews((prev) => [...prev, { file, preview: reader.result }]);
+          setImagePreviews((prev) => [
+            ...prev,
+            { file, preview: reader.result },
+          ]);
         };
         reader.readAsDataURL(file);
       });
@@ -164,16 +185,16 @@ export default function CompanyForm({
     formData.append("address[street_line1]", form.street_line1);
     formData.append("address[street_line2]", form.street_line2);
 
-    // Logo handling (Shrine format)
+    // Logo handling - mark as type "logo"
     if (logoFile) {
-      formData.append("company[logo]", logoFile);
+      formData.append("logo", logoFile);
     } else if (cachedLogoData) {
-      formData.append("company[logo]", cachedLogoData);
+      formData.append("logo_cached", cachedLogoData);
     }
 
-    // Images handling - append multiple images
-    newImageFiles.forEach((file, index) => {
-      formData.append(`images[]`, file);
+    // Images handling - append multiple images (type "image")
+    newImageFiles.forEach((file) => {
+      formData.append("images[]", file);
     });
 
     const url = company ? `/api/companies/${company.id}` : "/api/companies";
@@ -328,7 +349,14 @@ export default function CompanyForm({
 
           {logoPreview && (
             <div className="logo-preview">
-              <img src={`/images${logoPreview}`} alt="Company logo preview" />
+              <img
+                src={
+                  logoFile
+                    ? logoPreview
+                    : `/images${logoPreview}`
+                }
+                alt="Company logo preview"
+              />
               <button
                 type="button"
                 className="btn-remove-logo"
@@ -343,7 +371,7 @@ export default function CompanyForm({
             <input
               type="file"
               id="logo-input"
-              name="company[logo]"
+              name="logo"
               accept="image/*"
               onChange={handleLogoChange}
               className="file-input"
@@ -355,7 +383,7 @@ export default function CompanyForm({
           </div>
 
           {cachedLogoData && (
-            <input type="hidden" name="company[logo]" value={cachedLogoData} />
+            <input type="hidden" name="logo_cached" value={cachedLogoData} />
           )}
 
           {errorFor("logo") && (
@@ -389,7 +417,10 @@ export default function CompanyForm({
               <div className="images-list">
                 {images.map((image) => (
                   <div key={image.id} className="image-item">
-                    <img src={`/images${image.image_url}`} alt={image.image_name || "Company image"} />
+                    <img
+                      src={`/images${image.image_url}`}
+                      alt={image.image_name || "Company image"}
+                    />
                     <button
                       type="button"
                       className="btn-remove-image"

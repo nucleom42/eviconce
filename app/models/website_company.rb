@@ -26,6 +26,8 @@ class WebsiteCompany
       address: company.address,
       website: company.website,
       description: company.description,
+      logo: company.logo&.image_url,
+      images: company.images&.map(&:image_url),
     }
   end
 end
