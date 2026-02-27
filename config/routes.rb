@@ -4,7 +4,7 @@ Rubee::Router.draw do |router|
   router.get('/images/uploads/{filename}', to: 'base#image', namespace: 'Rubee')
 
   # Images API
-  router.delete('/api/images/{id}', to: 'base#destroy')
+  router.delete('/api/images/{id}', to: 'images#destroy')
 
   ### ADDRESSES API ###
   router.get('/api/addresses', to: 'addresses#index', model: {
@@ -59,6 +59,7 @@ Rubee::Router.draw do |router|
   router.get('/api/companies/{id}/edit', to: 'companies#edit')
   router.put('/api/companies/{id}', to: 'companies#update')
   router.delete('/api/companies/{id}', to: 'companies#destroy')
+  router.get('/api/employees/{id}/frames', to: 'employees#frames')
   ### END COMPANIES API ###
 
   ### EMPLOYEE API ###

@@ -67,6 +67,19 @@ class EmployeesController < Rubee::BaseController
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
+  # GET /api/employees/{id}/frames
+  def frames
+    date = Date.parse params[:date]
+    service = Service.find(params[:service_id])
+    employee = Employee.find(params[:id])
+    if employee.nil? || service.nil? || params[:date].nil?
+      response_with object: { errors: :not_found }, type: :json, status: 404
+      return
+    end
+    frames = employee.frames(date, service)
+    response_with object: frames, type: :json, status: 200
+  end
+
   # POST /api/employees/login
   def login
     params[:password_digest] = Employee.digest params[:password]

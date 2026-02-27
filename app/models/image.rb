@@ -3,7 +3,7 @@ class Image < Rubee::SequelObject
   TYPES_MAP = {
     0 => :photo,
     1 => :logo,
-  }
+  }.freeze
   after :destroy, :rm_file
 
   # Virtual attribute for image (Shrine provides this)

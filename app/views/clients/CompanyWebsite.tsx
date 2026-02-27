@@ -75,6 +75,9 @@ export default function CompanyWebsite() {
     return num.toFixed(0);
   };
 
+  // Get first 3 images for display
+  const displayImages = company.images ? company.images.slice(0, 3) : [];
+
   return (
     <div className="company-website">
       {/* Header */}
@@ -83,7 +86,7 @@ export default function CompanyWebsite() {
           <div className="logo-section">
             {company.logo && (
               <img
-                src={'/images' + company.logo}
+                src={"/images" + company.logo}
                 alt={company.name}
                 className="header-logo"
               />
@@ -116,6 +119,23 @@ export default function CompanyWebsite() {
         </div>
       </section>
 
+      {/* Image Banner - Display first 3 images */}
+      {displayImages.length > 0 && (
+        <section className="image-banner">
+          <div className="image-banner-container">
+            {displayImages.map((url, index) => (
+              <div key={index} className="banner-image-wrapper">
+                <img
+                  src={"/images" + url}
+                  alt={`${company.name} - фото ${index + 1}`}
+                  className="banner-image"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Navigation Tabs */}
       <nav className="tab-navigation">
         <div className="tab-container">
@@ -136,12 +156,6 @@ export default function CompanyWebsite() {
             onClick={() => setActiveTab("about")}
           >
             Про нас
-          </button>
-          <button
-            className={`tab-btn ${activeTab === "gallery" ? "active" : ""}`}
-            onClick={() => setActiveTab("gallery")}
-          >
-            Галерея
           </button>
         </div>
       </nav>
@@ -312,31 +326,6 @@ export default function CompanyWebsite() {
               </div>
             </section>
           )}
-
-          {/* Gallery Tab */}
-          {activeTab === "gallery" && (
-            <section className="gallery-content">
-              <h2>Галерея</h2>
-
-              {company.images && company.images.length > 0 ? (
-                <div className="gallery-grid">
-                  {company.images.map((url, index) => (
-                    <div key={index} className="gallery-item">
-                      <img
-                        src={'/images' + url}
-                        alt={`Фотографія ${index + 1}`}
-                      />
-                      {url && (
-                        <p className="gallery-caption">{index + 1}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="empty-message">Фотографії відсутні</p>
-              )}
-            </section>
-          )}
         </div>
       </main>
 
@@ -369,7 +358,7 @@ export default function CompanyWebsite() {
               </div>
               <div className="detail-item">
                 <span>Ціна:</span>
-                <strong>{selectedService.price} грн</strong>
+                <strong>{formatPrice(selectedService.price)} грн</strong>
               </div>
               <div className="detail-item">
                 <span>Майстер:</span>

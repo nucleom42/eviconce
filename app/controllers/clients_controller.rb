@@ -65,7 +65,7 @@ class ClientsController < Rubee::BaseController
     Client.search(
       key,
       in_fields: [{ name: :first_name, limit: 5 }, { name: :email, limit: 5 }, { name: :last_name, limit: 3 }],
-      dataset: Client.join(:company_clients, client_id: :id, company_id: @company.id)
+      dataset: Client.dataset.join(:company_clients, client_id: :id, company_id: @company.id)
     )
   end
 

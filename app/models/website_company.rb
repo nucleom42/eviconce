@@ -27,7 +27,7 @@ class WebsiteCompany
       website: company.website,
       description: company.description,
       logo: company.logo&.image_url,
-      images: company.images&.map(&:image_url),
+      images: company.images&.map(&:image_url)&.filter { |i| i != company.logo&.image_url },
     }
   end
 end

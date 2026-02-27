@@ -88,7 +88,7 @@ describe 'Employee API' do
   end
 
   describe 'POST /api/employees/logout' do
-        describe 'valid params' do
+    describe 'valid params' do
       it 'should logout employee' do
         employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                 email: "L4qyWi42342#{current_time_ms}@example.com",
@@ -101,6 +101,110 @@ describe 'Employee API' do
         post('/api/employees/logout')
 
         assert_equal(200, last_response.status)
+      end
+    end
+  end
+
+  describe '/api/employees/{id}/frames' do
+    let!(:auth_employee) do
+      employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
+                                  email: "L4qyWi2i123#{current_time_ms}@example.com",
+                                  password_digest: '123456', description: 'nail specialist', phone: '1234567890',
+                                  role: 1)
+      employee.password = '123456'
+      employee.save
+      employee
+    end
+    let!(:company) do
+      Company.create(
+        name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+        phone: '+123112123', description: 'description'
+      )
+    end
+    let!(:service) do
+      Service.create(
+        name: 'Fashion Haircut',
+        description: 'very fashion haircut',
+        duration: 30,
+        price: 100.0,
+        employee_id: auth_employee.id
+      )
+    end
+
+    before do
+      company.add_employees(auth_employee)
+      auth_params = { email: auth_employee.email, password: auth_employee.password }
+      post('/api/employees/login', auth_params)
+      jwt = last_response.cookies['jwt'].value[0]
+
+      header 'Cookie', "jwt=#{jwt}"
+    end
+
+    describe 'valid params' do
+      let!(:window) do
+        Window.create(
+          start_time: Time.new(2020, 1, 1, 9, 0, 0),
+          end_time: Time.new(2020, 1, 1, 18, 0, 0),
+          break_from: Time.new(2020, 1, 1, 12, 0, 0),
+          break_to: Time.new(2020, 1, 1, 13, 0, 0),
+          effective_date: Date.today,
+          weekends: [6, 0],
+        )
+      end
+
+      before do
+        auth_employee.add_windows(window)
+      end
+      context 'when all day 9am-6pm is available with 1 hr break' do
+        it 'should return 200' do
+          get(
+            "/api/employees/#{auth_employee.id}/frames",
+            { date: Time.beginning_of_today.strftime("%Y-%m-%d"), service_id: service.id }
+          )
+
+          assert_equal(200, last_response.status)
+        end
+
+        it 'should return exepcted data' do
+          get(
+            "/api/employees/#{auth_employee.id}/frames",
+            { date: Time.beginning_of_today.strftime("%Y-%m-%d"), service_id: service.id }
+          )
+          # assert_equal([], JSON.parse(last_response.body))
+        end
+      end
+
+      context 'when there is time slot booked at 3-30..4-15pm' do
+        let!(:time_slot) do
+          TimeSlot.create(
+            start_time: Time.new(2020, 1, 1, 15, 30, 0),
+            end_time: Time.new(2020, 1, 1, 16, 15, 0),
+            state: 1,
+            client_id: client.id,
+            employee_id: auth_employee.id, company_id: company.id, day: Date.new(2020, 1, 1)
+          )
+        end
+
+        it 'should return 200' do
+          get(
+            "/api/employees/#{auth_employee.id}/frames",
+            { date: Time.beginning_of_today.strftime("%Y-%m-%d"), service_id: service.id }
+          )
+
+          assert_equal(200, last_response.status)
+        end
+      end
+    end
+
+    describe 'invalid params' do
+      context 'when there is no serice given' do
+
+      end
+      context 'when there is no date params sent' do
+
+      end
+      context 'when there is no employee given' do
+
       end
     end
   end

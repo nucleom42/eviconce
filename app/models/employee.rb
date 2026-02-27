@@ -45,6 +45,29 @@ class Employee < Rubee::SequelObject
     end
   end
 
+  def frames(date, service)
+    target_window = window_for_date(date)
+    service_time = service.duration
+    from_time = date.to_time.at(target_window.start_time.hour, target_window.start_time.min, 0)
+    to_time = date.to_time.at(target_window.end_time.hour, target_window.end_time.min, 0)
+
+    step_seconds = service_time * 60
+
+    frames = []
+    current = from_time
+
+    while current + step_seconds <= to_time
+      frames << (current...current + step_seconds)
+      current += step_seconds
+    end
+
+    frames.filter_map do |frame|
+      if available?(frame, nil, target_window, skip_invalidation: true)
+        Frame.new(from: frame.begin, to: frame.end, service_id: service.id)
+      end
+    end
+  end
+
   def password
     ::JWT.decode(password_digest, JWT_KEY, false)[0]['password']
   end
@@ -133,25 +156,26 @@ class Employee < Rubee::SequelObject
     TimeSlot.where(employee_id: id, day: date_or_range)
   end
 
-  def available?(range, time_slot_id_exclude = nil, target_window = nil)
+  def available?(range, time_slot_id_exclude = nil, target_window = nil, **options)
     request_from = range.begin
     request_to = range.end
     request_date = range.begin.to_date
     target_window ||= current_window
+    skip_invalidation = options[:skip_invalidation]
     unless target_window
-      add_error(:availability, message: 'No windows')
+      add_error(:availability, message: 'No windows') unless skip_invalidation
       return false
     end
     unless target_window.within_work_hours?(request_from, request_to)
-      add_error(:availability, message: 'Outside work hours')
+      add_error(:availability, message: 'Outside work hours') unless skip_invalidation
       return false
     end
     if target_window.overlapping_break?(request_from, request_to)
-      add_error(:availability, message: 'Within break hours')
+      add_error(:availability, message: 'Within break hours') unless skip_invalidation
       return false
     end
     if target_window.weekends?(request_date)
-      add_error(:availability, message: 'On weekends')
+      add_error(:availability, message: 'On weekends') unless skip_invalidation
       return false
     end
     overlapps_with_others = time_slots(request_date).any? do |ts|
@@ -160,7 +184,7 @@ class Employee < Rubee::SequelObject
       ts.overlapping?(request_date, request_from, request_to)
     end
     if overlapps_with_others
-      add_error(:availability, message: 'Overlapping')
+      add_error(:availability, message: 'Overlapping') unless skip_invalidation
       return false
     end
 

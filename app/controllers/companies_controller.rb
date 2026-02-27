@@ -97,7 +97,7 @@ class CompaniesController < Rubee::BaseController
   end
 
   def logo_file_params
-    params[:company][:logo]
+    params[:logo]
   end
 
   def images_file_params

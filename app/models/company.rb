@@ -29,7 +29,7 @@ class Company < Rubee::SequelObject
   end
 
   def logo
-    images.where(type: Image::TYPES_MAP[:logo]).first
+    images.where(type: Image::TYPES_MAP.key(:logo)).first
   end
 
   def add_clients(*clients)
