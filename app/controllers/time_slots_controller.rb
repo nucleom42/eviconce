@@ -1,6 +1,6 @@
 class TimeSlotsController < Rubee::BaseController
   include Rubee::AuthTokenable
-  auth_methods :index, :create, :update, :destroy
+  auth_methods :index, :update, :destroy
 
   # GET /api/time_slots
   def index
@@ -16,6 +16,9 @@ class TimeSlotsController < Rubee::BaseController
     end
     unless service
       return response_with object: { errors: 'Service is required' }, type: :json, status: 404
+    end
+    unless time_slot_params[:company_id]
+      time_slot_params[:company_id] = service.employee.my_company.id
     end
     time_slot = TimeSlot.new(time_slot_params.except(:id).merge(service_id: service.id))
     if time_slot.valid? && time_slot.save

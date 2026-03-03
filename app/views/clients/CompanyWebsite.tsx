@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import BookingScheduler from "./pages/BookingScheduler";
 import "./CompanyWebsite.css";
 
 export default function CompanyWebsite() {
@@ -10,6 +11,7 @@ export default function CompanyWebsite() {
   const [error, setError] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [activeTab, setActiveTab] = useState("services");
+  const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -36,6 +38,23 @@ export default function CompanyWebsite() {
     }
   }, [companyName]);
 
+  const handleBookService = (service) => {
+    setSelectedService(service);
+    setShowBooking(true);
+  };
+
+  const handleCloseBooking = () => {
+    setShowBooking(false);
+    setSelectedService(null);
+  };
+
+  const handleBookingComplete = () => {
+    setShowBooking(false);
+    setSelectedService(null);
+    // Show success message
+    alert("Запис успішно створено!");
+  };
+
   if (loading) {
     return (
       <div className="website-loading">
@@ -58,7 +77,6 @@ export default function CompanyWebsite() {
     return null;
   }
 
-  // Flatten all services from all employees
   const allServices =
     employees?.flatMap(
       (employee) =>
@@ -68,14 +86,12 @@ export default function CompanyWebsite() {
         })) || [],
     ) || [];
 
-  // Format price helper
   const formatPrice = (price) => {
     if (!price) return "0";
     const num = parseFloat(price);
     return num.toFixed(0);
   };
 
-  // Get first 3 images for display
   const displayImages = company.images ? company.images.slice(0, 3) : [];
 
   return (
@@ -97,29 +113,7 @@ export default function CompanyWebsite() {
         </div>
       </header>
 
-      {/* Hero Banner */}
-      <section className="hero-banner">
-        <div className="hero-content-wrapper">
-          <div className="hero-text">
-            <h1 className="hero-title">{company.name}</h1>
-            {company.address && (
-              <p className="hero-location">
-                📍 {company.address.street_line1}, {company.address.city}
-              </p>
-            )}
-            <div className="hero-actions">
-              <button
-                className="primary-btn"
-                onClick={() => setActiveTab("services")}
-              >
-                Переглянути послуги
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Image Banner - Display first 3 images */}
+      {/* Image Banner */}
       {displayImages.length > 0 && (
         <section className="image-banner">
           <div className="image-banner-container">
@@ -193,7 +187,7 @@ export default function CompanyWebsite() {
                         </div>
                         <button
                           className="book-service-btn"
-                          onClick={() => setSelectedService(service)}
+                          onClick={() => handleBookService(service)}
                         >
                           Записатися
                         </button>
@@ -317,7 +311,7 @@ export default function CompanyWebsite() {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          {company.website}
+                          {company.website}{" "}
                         </a>
                       </span>
                     </div>
@@ -339,46 +333,14 @@ export default function CompanyWebsite() {
         </div>
       </footer>
 
-      {/* Booking Modal */}
-      {selectedService && (
-        <div className="modal-overlay" onClick={() => setSelectedService(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="modal-close"
-              onClick={() => setSelectedService(null)}
-            >
-              ×
-            </button>
-            <h3>Записатися на {selectedService.name}</h3>
-            <p className="modal-description">{selectedService.description}</p>
-            <div className="modal-details">
-              <div className="detail-item">
-                <span>Тривалість:</span>
-                <strong>{selectedService.duration} хв</strong>
-              </div>
-              <div className="detail-item">
-                <span>Ціна:</span>
-                <strong>{formatPrice(selectedService.price)} грн</strong>
-              </div>
-              <div className="detail-item">
-                <span>Майстер:</span>
-                <strong>
-                  {selectedService.employee.first_name}{" "}
-                  {selectedService.employee.last_name}
-                </strong>
-              </div>
-            </div>
-            <p className="coming-soon">
-              Функціонал бронювання буде доданий найближчим часом
-            </p>
-            <button
-              className="modal-btn"
-              onClick={() => setSelectedService(null)}
-            >
-              Закрити
-            </button>
-          </div>
-        </div>
+      {/* Booking Scheduler Modal */}
+      {showBooking && selectedService && (
+        <BookingScheduler
+          service={selectedService}
+          onClose={handleCloseBooking}
+          onComplete={handleBookingComplete}
+          company_id={company.id}
+        />
       )}
     </div>
   );

@@ -14,7 +14,7 @@ class ClientsController < Rubee::BaseController
   # POST /api/clients
   def create
     Rubee::SequelObject::DB.transaction do
-      client = Client.new(client_params)
+      client = Client.find_or_new(client_params)
       client.password = client_params[:password] || client.first_name
       if client.valid? && client.save && @company.add_clients(client)
         response_with object: client, type: :json, status: 201
@@ -54,11 +54,11 @@ class ClientsController < Rubee::BaseController
 
   def client_params
     target_hash = params[:client] || params
-    @client_params ||= target_hash.reject { |_, val| val.nil? }
+    @client_params ||= target_hash.reject { |key, val| val.nil? || key == :company_id }
   end
 
   def set_company
-    @company ||= auth_user&.my_company
+    @company ||= auth_user ? auth_user&.my_company : Company.find(params[:company_id])
   end
 
   def search(key)

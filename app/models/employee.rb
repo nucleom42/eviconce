@@ -47,6 +47,7 @@ class Employee < Rubee::SequelObject
 
   def frames(date, service)
     target_window = window_for_date(date)
+    return [] unless target_window
     service_time = service.duration
     from_time = date.to_time.at(target_window.start_time.hour, target_window.start_time.min, 0)
     to_time = date.to_time.at(target_window.end_time.hour, target_window.end_time.min, 0)
