@@ -7,3 +7,7 @@ Rubee::SequelObject.include Searchable
 # Enable pagination extension
 Sequel.extension :pagination
 Sequel.extension :pg_json
+
+# Setup Mailer
+require_relative '../app/services/mailer'
+Mailer.setup!

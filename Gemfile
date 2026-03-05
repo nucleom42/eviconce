@@ -13,12 +13,15 @@ gem 'rackup'
 gem 'rake'
 gem 'ru.Bee'
 gem 'sequel'
+# File management
 gem 'shrine'
 
 # Websocket is required to use integrated websocket feature
 gem 'websocket'
 # Redis is required for pubsub and websocket
 gem 'redis'
+# Sending emails
+gem 'mail'
 
 group :development do
   gem 'minitest'

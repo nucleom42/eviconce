@@ -14,10 +14,11 @@ class ClientsController < Rubee::BaseController
   # POST /api/clients
   def create
     Rubee::SequelObject::DB.transaction do
-      client = Client.find_or_new(client_params)
-      client.password = client_params[:password] || client.first_name
-      if client.valid? && client.save && @company.add_clients(client)
-        response_with object: client, type: :json, status: 201
+      client = Client.find_or_new(client_params.except(:id))
+      persisted = client.persisted?
+      client.password = client_params[:password] || client.first_name unless persisted
+      if persisted || (client.valid? && client.save && @company.add_clients(client))
+        response_with object: client, type: :json, status: persisted ? 200 : 201
       else
         response_with object: { errors: client.errors }, type: :json, status: 422
       end
@@ -41,6 +42,7 @@ class ClientsController < Rubee::BaseController
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
+  # DELETE /api/clients/{id}
   def destroy
     client = Client.find(params[:id])
     if client.destroy
