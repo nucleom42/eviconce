@@ -43,6 +43,15 @@ class TimeSlot < Rubee::SequelObject
     raise Rubee::Validatable::Error, "Time slot with status #{m.status} can't be deleted"
   end, if: ->(m) { !['booked', 'scheduled', 'frozen'].include?(m.status) }
 
+  around :save, ->(m, original_save) do
+    new_record = m.persisted?
+    original_save.call
+    return unless new_record
+
+    m.notify_client!
+    m.notify_company!
+  end
+
   holds :employee
   holds :client
   holds :company
@@ -50,6 +59,30 @@ class TimeSlot < Rubee::SequelObject
 
   def booked?
     status == 'booked'
+  end
+
+  def notify_client!
+    return unless client
+
+    AsyncEmailRunner.new.perform_async(
+      method: :booking_confirmation,
+      to: client.email,
+      client_name: "#{client.first_name} #{client.last_name}",
+      service: service,
+      time_slot: self
+    )
+  end
+
+  def notify_company!
+    return unless company
+
+    AsyncEmailRunner.new.perform_async(
+      method: :booking_confirmation,
+      to: company.email,
+      client_name: "#{client.first_name} #{client.last_name}",
+      service: service,
+      time_slot: self
+    )
   end
 
   def scheduled?

@@ -20,18 +20,20 @@ class Mailer
 
     # Send booking confirmation
     def booking_confirmation(to:, client_name:, service:, time_slot:)
+      # Generate content outside the Mail.deliver block
+      html_content = booking_html(client_name, service, time_slot)
+      text_content = booking_text(client_name, service, time_slot)
+
       Mail.deliver do
         from     ENV.fetch('FROM_EMAIL', 'noreply@yourdomain.com')
         to       to
         subject  "Підтвердження запису"
-
         html_part do
           content_type 'text/html; charset=UTF-8'
-          body booking_html(client_name, service, time_slot)
+          body html_content
         end
-
         text_part do
-          body booking_text(client_name, service, time_slot)
+          body text_content
         end
       end
     end
@@ -59,7 +61,6 @@ class Mailer
             </div>
             <div class="content">
               <p>Доброго дня, #{name}!</p>
-
               <div class="detail">
                 <span class="label">Послуга:</span> #{service.name}
               </div>
@@ -72,7 +73,6 @@ class Mailer
               <div class="detail">
                 <span class="label">Ціна:</span> #{service.price} грн
               </div>
-
               <p>Дякуємо за ваш запис!</p>
             </div>
           </div>
@@ -97,4 +97,3 @@ class Mailer
     end
   end
 end
-

@@ -11,3 +11,4 @@ Sequel.extension :pg_json
 # Setup Mailer
 require_relative '../app/services/mailer'
 Mailer.setup!
+

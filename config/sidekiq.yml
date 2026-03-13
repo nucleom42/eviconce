@@ -1,0 +1,7 @@
+development:
+  redis: redis://localhost:6379/0
+  concurrency: 5
+  queues:
+    default:
+    low:
+    high:
