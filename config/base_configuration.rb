@@ -1,4 +1,5 @@
 require_relative '../inits/middlewares/sidekiq_middleware'
+
 Rubee::Configuration.setup(env = :development) do |config|
   config.database_url = { url: 'postgres://postgres@localhost:5432/development', env: }
 

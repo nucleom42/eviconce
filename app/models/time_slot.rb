@@ -43,10 +43,10 @@ class TimeSlot < Rubee::SequelObject
     raise Rubee::Validatable::Error, "Time slot with status #{m.status} can't be deleted"
   end, if: ->(m) { !['booked', 'scheduled', 'frozen'].include?(m.status) }
 
-  around :save, ->(m, original_save) do
-    new_record = m.persisted?
+  around :save, ->(m, &original_save) do
+    existing_record = m.persisted?
     original_save.call
-    return unless new_record
+    return if existing_record
 
     m.notify_client!
     m.notify_company!
@@ -65,11 +65,13 @@ class TimeSlot < Rubee::SequelObject
     return unless client
 
     AsyncEmailRunner.new.perform_async(
-      method: :booking_confirmation,
-      to: client.email,
-      client_name: "#{client.first_name} #{client.last_name}",
-      service: service,
-      time_slot: self
+      options: {
+        method: :booking_confirmation,
+        to: client.email,
+        client_name: "#{client.first_name} #{client.last_name}",
+        service_id: service.id,
+        time_slot_id: id,
+      }
     )
   end
 
@@ -77,11 +79,13 @@ class TimeSlot < Rubee::SequelObject
     return unless company
 
     AsyncEmailRunner.new.perform_async(
-      method: :booking_confirmation,
-      to: company.email,
-      client_name: "#{client.first_name} #{client.last_name}",
-      service: service,
-      time_slot: self
+      options: {
+        method: :booking_confirmation,
+        to: company.email,
+        client_name: "#{client.first_name} #{client.last_name}",
+        service_id: service.id,
+        time_slot_id: id,
+      }
     )
   end
 
