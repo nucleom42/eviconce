@@ -12,6 +12,7 @@ class CreateWindows
       DateTime :break_to, null: false
       Date :effective_date, null: false
       Date :end_date, null: true
+      foreign_key :employee_id, :employees, null: false, on_delete: :cascade
       column :weekends, 'smallint[]', null: false, array: true, default: Sequel.pg_array([], :smallint)
       DateTime :created
       DateTime :updated

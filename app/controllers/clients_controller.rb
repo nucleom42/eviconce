@@ -17,14 +17,14 @@ class ClientsController < Rubee::BaseController
       client = Client.find_or_new(client_params.except(:id))
       persisted = client.persisted?
       client.password = client_params[:password] || client.first_name unless persisted
-      if persisted || (client.valid? && client.save && @company.add_clients(client))
+      if persisted || (client.valid? && client.save)
         response_with object: client, type: :json, status: persisted ? 200 : 201
       else
-        response_with object: { errors: client.errors }, type: :json, status: 422
+        response_with(object: { errors: client.errors }, type: :json, status: 422)
       end
     end
   rescue StandardError => e
-    response_with object: { errors: e.message }, type: :json, status: 422
+    response_with(object: { errors: e.message }, type: :json, status: 422)
   end
 
   # PUT /api/clients/{id}
@@ -36,38 +36,38 @@ class ClientsController < Rubee::BaseController
     if client.valid? && client.save
       response_with object: client, type: :json, status: 200
     else
-      response_with object: { errors: client.errors }, type: :json, status: 422
+      response_with(object: { errors: client.errors }, type: :json, status: 422)
     end
   rescue StandardError => e
-    response_with object: { errors: e.message }, type: :json, status: 500
+    response_with(object: { errors: e.message }, type: :json, status: 500)
   end
 
   # DELETE /api/clients/{id}
   def destroy
     client = Client.find(params[:id])
     if client.destroy
-      response_with object: { ok: :deleted }, type: :json, status: 200
+      response_with(object: { ok: :deleted }, type: :json, status: 200)
     else
-      response_with object: { errors: client.errors }, type: :json, status: 422
+      response_with(object: { errors: client.errors }, type: :json, status: 422)
     end
   rescue StandardError => e
-    response_with object: { errors: e.message }, type: :json, status: 500
+    response_with(object: { errors: e.message }, type: :json, status: 500)
   end
 
   def client_params
     target_hash = params[:client] || params
-    @client_params ||= target_hash.reject { |key, val| val.nil? || key == :company_id }
+    @client_params ||= target_hash.reject { |_, val| val.nil? }
   end
 
   def set_company
-    @company ||= auth_user ? auth_user&.my_company : Company.find(params[:company_id])
+    @company ||= auth_user ? auth_user&.company : Company.find(params[:company_id])
   end
 
   def search(key)
     Client.search(
       key,
       in_fields: [{ name: :first_name, limit: 5 }, { name: :email, limit: 5 }, { name: :last_name, limit: 3 }],
-      dataset: Client.dataset.join(:company_clients, client_id: :id, company_id: @company.id)
+      dataset: Client.dataset.where(company_id: @company.id)
     )
   end
 

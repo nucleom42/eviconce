@@ -5,8 +5,11 @@ require 'minitest/autorun'
 require 'rack/test'
 require 'rubee'
 require 'stringio'
+require 'sidekiq'
 
 Rubee::Autoload.call
+
+# Sidekiq.testing!(:fake)
 
 def assert_difference(expression, difference = 1)
   before = expression.call
@@ -57,3 +60,4 @@ module Minitest
     end
   end
 end
+

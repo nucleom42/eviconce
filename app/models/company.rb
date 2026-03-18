@@ -20,20 +20,13 @@ class Company < Rubee::SequelObject
   end
 
   holds :address
-  owns_many :employees, over: :company_employees
-  owns_many :clients, over: :company_clients
+  owns_many :employees
+  owns_many :clients
   owns_many :images, over: :company_images
-
-  def add_employees(*employees)
-    employees.map { |e| CompanyEmployee.create(employee_id: e.id, company_id: id) }
-  end
+  owns_many :categories, over: :company_categories
 
   def logo
     images.where(type: Image::TYPES_MAP.key(:logo)).first
-  end
-
-  def add_clients(*clients)
-    clients.map { |c| CompanyClient.create(client_id: c.id, company_id: id) }
   end
 
   def add_images(*images)

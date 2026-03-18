@@ -343,135 +343,136 @@ export default function CompanyForm({
             placeholder="Адреса 2"
           />
         </section>
+        {company && (
+          <section className="form-section">
+            <h3>Логотип компанії</h3>
 
-        <section className="form-section">
-          <h3>Логотип компанії</h3>
+            {logoPreview && (
+              <div className="logo-preview">
+                <img
+                  src={logoFile ? logoPreview : `/images${logoPreview}`}
+                  alt="Company logo preview"
+                />
+                <button
+                  type="button"
+                  className="btn-remove-logo"
+                  onClick={handleRemoveLogo}
+                >
+                  ✕ Видалити логотип
+                </button>
+              </div>
+            )}
 
-          {logoPreview && (
-            <div className="logo-preview">
-              <img
-                src={
-                  logoFile
-                    ? logoPreview
-                    : `/images${logoPreview}`
-                }
-                alt="Company logo preview"
+            <div className="file-input-wrapper">
+              <input
+                type="file"
+                id="logo-input"
+                name="logo"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="file-input"
               />
-              <button
-                type="button"
-                className="btn-remove-logo"
-                onClick={handleRemoveLogo}
-              >
-                ✕ Видалити логотип
-              </button>
+              <label htmlFor="logo-input" className="file-input-label">
+                {logoPreview ? "Змінити логотип" : "Завантажити логотип"}
+              </label>
+              <span className="file-input-hint">PNG, JPG, GIF до 5MB</span>
             </div>
-          )}
 
-          <div className="file-input-wrapper">
-            <input
-              type="file"
-              id="logo-input"
-              name="logo"
-              accept="image/*"
-              onChange={handleLogoChange}
-              className="file-input"
-            />
-            <label htmlFor="logo-input" className="file-input-label">
-              {logoPreview ? "Змінити логотип" : "Завантажити логотип"}
-            </label>
-            <span className="file-input-hint">PNG, JPG, GIF до 5MB</span>
-          </div>
+            {cachedLogoData && (
+              <input type="hidden" name="logo_cached" value={cachedLogoData} />
+            )}
 
-          {cachedLogoData && (
-            <input type="hidden" name="logo_cached" value={cachedLogoData} />
-          )}
-
-          {errorFor("logo") && (
-            <div className="field-error">{errorFor("logo")}</div>
-          )}
-        </section>
+            {errorFor("logo") && (
+              <div className="field-error">{errorFor("logo")}</div>
+            )}
+          </section>
+        )}
 
         {/* Company Images Section */}
-        <section className="form-section">
-          <div className="images-header">
-            <h3>Фотографії компанії</h3>
-            <label htmlFor="images-input" className="btn-add-image">
-              + Додати фото
-            </label>
-          </div>
-
-          <input
-            type="file"
-            id="images-input"
-            accept="image/*"
-            multiple
-            onChange={handleImagesChange}
-            className="file-input"
-            style={{ display: "none" }}
-          />
-
-          {/* Existing Images */}
-          {images.length > 0 && (
-            <div className="images-grid">
-              <h4 className="images-subtitle">Завантажені фото</h4>
-              <div className="images-list">
-                {images.map((image) => (
-                  <div key={image.id} className="image-item">
-                    <img
-                      src={`/images${image.image_url}`}
-                      alt={image.image_name || "Company image"}
-                    />
-                    <button
-                      type="button"
-                      className="btn-remove-image"
-                      onClick={() => handleRemoveExistingImage(image.id)}
-                      title="Видалити"
-                    >
-                      ✕
-                    </button>
-                    <span className="image-name">{image.image_name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* New Image Previews */}
-          {imagePreviews.length > 0 && (
-            <div className="images-grid">
-              <h4 className="images-subtitle">Нові фото (буде завантажено)</h4>
-              <div className="images-list">
-                {imagePreviews.map((item, index) => (
-                  <div key={index} className="image-item new-image">
-                    <img src={item.preview} alt={`Preview ${index + 1}`} />
-                    <button
-                      type="button"
-                      className="btn-remove-image"
-                      onClick={() => handleRemoveNewImage(index)}
-                      title="Видалити"
-                    >
-                      ✕
-                    </button>
-                    <span className="image-name">{item.file.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {images.length === 0 && imagePreviews.length === 0 && (
-            <div className="empty-images">
-              <p>Фотографії ще не додані</p>
-              <label htmlFor="images-input" className="btn-add-first-image">
-                Додати перше фото
+        {company && (
+          <section className="form-section">
+            <div className="images-header">
+              <h3>Фотографії компанії</h3>
+              <label htmlFor="images-input" className="btn-add-image">
+                + Додати фото
               </label>
             </div>
-          )}
 
-          {errorFor("images") && (
-            <div className="field-error">{errorFor("images")}</div>
-          )}
-        </section>
+            <input
+              type="file"
+              id="images-input"
+              accept="image/*"
+              multiple
+              onChange={handleImagesChange}
+              className="file-input"
+              style={{ display: "none" }}
+            />
+
+            {/* Existing Images */}
+            {images.length > 0 && (
+              <div className="images-grid">
+                <h4 className="images-subtitle">Завантажені фото</h4>
+                <div className="images-list">
+                  {images.map((image) => (
+                    <div key={image.id} className="image-item">
+                      <img
+                        src={`/images${image.image_url}`}
+                        alt={image.image_name || "Company image"}
+                      />
+                      <button
+                        type="button"
+                        className="btn-remove-image"
+                        onClick={() => handleRemoveExistingImage(image.id)}
+                        title="Видалити"
+                      >
+                        ✕
+                      </button>
+                      <span className="image-name">{image.image_name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Image Previews */}
+            {imagePreviews.length > 0 && (
+              <div className="images-grid">
+                <h4 className="images-subtitle">
+                  Нові фото (буде завантажено)
+                </h4>
+                <div className="images-list">
+                  {imagePreviews.map((item, index) => (
+                    <div key={index} className="image-item new-image">
+                      <img src={item.preview} alt={`Preview ${index + 1}`} />
+                      <button
+                        type="button"
+                        className="btn-remove-image"
+                        onClick={() => handleRemoveNewImage(index)}
+                        title="Видалити"
+                      >
+                        ✕
+                      </button>
+                      <span className="image-name">{item.file.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {images.length === 0 && imagePreviews.length === 0 && (
+              <div className="empty-images">
+                <p>Фотографії ще не додані</p>
+                <label htmlFor="images-input" className="btn-add-first-image">
+                  Додати перше фото
+                </label>
+              </div>
+            )}
+
+            {errorFor("images") && (
+              <div className="field-error">{errorFor("images")}</div>
+            )}
+          </section>
+        )}
 
         <div className="form-actions">
           {isModal && onCancel && (

@@ -6,21 +6,20 @@ describe 'Company API' do
   def app
     Rubee::Application.instance
   end
-
-  let!(:auth_employee) do
-    employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
-                                email: "L4qyWi2i123#{current_time_ms}@example.com",
-                                password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                role: 1)
-    employee.password = '123456'
-    employee.save
-    employee
-  end
   let!(:company) do
     Company.create(
       name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
       phone: '+123112123', description: 'description'
     )
+  end
+  let!(:auth_employee) do
+    employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
+                                email: "L4qyWi2i123#{current_time_ms}@example.com",
+                                password_digest: '123456', description: 'nail specialist', phone: '1234567890',
+                                role: 1, company_id: company.id)
+    employee.password = '123456'
+    employee.save
+    employee
   end
 
   describe 'GET /api/companies/{id}/dashboard' do
@@ -35,7 +34,6 @@ describe 'Company API' do
     describe 'employee authentificated' do
       describe 'valid params' do
         it 'should return 200' do
-          company.add_employees(auth_employee)
           valid_params = { email: auth_employee.email, password: auth_employee.password }
           post('/api/employees/login', valid_params)
           jwt = last_response.cookies['jwt'].value[0]

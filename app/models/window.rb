@@ -2,7 +2,7 @@ class Window < Rubee::SequelObject
   WEEKS = [0, 1, 2, 3, 4, 5, 6].freeze
   WEEKENDS = [0, 6].freeze
   attr_accessor :id, :start_time, :end_time, :break_from, :break_to,
-    :weekends, :effective_date, :end_date, :created, :updated
+    :weekends, :effective_date, :end_date, :created, :updated, :employee_id
 
   before :save, ->(m) { m.weekends = Sequel.pg_array(m.weekends) }
 
@@ -27,6 +27,7 @@ class Window < Rubee::SequelObject
       .condition(-> { !persisted? || persisted? && !any_windows_intersects? }, 'Window intersects with another window')
     attribute(:weekends).required
       .condition(-> { weekends.uniq.size == weekends.size && weekends.all? { |w| WEEKS.include?(w) } })
+    attribute(:employee_id).required
   end
 
   before :destroy, ->(m) do
@@ -35,22 +36,17 @@ class Window < Rubee::SequelObject
 
   def all_time_slots_available?
     # We want to make sure all time slots within the window are available
-    TimeSlot.where(employee_id: employees.map(&:id), day: (effective_date..end_date)).all?(&:available?)
+    TimeSlot.where(employee_id: employee_id, day: (effective_date..end_date)).all?(&:available?)
   end
 
-  owns_many :employees, over: :employee_windows
+  holds :employee
 
   def any_windows_intersects?
-    employee_ids = employees.map(&:id)
-    return false if employee_ids.empty?
-
     sql = <<~SQL
       SELECT EXISTS (
         SELECT 1
         FROM windows
-        JOIN employee_windows
-          ON employee_windows.window_id = windows.id
-        WHERE employee_windows.employee_id IN ?
+        WHERE windows.employee_id = ?
           AND windows.id != ?
           AND windows.effective_date <= ?
           AND (
@@ -62,7 +58,7 @@ class Window < Rubee::SequelObject
 
     Rubee::SequelObject::DB.fetch(
       sql,
-      employee_ids,
+      employee_id,
       id,
       end_date || Date.new(9999, 12, 31),
       effective_date
@@ -78,7 +74,7 @@ class Window < Rubee::SequelObject
   def has_time_slots?
     !!TimeSlot
       .dataset
-      .where(employee_id: employees.map(&:id), day: effective_date..end_date)
+      .where(employee_id: employee_id, day: effective_date..end_date)
       .get(1)
   end
 
@@ -86,15 +82,10 @@ class Window < Rubee::SequelObject
     Window
       .dataset
       .where(end_date: nil)
-      .join(:employee_windows, window_id: :id)
-      .where(Sequel[:employee_windows][:employee_id] => employees.map(&:id))
+      .where(Sequel[:windows][:employee_id] => employee_id)
       .where(Sequel[:windows][:effective_date] < effective_date)
       .order(Sequel.desc(:effective_date)).select_all(:windows)
       .limit(1).then { |ds| Window.serialize(ds) }&.first
-  end
-
-  def add_employees(*employees)
-    employees.map { |e| EmployeeWindow.create(employee_id: e.id, window_id: id) }
   end
 
   def within_work_hours?(request_from, request_to)

@@ -7,15 +7,16 @@ class CreateTimeSlots
       DateTime :start_time, null: false
       DateTime :end_time, null: false
       Date :day, null: false
-      foreign_key :employee_id, :employees, null: false, on_delete: :cascade
-      foreign_key :client_id, :clients, null: true, on_delete: :cascade
-      foreign_key :company_id, :companies, null: false, on_delete: :cascade
-      foreign_key :service_id, :services, null: true, on_delete: :cascade
       Integer :state, null: false, default: 0
       BigDecimal :price, null: true, default: 0
       DateTime :created
       DateTime :updated
-      index :day
+
+      foreign_key :employee_id, :employees, null: false, on_delete: :cascade
+      foreign_key :client_id, :clients, null: true, on_delete: :cascade
+      foreign_key :company_id, :companies, null: false, on_delete: :cascade
+      foreign_key :service_id, :services, null: true, on_delete: :cascade
+
       index [:company_id, :employee_id]
       index [:day, :employee_id]
     end

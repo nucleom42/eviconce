@@ -7,6 +7,13 @@ describe 'Window API' do
     Rubee::Application.instance
   end
 
+  let!(:company) do
+    Company.create(
+      name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+      phone: '+123112123', description: 'description'
+    )
+  end
+
   let!(:auth_employee) do
     employee = Employee.new(
       first_name: 'Hren',
@@ -15,18 +22,12 @@ describe 'Window API' do
       password_digest: '123456',
       description: 'nail specialist',
       phone: '1234567890',
-      role: 1
+      role: 1,
+      company_id: company.id
     )
     employee.password = '123456'
     employee.save
     employee
-  end
-
-  let!(:company) do
-    Company.create(
-      name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
-      phone: '+123112123', description: 'description'
-    )
   end
 
   let(:window) do
@@ -36,7 +37,8 @@ describe 'Window API' do
       break_from: Time.new(2020, 1, 1, 12, 0, 0),
       break_to: Time.new(2020, 1, 1, 13, 0, 0),
       effective_date: Date.today,
-      weekends: [6, 0]
+      weekends: [6, 0],
+      employee_id: auth_employee.id
     )
   end
 
@@ -46,7 +48,8 @@ describe 'Window API' do
       last_name: 'last_name',
       email: "ok#{current_time_ms}@ok.com",
       phone: 'phone',
-      password_digest: 'password_digest'
+      password_digest: 'password_digest',
+      company_id: company.id,
     )
     client.password = 'password_digest'
     client.save
@@ -54,8 +57,6 @@ describe 'Window API' do
   end
 
   before do
-    company.add_employees(auth_employee)
-    company.add_clients(client)
     auth_params = { email: auth_employee.email, password: auth_employee.password }
     post('/api/employees/login', auth_params)
     jwt = last_response.cookies['jwt'].value[0]
@@ -111,7 +112,6 @@ describe 'Window API' do
         it 'should return 200' do
           TimeSlot.dataset.delete
           window
-          auth_employee.add_windows(window)
           assert_difference(-> { Window.count }, 0) { post('/api/windows/upsert', valid_params.merge(id: window.id)) }
 
           assert_equal(200, last_response.status)
@@ -119,9 +119,6 @@ describe 'Window API' do
       end
 
       describe 'when there is window with time slots in the future' do
-        before do
-          auth_employee.add_windows(window)
-        end
 
         it 'should return 422' do
           TimeSlot.create(
@@ -140,9 +137,6 @@ describe 'Window API' do
       end
 
       describe 'when there is window with time slots in the past' do
-        before do
-          auth_employee.add_windows(window)
-        end
 
         it 'should return 200' do
           TimeSlot.dataset.insert(

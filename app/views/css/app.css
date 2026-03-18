@@ -7,18 +7,17 @@
 
 /* COLOR SYSTEM */
 :root {
-  --bg: #faf8f5; /* warm off-white */
-  --bg-soft: #fff7ef; /* very soft beige */
-  --text: #2f2a26; /* warm charcoal */
-  --accent: #d57a66; /* soft terracotta */
-  --accent-muted: #807b58; /* warm olive */
+  --bg: #f5f7fa;
+  --bg-soft: #eff6ff;
+  --text: #2f2a26;
+  --accent: #666dd5;
+  --accent-muted: #807b58;
   --soft-blue: #2f3b81;
   --deep-blue: #1d2869;
   --border: rgba(80, 70, 60, 0.15);
   --radius: 12px;
   --shadow: 0 4px 14px rgba(80, 70, 60, 0.08);
   --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  /* Warm black base */
   --black: #1c1c1a;
   --black-soft: #232321;
   --black-muted: #2b2b28;

@@ -10,7 +10,7 @@ describe 'Employee API' do
   describe 'POST /api/employees' do
     let!(:company) do
       Company.create(
-        name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+        name: "name#{current_time_ms}", email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
         phone: '+123112123', description: 'description'
       )
     end
@@ -19,14 +19,13 @@ describe 'Employee API' do
       employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                   email: "L4qyWi2i123#{current_time_ms}@example.com",
                                   password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                  role: 1)
+                                  role: 1, company_id: company.id)
       employee.password = '123456'
       employee.save
       employee
     end
 
     before do
-      company.add_employees(auth_employee)
       auth_params = { email: auth_employee.email, password: auth_employee.password }
       post('/api/employees/login', auth_params)
       jwt = last_response.cookies['jwt'].value[0]
@@ -67,7 +66,7 @@ describe 'Employee API' do
         employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                 email: "L4qyWi2i123#{current_time_ms}@example.com",
                                 password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                role: 1)
+                                role: 1, company_id: company.id)
         employee.password = '123456'
         employee.save
         valid_params = { email: employee.email, password: employee.password }
@@ -93,7 +92,7 @@ describe 'Employee API' do
         employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                 email: "L4qyWi42342#{current_time_ms}@example.com",
                                 password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                role: 1)
+                                role: 1, company_id: company.id)
         employee.password = '123456'
         employee.save
         valid_params = { email: employee.email, password: employee.password }
@@ -110,14 +109,14 @@ describe 'Employee API' do
       employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                   email: "L4qyWi2i123#{current_time_ms}@example.com",
                                   password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                  role: 1)
+                                  role: 1, company_id: company.id)
       employee.password = '123456'
       employee.save
       employee
     end
     let!(:company) do
       Company.create(
-        name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+        name: "name#{current_time_ms}", email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
         phone: '+123112123', description: 'description'
       )
     end
@@ -132,7 +131,6 @@ describe 'Employee API' do
     end
 
     before do
-      company.add_employees(auth_employee)
       auth_params = { email: auth_employee.email, password: auth_employee.password }
       post('/api/employees/login', auth_params)
       jwt = last_response.cookies['jwt'].value[0]
@@ -149,12 +147,11 @@ describe 'Employee API' do
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today,
           weekends: [6, 0],
+          employee_id: auth_employee.id
         )
       end
 
-      before do
-        auth_employee.add_windows(window)
-      end
+
       context 'when all day 9am-6pm is available with 1 hr break' do
         it 'should return 200' do
           get(
@@ -162,7 +159,7 @@ describe 'Employee API' do
             { date: Time.beginning_of_today.strftime("%Y-%m-%d"), service_id: service.id }
           )
 
-          assert_equal(200, last_response.status)
+          assert_equal(200, lastresponse.status)
         end
 
         it 'should return exepcted data' do
@@ -181,7 +178,7 @@ describe 'Employee API' do
             end_time: Time.new(2020, 1, 1, 16, 15, 0),
             state: 1,
             client_id: client.id,
-            employee_id: auth_employee.id, company_id: company.id, day: Date.new(2020, 1, 1)
+            employee_id: auth_employee.id, company_id: company.id, day: Date.new(2020, 1, 1),
           )
         end
 
@@ -214,20 +211,19 @@ describe 'Employee API' do
       employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                   email: "L4qyWi2i123#{current_time_ms}@example.com",
                                   password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                  role: 1)
+                                  role: 1, company_id: company.id)
       employee.password = '123456'
       employee.save
       employee
     end
     let!(:company) do
       Company.create(
-        name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+        name: "name#{current_time_ms}", email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
         phone: '+123112123', description: 'description'
       )
     end
 
     before do
-      company.add_employees(auth_employee)
       auth_params = { email: auth_employee.email, password: auth_employee.password }
       post('/api/employees/login', auth_params)
       jwt = last_response.cookies['jwt'].value[0]
@@ -255,7 +251,7 @@ describe 'Employee API' do
       let!(:client) do
         client = Client.new(first_name: 'first_name', last_name: 'last_name',
                    email: "ok#{current_time_ms}@ok.com", phone: 'phone',
-                   password_digest: 'password_digest')
+                   password_digest: 'password_digest', company_id: company.id)
         client.password = 'password_digest'
         client.save
         client
@@ -267,7 +263,8 @@ describe 'Employee API' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today,
-          weekends: [6, 0]
+          weekends: [6, 0],
+          employee_id: auth_employee.id
         )
       end
       let!(:time_slot) do
@@ -287,9 +284,6 @@ describe 'Employee API' do
           client_id: client.id,
           employee_id: auth_employee.id, company_id: company.id, day: Time.today.closest_future_working_day.to_date
         )
-      end
-      before do
-        auth_employee.add_windows(window)
       end
 
       describe 'valid params' do

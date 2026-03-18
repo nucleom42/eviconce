@@ -6,26 +6,27 @@ describe 'Employee API' do
   def app
     Rubee::Application.instance
   end
-
+  let!(:company) do
+    company = Company.create(
+      name: "name#{current_time_ms}", email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+      phone: '+123112123', description: 'description'
+    )
+    company
+  end
   let!(:auth_employee) do
     employee = Employee.new(first_name: 'Hren', last_name: 'Hrenon',
                                 email: "L4qyWi2i123#{current_time_ms}@example.com",
                                 password_digest: '123456', description: 'nail specialist', phone: '1234567890',
-                                role: 1)
+                                role: 1, company_id: company.id)
     employee.password = '123456'
     employee.save
     employee
   end
-  let!(:company) do
-    Company.create(
-      name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
-      phone: '+123112123', description: 'description'
-    )
-  end
-  let(:client) do
+
+  let!(:client) do
     client = Client.new(first_name: 'first_name', last_name: 'last_name',
                email: "ok#{current_time_ms}@ok.com", phone: 'phone',
-               password_digest: 'password_digest')
+               password_digest: 'password_digest', company_id: company.id)
     client.password = 'password_digest'
     client.save
     client
@@ -46,14 +47,12 @@ describe 'Employee API' do
       break_from: Time.new(2020, 1, 1, 12, 0, 0),
       break_to: Time.new(2020, 1, 1, 13, 0, 0),
       effective_date: Date.today,
-      weekends: [6, 0]
+      weekends: [6, 0],
+      employee_id: auth_employee.id
     )
   end
 
   before do
-    company.add_employees(auth_employee)
-    company.add_clients(client)
-    auth_employee.add_windows(window)
     auth_params = { email: auth_employee.email, password: auth_employee.password }
     post('/api/employees/login', auth_params)
     jwt = last_response.cookies['jwt'].value[0]

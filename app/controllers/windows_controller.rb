@@ -18,7 +18,7 @@ class WindowsController < Rubee::BaseController
         found_window.assign_attributes(window_params.except(:id, :employee_id))
         found_window
       else
-        Window.new(window_params.except(:id, :employee_id))
+        Window.new(window_params.except(:id))
       end
 
       found_employee = Employee.find(window_params[:employee_id])
@@ -27,8 +27,6 @@ class WindowsController < Rubee::BaseController
       window.save
 
       if new_window_record
-        # Add window to employee
-        found_employee.add_windows(window)
         # Noramlize in case of previous endless
         prev_endless = window.previous_endless
         prev_endless&.update(end_date: window.effective_date - 1)
@@ -99,6 +97,6 @@ class WindowsController < Rubee::BaseController
   end
 
   def set_company
-    @company ||= auth_user&.my_company
+    @company ||= auth_user&.company
   end
 end

@@ -178,16 +178,15 @@ Rubee::Router.draw do |router|
   router.delete('/api/windows/{id}', to: 'windows#destroy')
   ### END WINDOW API ###
 
-  ### START employee_windows ###
-  router.get('/api/employee_windows', to: 'employee_windows#index', model: {
-    name: 'employee_window',
+  ### START categories ###
+  router.get('/api/categories', to: 'categories#index', model: {
+    name: 'category',
     attributes: [
       { name: 'id', type: 'primary' },
-      { name: 'employee_id', type: 'foreign_key', options: { null: false } },
-      { name: 'window_id', type: 'foreign_key', options: { null: false } },
+      { name: 'name', type: 'string', options: { null: false } },
       { name: 'created', type: 'datetime' },
       { name: 'updated', type: 'datetime' },
     ],
   })
-  ### END employee_windows ###
+  ### END categories ###
 end

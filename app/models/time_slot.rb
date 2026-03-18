@@ -63,6 +63,7 @@ class TimeSlot < Rubee::SequelObject
 
   def notify_client!
     return unless client
+    return if RACK_ENV['ENV'] == 'test'
 
     AsyncEmailRunner.new.perform_async(
       options: {
@@ -77,6 +78,7 @@ class TimeSlot < Rubee::SequelObject
 
   def notify_company!
     return unless company
+    return if ENV['RACK_ENV'] == 'test'
 
     AsyncEmailRunner.new.perform_async(
       options: {

@@ -1,24 +1,34 @@
 require_relative '../test_helper'
 
 describe 'Image model' do
-  after { Image.destroy_all }
+  after { Image.dataset.delete }
   describe '.save' do
+    let(:image) do
+      {
+        "id" => "#{SecureRandom.hex}/test.jpg",
+        "storage" => "store",
+        "metadata" => {
+          "filename" => filename,
+          "size" => 1024,
+          "mime_type" => "image/jpeg",
+        },
+      }
+    end
     describe 'when valid' do
       it 'should be valid' do
-        image = Image.new(image_data: {})
+        image = Image.new(image:)
         _(image.valid?).must_equal(true)
       end
 
       it 'should save' do
-        image = Image.new(image_data: { url: 'url', width: 1, height: 1 })
+        image = Image.new(image:)
         image.save
         _(image.persisted?).must_equal(true)
       end
     end
     describe 'when invalid' do
       it 'should raise error' do
-        image = Image.new(image_data: 123)
-        _(raise_error { image.save }.is_a?(Rubee::Validatable::Error)).must_equal(true)
+        _(raise_error { Image.new(image: {}) }.is_a?(Shrine::Error)).must_equal(true)
       end
     end
   end

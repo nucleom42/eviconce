@@ -4,8 +4,8 @@ class CreateCompanies
 
     Rubee::SequelObject::DB.create_table(:companies) do
       primary_key(:id)
-      String(:name, null: false)
-      String(:email, null: false)
+      String(:name, null: false, unique: true)
+      String(:email, null: false, unique: true)
       String(:website, null: true)
       String(:phone, null: true)
       String(:description, null: false)

@@ -12,7 +12,7 @@ gem 'rack'
 gem 'rackup'
 gem 'rake'
 gem 'rack-session'
-gem 'ru.Bee', path: '../rubee'
+gem 'ru.Bee'
 gem 'sequel'
 # File management
 gem 'shrine'
@@ -30,4 +30,5 @@ group :development do
   gem 'minitest'
   gem 'rack-test'
   gem 'rerun'
+  gem 'irb'
 end

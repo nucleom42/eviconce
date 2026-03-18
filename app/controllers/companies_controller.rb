@@ -1,10 +1,33 @@
 class CompaniesController < Rubee::BaseController
   include Rubee::AuthTokenable
-  auth_methods :create, :index, :dashboard
+  auth_methods :create, :dashboard, :update
+
+  # GET /api/companies
+  def index
+    query = Company.dataset
+    query = query.join(:addresses, id: :address_id).where(
+      Sequel.lit("addresses.city ILIKE ?", "%#{search_params[:city]}%")
+    ) if search_params[:city]
+    query = query.where(
+      Sequel.lit("description ILIKE ?", "%#{search_params[:category]}%")
+    ) if search_params[:category]
+    query = query.where(
+      Sequel.lit("name ILIKE ?", "%#{search_params[:name]}%")
+    ) if search_params[:name]
+    response_with object: query.then { |ds| Company.serialize(ds) }, type: :json, status: 200
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
 
   # GET /api/companies/{name}
   def show_by_name
-    found_company = Company.where(params).last
+    search_hash = { name: params[:name].downcase.gsub('-', ' ') }
+    found_company = Company.search(
+      search_hash.values[0],
+      in_fields: [name: search_hash.keys[0]],
+      dataset: Company.dataset
+    ).first
+
     if found_company
       response_with(
         object: WebsiteCompany.new(company: found_company, employees: found_company.employees),
@@ -18,19 +41,13 @@ class CompaniesController < Rubee::BaseController
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
-  # GET /api/companies
-  def index
-    owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
-    response_with object: owner.companies.where(companny_params), type: :json, status: 200
-  end
-
   # POST /api/companies
   def create
     Rubee::SequelObject::DB.transaction do
       address = Address.create(address_params)
-      company = Company.create(companny_params.merge(address_id: address.id))
       owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
-      company.add_employees owner
+      company = Company.create(companny_params.merge(address_id: address.id))
+      owner.update(company_id: company.id)
 
       response_with(object: company, type: :json, status: 201)
     end
@@ -66,7 +83,7 @@ class CompaniesController < Rubee::BaseController
     user = authentificated_user user_model: Employee, login: :email, password: :password_digest
     company = Company.find(params[:id])
     employees = company.employees
-    unless user.companies.any? { |c| c.id == company.id }
+    unless user.company
       response_with object: { errors: :unauthentificated }, type: :json, status: 401
       return
     end
@@ -110,5 +127,9 @@ class CompaniesController < Rubee::BaseController
 
   def address_params
     params[:address].reject { |_, val| val.strip == '' }
+  end
+
+  def search_params
+    params[:params].reject { |_, val| val.strip == '' }
   end
 end

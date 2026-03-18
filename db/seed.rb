@@ -1,9 +1,18 @@
 class Seed
   def call
+    company = Company.find_or_new(
+      name: 'name', email: "ok3@ok.com",
+      website: 'https://ok.com', phone: '+123112123', description: 'description',
+      address_id: address.id
+    )
+    unless company.persisted?
+      company.save
+      Rubee::Logger.debug object: company, message: 'Company created'
+    end
     # Create dummy Employee
     employee = Employee.find_or_new(
       first_name: 'first_name', last_name: 'last_name', description: 'description',
-      email: "ok1@ok.com", phone: '123123123', role: 1
+      email: "ok1@ok.com", phone: '123123123', role: 1, company_id: company.id
     )
     employee.password = '12345'
     unless employee.persisted?
@@ -18,16 +27,7 @@ class Seed
       Rubee::Logger.debug object: address, message: 'Address created'
     end
 
-    company = Company.find_or_new(
-      name: 'name', email: "ok3@ok.com",
-      website: 'https://ok.com', phone: '+123112123', description: 'description',
-      address_id: address.id
-    )
-    unless company.persisted?
-      company.save
-      Rubee::Logger.debug object: company, message: 'Company created'
-      company.add_employees(employee)
-    end
+
     # Create dummy Window
     window = Window.find_or_new(
       start_time: Time.new(2020, 1, 1, 9, 0, 0),
@@ -35,14 +35,12 @@ class Seed
       break_from: Time.new(2020, 1, 1, 12, 0, 0),
       break_to: Time.new(2020, 1, 1, 13, 0, 0),
       effective_date: Date.today - 1,
+      employee_id: employee.id,
     )
     unless window.persisted?
       window.weekends = [7, 0]
       window.save
       Rubee::Logger.debug object: window, message: 'Window created'
-      # add window to employee
-      employee.add_windows(window)
-      Rubee::Logger.info message: 'Window added to employee'
     end
     # Create dummy Services
     service1 = Service.find_or_new(
@@ -65,25 +63,23 @@ class Seed
     client = Client.find_or_new(
       first_name: 'John', last_name: 'Doe',
                             email: "ok#{Time.now.to_i}i@ok.com", phone: 'phone',
-                            password_digest: 'password_digest'
+                            password_digest: 'password_digest', company_id: company.id
     )
     client.password = 'password_digest'
     unless client.persisted?
       client.save
       Rubee::Logger.debug object: client, message: 'Client created'
-      company.add_clients(client)
     end
     # Create dummy Client2
     client2 = Client.find_or_new(
       first_name: 'Marry', last_name: 'Cluth',
                             email: "ok#{Time.now.to_i}o@ok.com", phone: 'phone',
-                            password_digest: 'password_digest'
+                            password_digest: 'password_digest', company_id: company.id
     )
     client2.password = 'password_digest'
     unless client2.persisted?
       client2.save
       Rubee::Logger.debug object: client2, message: 'Client2 created'
-      company.add_clients(client2)
     end
 
     Rubee::Logger.info message: 'Seeds completed'

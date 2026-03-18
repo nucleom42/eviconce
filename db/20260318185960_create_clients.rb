@@ -11,8 +11,9 @@ class CreateClients
       String :password_digest, null: false
       DateTime :created
       DateTime :updated
-      foreign_key :address_id, :addresses, null: true, on_delete: :cascade
-      index :email
+      foreign_key :address_id, :addresses, null: true
+      foreign_key :company_id, :companies, null: false, on_delete: :cascade
+      index [:email, :company_id], unique: true
     end
   end
 end

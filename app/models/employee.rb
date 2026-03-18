@@ -2,7 +2,7 @@ class Employee < Rubee::SequelObject
   JWT_KEY = "#{ENV['JWT_KEY']}#{name}" || 'secret'
 
   attr_accessor :id, :first_name, :last_name, :description,
-    :email, :phone, :password_digest, :role, :created, :updated
+    :email, :phone, :password_digest, :role, :created, :updated, :company_id
   ROLES = { admin: 1, user: 0 }.freeze
 
   validate do
@@ -26,10 +26,11 @@ class Employee < Rubee::SequelObject
       )
     attribute(:role).required('Роль не може бути порожнім').type(Integer)
       .condition(-> { role.to_i&.between?(0, 1) }, 'Роль повинна бути адмін чи користувач')
+    attribute(:company_id).optional
   end
 
-  owns_many :companies, over: :company_employees
-  owns_many :windows, over: :employee_windows
+  holds :company
+  owns_many :windows
   owns_many :time_slots
   owns_many :services
 
@@ -38,8 +39,7 @@ class Employee < Rubee::SequelObject
       # Progrmaticall cascade deletion
       Service.where(employee_id: m.id).map(&:destroy)
       TimeSlot.where(employee_id: m.id).map(&:destroy)
-      CompanyEmployee.where(employee_id: m.id).map(&:destroy)
-      EmployeeWindow.where(employee_id: m.id).map(&:destroy)
+      Window.where(employee_id: m.id).map(&:destroy)
 
       origianl_destroy.call
     end
@@ -80,12 +80,8 @@ class Employee < Rubee::SequelObject
     password_digest
   end
 
-  def my_company
-    companies&.first
-  end
-
   def email_unique?
-    ds = Employee.dataset.where(email: email)
+    ds = Employee.dataset.where(email: email, company_id: company_id)
     ds = ds.exclude(id: id) if id
 
     !Rubee::SequelObject::DB.get(ds.exists)
@@ -99,9 +95,8 @@ class Employee < Rubee::SequelObject
   end
 
   def upcoming_windows
-    EmployeeWindow.dataset
-      .join(:windows, id: :window_id)
-      .where(Sequel[:employee_windows][:employee_id] => id)
+    Window.dataset
+      .where(Sequel[:windows][:employee_id] => id)
       .where(Sequel[:windows][:effective_date] >= Date.today)
       .select_all(:windows).all.then { |hash| Window.serialize(hash) }
   end
@@ -112,8 +107,7 @@ class Employee < Rubee::SequelObject
 
   def today_or_past_window
     Window.dataset
-      .join(:employee_windows, window_id: :id)
-      .where(Sequel[:employee_windows][:employee_id] => id)
+      .where(Sequel[:windows][:employee_id] => id)
       .where(Sequel[:windows][:effective_date] <= Date.today)
       .where(Sequel.|(
         Sequel.expr(Sequel[:windows][:end_date] => nil),
@@ -128,8 +122,7 @@ class Employee < Rubee::SequelObject
 
   def earliest_future_window
     Window.dataset
-      .join(:employee_windows, window_id: :id)
-      .where(Sequel[:employee_windows][:employee_id] => id)
+      .where(Sequel[:windows][:employee_id] => id)
       .where(Sequel[:windows][:effective_date] > Date.today)
       .order(Sequel.asc(:effective_date), Sequel.asc(:created))
       .limit(1)
@@ -141,8 +134,7 @@ class Employee < Rubee::SequelObject
   # Cehck why it's not retunring window
   def window_for_date(date)
     Window.dataset
-      .join(:employee_windows, window_id: :id)
-      .where(Sequel[:employee_windows][:employee_id] => id)
+      .where(Sequel[:windows][:employee_id] => id)
       .where(Sequel[:windows][:effective_date] <= date)
       .where(Sequel.|(
         Sequel.expr(Sequel[:windows][:end_date] => nil),
@@ -190,18 +182,6 @@ class Employee < Rubee::SequelObject
     end
 
     true
-  end
-
-  def add_companies(*companies_args)
-    if ROLES[role] == 'admin' && my_company
-      add_error(:role, message: 'Admin can have only one company')
-      return false
-    end
-    companies_args.map { |company| CompanyEmployee.create(employee_id: id, company_id: company.id) }
-  end
-
-  def add_windows(*windows_args)
-    windows_args.map { |window| EmployeeWindow.create(employee_id: id, window_id: window.id) }
   end
 
   class << self

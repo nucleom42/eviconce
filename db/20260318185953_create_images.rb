@@ -5,6 +5,7 @@ class CreateImages
     Rubee::SequelObject::DB.create_table(:images) do
       primary_key(:id)
       column(:image_data, 'jsonb', null: false)
+      column(:type, :smallint, null: true, index: true)
 
       DateTime(:created)
       DateTime(:updated)

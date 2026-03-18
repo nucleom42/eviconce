@@ -2,6 +2,12 @@ require_relative '../test_helper'
 
 describe 'Window model' do
   describe '.save' do
+    let(:employee) do
+      employee = Employee.new(
+          first_name: 'first_name', last_name: 'last_name', description: 'description',
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1, company_id: 1
+        )
+    end
     describe 'when valid' do
       it 'should be valid' do
         window = Window.new(
@@ -10,7 +16,8 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today,
-          weekends: [6, 0]
+          weekends: [6, 0],
+          employee_id: employee.id,
         )
         _(window.valid?).must_equal(true)
       end
@@ -24,7 +31,8 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today,
-          weekends: [6, 0]
+          weekends: [6, 0],
+          employee_id: employee.id
         )
         _(window.valid?).must_equal(false)
       end
@@ -38,7 +46,8 @@ describe 'Window model' do
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today - 2,
-          weekends: [6, 0]
+          weekends: [6, 0],
+          employee_id: employee.id
         )
         _(window.valid?).must_equal(false)
       end
@@ -46,39 +55,26 @@ describe 'Window model' do
 
     describe 'association employees' do
       it 'should bring the employees' do
+
+        employee.password = 'password_digest'
+        employee.save
         window = Window.new(
           start_time: Time.new(2020, 1, 1, 9, 0, 0),
           end_time: Time.new(2020, 1, 1, 18, 0, 0),
           break_from: Time.new(2020, 1, 1, 12, 0, 0),
           break_to: Time.new(2020, 1, 1, 13, 0, 0),
           effective_date: Date.today,
-          weekends: [6, 0]
+          weekends: [6, 0],
+          employee_id: employee.id
         )
         window.save
-        employee = Employee.new(
-          first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
-        )
-        employee.password = 'password_digest'
-        employee.save
-        window.add_employees(employee)
-        _(window.employees.any? { |e| e.id == employee.id }).must_equal(true)
+
+        _(window.employee).must_equal(employee)
       end
     end
 
     describe 'methods' do
       before { Window.delete_all }
-      let!(:window) do
-        Window.create(
-          start_time: Time.new(2020, 1, 1, 9, 0, 0),
-          end_time: Time.new(2020, 1, 1, 18, 0, 0),
-          break_from: Time.new(2020, 1, 1, 12, 0, 0),
-          break_to: Time.new(2020, 1, 1, 13, 0, 0),
-          effective_date: Date.today,
-          weekends: [6, 0]
-        )
-      end
-
       let!(:employee) do
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
@@ -87,6 +83,17 @@ describe 'Window model' do
         employee.password = 'password_digest'
         employee.save
         employee
+      end
+      let!(:window) do
+        Window.create(
+          start_time: Time.new(2020, 1, 1, 9, 0, 0),
+          end_time: Time.new(2020, 1, 1, 18, 0, 0),
+          break_from: Time.new(2020, 1, 1, 12, 0, 0),
+          break_to: Time.new(2020, 1, 1, 13, 0, 0),
+          effective_date: Date.today,
+          weekends: [6, 0],
+          employee_id: employee.id
+        )
       end
 
       describe '#within_work_hours?' do
@@ -153,7 +160,6 @@ describe 'Window model' do
             _(window.weekends?(Date.new(2020, 1, 4))).must_equal(true)
           end
         end
-
         describe 'when arg does not fall on weekends' do
           it 'should return false' do
             _(window.weekends?(Date.new(2020, 1, 1))).must_equal(false)

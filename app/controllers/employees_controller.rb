@@ -1,11 +1,11 @@
 class EmployeesController < Rubee::BaseController
   include Rubee::AuthTokenable
 
-  auth_methods :index, :update, :create, :destroy, :availability
+  auth_methods :index, :update, :destroy, :availability
 
   # GET /api/employees
   def index
-    response_with object: @auth_user.my_company.employees, type: :json, status: 200
+    response_with object: auth_user.company.employees, type: :json, status: 200
   rescue StandardError => e
     response_with object: { errors: e.message }, type: :json, status: 500
   end
@@ -27,10 +27,11 @@ class EmployeesController < Rubee::BaseController
 
   # POST /api/employees
   def create
-    employee = Employee.new(employee_params)
+    new_employee_params = employee_params
+    new_employee_params[:company_id] = auth_user.company.id if auth_user
+    employee = Employee.new(new_employee_params)
 
     if employee.valid? && employee.save
-      auth_user.my_company.add_employees(employee)
       response_with object: employee, type: :json, status: 201
     else
       response_with object: { errors: employee.errors }, type: :json, status: 422
@@ -86,7 +87,7 @@ class EmployeesController < Rubee::BaseController
 
     if authentificate! user_model: Employee, login: :email, password: :password_digest
       response_with(
-        object: { ok: :authentificated, company_id: auth_user&.my_company&.id },
+        object: { ok: :authentificated, company_id: auth_user&.company&.id },
         type: :json, status: 200, headers: @token_header
       )
     else

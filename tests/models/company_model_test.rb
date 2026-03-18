@@ -6,7 +6,7 @@ describe 'Company model' do
     describe 'when valid' do
       it 'should be valid' do
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}5@ok.com", website: 'https://ok.com',
           phone: '+123112123', description: 'description'
         )
         _(company.valid?).must_equal(true)
@@ -14,7 +14,7 @@ describe 'Company model' do
 
       it 'should save' do
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com',
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}@ok.com", website: 'https://ok.com',
           phone: '+123112123', description: 'description'
         )
         company.save
@@ -23,7 +23,7 @@ describe 'Company model' do
 
       it 'should be valid without website' do
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}4@ok.com", phone: '+123112123', description: 'description'
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}4@ok.com", phone: '+123112123', description: 'description'
         )
         _(company.valid?).must_equal(true)
       end
@@ -32,7 +32,7 @@ describe 'Company model' do
     describe 'when invalid' do
       it 'should be invalid' do
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}@ok.com", website: 'website',
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}@ok.com", website: 'website',
           phone: 'phone', description: 'description'
         )
         _(company.valid?).must_equal(false)
@@ -40,7 +40,7 @@ describe 'Company model' do
 
       it 'should raise error' do
         company = Company.new(
-          name: 'name', email: 'email', website: 'website', phone: 'phone', description: 'description'
+          name: "name#{current_time_ms}", email: 'email', website: 'website', phone: 'phone', description: 'description'
         )
         _(raise_error { company.save }.is_a?(Rubee::Validatable::Error)).must_equal(true)
       end
@@ -52,7 +52,7 @@ describe 'Company model' do
                            street_line1: 'street_line1', street_line2: 'street_line2', lt: 1.0, ln: 1.0)
         address.save
         company = Company.new(
-          name: 'name', email: "ok#{current_time_ms}3@ok.com",
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}3@ok.com",
           website: 'https://ok.com', phone: '+123112123', description: 'description',
           address_id: address.id
         )
@@ -65,35 +65,30 @@ describe 'Company model' do
     describe 'owns_many employees' do
       it 'should add employees' do
         company = Company.create(
-          name: 'name', email: "ok#{current_time_ms}2@ok.com",
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}2@ok.com",
           website: 'https://ok.com', phone: '+123112123', description: 'description'
         )
         employee = Employee.new(
           first_name: 'first_name', last_name: 'last_name', description: 'description',
-          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1
+          email: "ok#{current_time_ms}@ok.com", phone: '123123123', password_digest: 'password_digest', role: 1, company_id: company.id
         )
         employee.password = 'password_digest'
         employee.save
-        assert_difference(-> { company.employees.count }, 1) do
-          company.add_employees(employee)
-        end
+        _(company.employees.count).must_equal(1)
       end
     end
 
     describe 'owns many clients' do
       it 'should add clients' do
         company = Company.create(
-          name: 'name', email: "ok#{current_time_ms}1@ok.com", website: 'https://ok.com',
+          name: "name#{current_time_ms}", email: "ok#{current_time_ms}1@ok.com", website: 'https://ok.com',
           phone: '+123112123', description: 'description'
         )
         client = Client.new(first_name: 'first_name', last_name: 'last_name',
                             email: "ok#{current_time_ms}@ok.com", phone: 'phone',
-                            password_digest: 'password_digest')
+                            password_digest: 'password_digest', company_id: company.id)
         client.password = 'password_digest'
         client.save
-        assert_difference(-> { company.clients.count }, 1) do
-          company.add_clients(client)
-        end
         _(company.clients.count).must_equal(1)
       end
     end

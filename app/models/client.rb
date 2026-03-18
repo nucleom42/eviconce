@@ -1,6 +1,7 @@
 class Client < Rubee::SequelObject
   JWT_KEY = "#{ENV['JWT_KEY']}#{name}" || 'secret'
-  attr_accessor :id, :first_name, :last_name, :email, :phone, :password_digest, :created, :updated, :address_id
+  attr_accessor :id, :first_name, :last_name, :email, :phone, :password_digest,
+    :created, :updated, :address_id, :company_id
 
   validate do
     attribute(:first_name).required.type(String).condition(-> { first_name.length > 2 })
@@ -13,11 +14,12 @@ class Client < Rubee::SequelObject
         -> { password_digest || !persisted? && @__encoded },
         message: "password should be set over 'password=' method"
       )
+    attribute(:company_id).required.type(Integer)
     attribute(:address_id).optional.type(Integer)
   end
 
   holds :address
-  owns_many :companies, over: :company_clients
+  holds :company
 
   around :destroy do |client, &origianl_destroy|
     Rubee::SequelObject::DB.transaction do
@@ -36,9 +38,5 @@ class Client < Rubee::SequelObject
 
   def password
     ::JWT.decode(password_digest, JWT_KEY, false)[0]['password']
-  end
-
-  def add_companies(*companies)
-    companies.map { |company| CompanyClient.create(client_id: id, company_id: company.id) }
   end
 end
