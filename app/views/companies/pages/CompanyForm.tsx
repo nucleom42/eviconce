@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./../styles/Form.css";
+import CATEGORIES from "./../../data/ua_categories.json";
+import CITIES from "./../../data/ua_cities.json";
 
 export default function CompanyForm({
   company,
@@ -16,7 +18,7 @@ export default function CompanyForm({
     phone: "",
     description: "",
     city: "",
-    country: "",
+    country: "Україна",
     postal: "",
     region: "",
     street_line1: "",
@@ -33,7 +35,17 @@ export default function CompanyForm({
   const [newImageFiles, setNewImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
 
+  // Categories state
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
   const [errors, setErrors] = useState({});
+
+  // Filter categories based on search
+  const filteredCategories = CATEGORIES.filter((category) =>
+    category.toLowerCase().includes(categorySearch.toLowerCase())
+  );
 
   // Prefill form if editing
   useEffect(() => {
@@ -45,12 +57,17 @@ export default function CompanyForm({
         phone: company.phone || "",
         description: company.description || "",
         city: company.address?.city || "",
-        country: company.address?.country || "",
+        country: company.address?.country || "Україна",
         postal: company.address?.postal || "",
         region: company.address?.region || "",
         street_line1: company.address?.street_line1 || "",
         street_line2: company.address?.street_line2 || "",
       });
+
+      // Set existing categories
+      if (company.categories && company.categories.length > 0) {
+        setSelectedCategories(company.categories.map(cat => cat.name || cat));
+      }
 
       // Set existing logo
       if (company.images && company.images.length > 0) {
@@ -71,6 +88,23 @@ export default function CompanyForm({
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors((prev) => ({ ...prev, [e.target.name]: null }));
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (category) => {
+    if (!selectedCategories.includes(category)) {
+      setSelectedCategories([...selectedCategories, category]);
+      setCategorySearch("");
+      setShowCategoryDropdown(false);
+      setErrors((prev) => ({ ...prev, categories: null }));
+    }
+  };
+
+  // Remove category
+  const handleRemoveCategory = (categoryToRemove) => {
+    setSelectedCategories(
+      selectedCategories.filter((cat) => cat !== categoryToRemove)
+    );
   };
 
   const handleLogoChange = (e) => {
@@ -177,6 +211,11 @@ export default function CompanyForm({
     formData.append("company[phone]", form.phone);
     formData.append("company[description]", form.description);
 
+    // Categories
+    selectedCategories.forEach((category) => {
+      formData.append("categories[]", category);
+    });
+
     // Address data
     formData.append("address[city]", form.city);
     formData.append("address[country]", form.country);
@@ -244,6 +283,7 @@ export default function CompanyForm({
           )}
           <input
             name="email"
+            type="email"
             value={form.email}
             onChange={handleChange}
             placeholder="Email"
@@ -254,9 +294,10 @@ export default function CompanyForm({
           )}
           <input
             name="website"
+            type="url"
             value={form.website}
             onChange={handleChange}
-            placeholder="Веб сторінка"
+            placeholder="https://example.com"
           />
 
           {errorFor("phone") && (
@@ -264,9 +305,10 @@ export default function CompanyForm({
           )}
           <input
             name="phone"
+            type="tel"
             value={form.phone}
             onChange={handleChange}
-            placeholder="Номер телефона"
+            placeholder="+380 XX XXX XX XX"
           />
 
           {errorFor("description") && (
@@ -277,7 +319,83 @@ export default function CompanyForm({
             value={form.description}
             onChange={handleChange}
             placeholder="Опис діяльності"
+            rows="4"
           />
+        </section>
+
+        {/* Categories Section */}
+        <section className="form-section">
+          <h3>Категорії послуг</h3>
+
+          {errorFor("categories") && (
+            <div className="field-error">{errorFor("categories")}</div>
+          )}
+
+          {/* Selected Categories */}
+          {selectedCategories.length > 0 && (
+            <div className="selected-categories-tags">
+              {selectedCategories.map((category) => (
+                <span key={category} className="category-tag">
+                  {category}
+                  <button
+                    type="button"
+                    className="category-tag-remove"
+                    onClick={() => handleRemoveCategory(category)}
+                    aria-label="Видалити категорію"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Category Search Input */}
+          <div className="category-search-wrapper">
+            <input
+              type="text"
+              className="category-search-input"
+              placeholder="Шукати категорії..."
+              value={categorySearch}
+              onChange={(e) => {
+                setCategorySearch(e.target.value);
+                setShowCategoryDropdown(true);
+              }}
+              onFocus={() => setShowCategoryDropdown(true)}
+            />
+
+            {/* Category Dropdown */}
+            {showCategoryDropdown && categorySearch && (
+              <div className="category-dropdown">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.slice(0, 50).map((category) => (
+                    <div
+                      key={category}
+                      className={`category-dropdown-item ${
+                        selectedCategories.includes(category) ? "selected" : ""
+                      }`}
+                      onClick={() => handleCategorySelect(category)}
+                    >
+                      {category}
+                      {selectedCategories.includes(category) && (
+                        <span className="checkmark">✓</span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="category-dropdown-empty">
+                    Категорії не знайдено
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {selectedCategories.length === 0 && (
+            <p className="helper-text">
+              Почніть вводити назву категорії для пошуку
+            </p>
+          )}
         </section>
 
         <section className="form-section">
@@ -286,32 +404,19 @@ export default function CompanyForm({
           {errorFor("city") && (
             <div className="field-error">{errorFor("city")}</div>
           )}
-          <input
+          <select
             name="city"
             value={form.city}
             onChange={handleChange}
-            placeholder="Місто"
-          />
-
-          {errorFor("country") && (
-            <div className="field-error">{errorFor("country")}</div>
-          )}
-          <input
-            name="country"
-            value={form.country}
-            onChange={handleChange}
-            placeholder="Країна"
-          />
-
-          {errorFor("postal") && (
-            <div className="field-error">{errorFor("postal")}</div>
-          )}
-          <input
-            name="postal"
-            value={form.postal}
-            onChange={handleChange}
-            placeholder="Поштовий індекс"
-          />
+            className="form-select"
+          >
+            <option value="">Оберіть місто</option>
+            {CITIES.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
 
           {errorFor("region") && (
             <div className="field-error">{errorFor("region")}</div>
@@ -330,7 +435,7 @@ export default function CompanyForm({
             name="street_line1"
             value={form.street_line1}
             onChange={handleChange}
-            placeholder="Адреса 1"
+            placeholder="Вулиця, будинок"
           />
 
           {errorFor("street_line2") && (
@@ -340,9 +445,31 @@ export default function CompanyForm({
             name="street_line2"
             value={form.street_line2}
             onChange={handleChange}
-            placeholder="Адреса 2"
+            placeholder="Квартира, офіс (необов'язково)"
+          />
+
+          {errorFor("postal") && (
+            <div className="field-error">{errorFor("postal")}</div>
+          )}
+          <input
+            name="postal"
+            value={form.postal}
+            onChange={handleChange}
+            placeholder="Поштовий індекс"
+          />
+
+          {errorFor("country") && (
+            <div className="field-error">{errorFor("country")}</div>
+          )}
+          <input
+            name="country"
+            value={form.country}
+            onChange={handleChange}
+            placeholder="Країна"
+            readOnly
           />
         </section>
+
         {company && (
           <section className="form-section">
             <h3>Логотип компанії</h3>
@@ -476,11 +603,11 @@ export default function CompanyForm({
 
         <div className="form-actions">
           {isModal && onCancel && (
-            <button type="button" onClick={onCancel}>
+            <button type="button" onClick={onCancel} className="btn-secondary">
               Скасувати
             </button>
           )}
-          <button type="submit">
+          <button type="submit" className="btn-primary">
             {company ? "Оновити" : "Створити компанію"}
           </button>
         </div>

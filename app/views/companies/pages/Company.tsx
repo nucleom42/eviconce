@@ -1,16 +1,38 @@
-import React, { useState } from 'react';
-import CompanyForm from './CompanyForm';
-import './../styles/Company.css';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import CompanyForm from "./CompanyForm";
+import "./../styles/Company.css";
 
-export default function Company({ dashboardData }) {
+export default function Company({ dashboardData, fetchData }) {
   const [company, setCompany] = useState(dashboardData?.company || null);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [dashbaordData, setDashboardData] = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Open edit modal
   const handleEdit = () => {
     setIsEditing(true);
+    fetch(`/api/companies/${id}/dashboard`)
+      .then((res) => {
+        if (res.status === 401) {
+          navigate("/companies/welcome");
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data) {
+          setDashboardData(data);
+          setCompany(data.company);
+        }
+      })
+      .catch(() => {
+        setError("Failed to fetch dashboard data");
+      });
   };
 
   // Handle save from form
@@ -46,7 +68,9 @@ export default function Company({ dashboardData }) {
       </div>
 
       {error && <div className="error-message">{error}</div>}
-      {successMessage && <div className="success-message">{successMessage}</div>}
+      {successMessage && (
+        <div className="success-message">{successMessage}</div>
+      )}
 
       <div className="company-details">
         <section className="company-section">
@@ -58,25 +82,31 @@ export default function Company({ dashboardData }) {
             </div>
             <div className="detail-item">
               <label>Email:</label>
-              <span>{company.email || 'N/A'}</span>
+              <span>{company.email || "N/A"}</span>
             </div>
             <div className="detail-item">
               <label>Телефон:</label>
-              <span>{company.phone || 'N/A'}</span>
+              <span>{company.phone || "N/A"}</span>
             </div>
             <div className="detail-item">
               <label>Веб-сайт:</label>
               <span>
                 {company.website ? (
-                  <a href={company.website} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {company.website}
                   </a>
-                ) : 'N/A'}
+                ) : (
+                  "N/A"
+                )}
               </span>
             </div>
             <div className="detail-item full-width">
               <label>Опис:</label>
-              <span>{company.description || 'N/A'}</span>
+              <span>{company.description || "N/A"}</span>
             </div>
           </div>
         </section>
@@ -87,27 +117,27 @@ export default function Company({ dashboardData }) {
             <div className="detail-grid">
               <div className="detail-item">
                 <label>Вулиця 1:</label>
-                <span>{company.address.street_line1 || 'N/A'}</span>
+                <span>{company.address.street_line1 || "N/A"}</span>
               </div>
               <div className="detail-item">
                 <label>Вулиця 2:</label>
-                <span>{company.address.street_line2 || 'N/A'}</span>
+                <span>{company.address.street_line2 || "N/A"}</span>
               </div>
               <div className="detail-item">
                 <label>Місто:</label>
-                <span>{company.address.city || 'N/A'}</span>
+                <span>{company.address.city || "N/A"}</span>
               </div>
               <div className="detail-item">
                 <label>Область:</label>
-                <span>{company.address.region || 'N/A'}</span>
+                <span>{company.address.region || "N/A"}</span>
               </div>
               <div className="detail-item">
                 <label>Поштовий індекс:</label>
-                <span>{company.address.postal || 'N/A'}</span>
+                <span>{company.address.postal || "N/A"}</span>
               </div>
               <div className="detail-item">
                 <label>Країна:</label>
-                <span>{company.address.country || 'N/A'}</span>
+                <span>{company.address.country || "N/A"}</span>
               </div>
             </div>
           </section>

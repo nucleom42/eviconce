@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ServiceModalForm from './ServiceModalForm';
-import './../styles/Form.css';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import ServiceModalForm from "./ServiceModalForm";
+import "./../styles/Form.css";
 
-export default function EmployeeForm({ role, employee, onSave, onCancel, isModal = false }) {
+export default function EmployeeForm({
+  role,
+  employee,
+  onSave,
+  onCancel,
+  isModal = false,
+}) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     first_name: "",
@@ -12,7 +18,7 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
     email: "",
     phone: "",
     password: "",
-    role: role === "admin" ? 1 : 0
+    role: role === "admin" ? 1 : 0,
   });
   const [errors, setErrors] = useState({});
   const [services, setServices] = useState([]);
@@ -29,14 +35,28 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
         email: employee.email || "",
         phone: employee.phone || "",
         password: "",
-        role: employee.role ?? (role === "admin" ? 1 : 0)
+        role: employee.role ?? (role === "admin" ? 1 : 0),
       });
       setServices(employee.services || []);
     }
   }, [employee, role]);
+  const silentLogout = async () => {
+    await fetch("/api/employees/logout", {
+      method: "POST",
+      credentials: "include"
+    });
+  };
+
+  useRef(() => {
+    if (!employee) {
+      // logout
+      silentLogout();
+    }
+  });
 
   const handleChange = (e) => {
-    const value = e.target.name === 'role' ? parseInt(e.target.value) : e.target.value;
+    const value =
+      e.target.name === "role" ? parseInt(e.target.value) : e.target.value;
     setForm({ ...form, [e.target.name]: value });
     setErrors((prev) => ({ ...prev, [e.target.name]: null }));
   };
@@ -51,8 +71,8 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
         description: form.description,
         email: form.email,
         phone: form.phone,
-        role: form.role
-      }
+        role: form.role,
+      },
     };
 
     if (form.password) {
@@ -66,7 +86,7 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
       method,
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (response.ok) {
@@ -119,7 +139,7 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
     } else if (editingService) {
       // Update
       setServices(
-        services.map((s) => (s.id === savedService.id ? savedService : s))
+        services.map((s) => (s.id === savedService.id ? savedService : s)),
       );
     } else {
       // Create
@@ -131,7 +151,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
   const errorFor = (field) => errors[field]?.message;
 
   return (
-    <div className={isModal ? "employee-form-modal" : "employee-form container"}>
+    <div
+      className={isModal ? "employee-form-modal" : "employee-form container"}
+    >
       <h1>
         {employee ? "Редагувати" : "Створити"}{" "}
         {form.role === 1 ? "адміністратора" : "працівника"}
@@ -142,7 +164,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
         <section className="form-section">
           <h3>Інформація про працівника</h3>
 
-          {errorFor("first_name") && <div className="field-error">{errorFor("first_name")}</div>}
+          {errorFor("first_name") && (
+            <div className="field-error">{errorFor("first_name")}</div>
+          )}
           <input
             name="first_name"
             value={form.first_name}
@@ -150,7 +174,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
             placeholder="Імʼя"
           />
 
-          {errorFor("last_name") && <div className="field-error">{errorFor("last_name")}</div>}
+          {errorFor("last_name") && (
+            <div className="field-error">{errorFor("last_name")}</div>
+          )}
           <input
             name="last_name"
             value={form.last_name}
@@ -158,7 +184,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
             placeholder="Прізвище"
           />
 
-          {errorFor("email") && <div className="field-error">{errorFor("email")}</div>}
+          {errorFor("email") && (
+            <div className="field-error">{errorFor("email")}</div>
+          )}
           <input
             name="email"
             type="email"
@@ -167,7 +195,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
             placeholder="Email"
           />
 
-          {errorFor("phone") && <div className="field-error">{errorFor("phone")}</div>}
+          {errorFor("phone") && (
+            <div className="field-error">{errorFor("phone")}</div>
+          )}
           <input
             name="phone"
             value={form.phone}
@@ -175,17 +205,25 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
             placeholder="Телефон"
           />
 
-          {errorFor("password") && <div className="field-error">{errorFor("password")}</div>}
+          {errorFor("password") && (
+            <div className="field-error">{errorFor("password")}</div>
+          )}
           <input
             name="password"
             type="password"
             value={form.password}
             onChange={handleChange}
-            placeholder={employee ? "Новий пароль (залиште порожнім, щоб не змінювати)" : "Пароль"}
+            placeholder={
+              employee
+                ? "Новий пароль (залиште порожнім, щоб не змінювати)"
+                : "Пароль"
+            }
             required={!employee}
           />
 
-          {errorFor("description") && <div className="field-error">{errorFor("description")}</div>}
+          {errorFor("description") && (
+            <div className="field-error">{errorFor("description")}</div>
+          )}
           <textarea
             name="description"
             value={form.description}
@@ -193,7 +231,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
             placeholder="Опис"
           />
 
-          {errorFor("role") && <div className="field-error">{errorFor("role")}</div>}
+          {errorFor("role") && (
+            <div className="field-error">{errorFor("role")}</div>
+          )}
           <label htmlFor="role">Роль</label>
           <select
             id="role"
@@ -249,7 +289,9 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
                     <p className="service-description">{service.description}</p>
                     <div className="service-footer">
                       <span className="service-price">{service.price} грн</span>
-                      <span className="service-duration">{service.duration} хв</span>
+                      <span className="service-duration">
+                        {service.duration} хв
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -275,9 +317,7 @@ export default function EmployeeForm({ role, employee, onSave, onCancel, isModal
               Скасувати
             </button>
           )}
-          <button type="submit">
-            {employee ? "Оновити" : "Створити"}
-          </button>
+          <button type="submit">{employee ? "Оновити" : "Створити"}</button>
         </div>
       </form>
 

@@ -1,4 +1,265 @@
 STRUCTURE = {
+  addresses: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      city: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      country: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      postal: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      region: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      street_line1: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      street_line2: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      lt: {
+        oid: 701,
+        comment: nil,
+        db_type: "double precision",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "float",
+        ruby_default: nil
+      },
+      ln: {
+        oid: 701,
+        comment: nil,
+        db_type: "double precision",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "float",
+        ruby_default: nil
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      }
+    },
+    foreign_keys: []
+  },
+  companies: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      name: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      email: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      website: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      phone: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      description: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      address_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      }
+    },
+    foreign_keys: [
+      {
+        name: "companies_address_id_fkey",
+        columns: [
+          "address_id"
+        ],
+        references: {
+          table: "addresses",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      }
+    ]
+  },
   employees: {
     columns: {
       id: {
@@ -151,139 +412,6 @@ STRUCTURE = {
       }
     ]
   },
-  addresses: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      city: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      country: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      postal: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      region: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      street_line1: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      street_line2: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      lt: {
-        oid: 701,
-        comment: nil,
-        db_type: "double precision",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "float",
-        ruby_default: nil
-      },
-      ln: {
-        oid: 701,
-        comment: nil,
-        db_type: "double precision",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "float",
-        ruby_default: nil
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      }
-    },
-    foreign_keys: []
-  },
   services: {
     columns: {
       id: {
@@ -403,6 +531,131 @@ STRUCTURE = {
       }
     ]
   },
+  images: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      image_data: {
+        oid: 3802,
+        comment: nil,
+        db_type: "jsonb",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: nil,
+        ruby_default: nil
+      },
+      type: {
+        oid: 21,
+        comment: nil,
+        db_type: "smallint",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -32768,
+        max_value: 32767
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      }
+    },
+    foreign_keys: []
+  },
+  categories: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      name: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      }
+    },
+    foreign_keys: []
+  },
   company_categories: {
     columns: {
       id: {
@@ -502,62 +755,6 @@ STRUCTURE = {
         on_update: "no_action"
       }
     ]
-  },
-  categories: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      name: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      }
-    },
-    foreign_keys: []
   },
   clients: {
     columns: {
@@ -1149,7 +1346,7 @@ STRUCTURE = {
         generated: false,
         type: "smallint_array",
         ruby_default: nil,
-        callable_default: "#<Proc:0x000000010d875448 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.102.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
+        callable_default: "#<Proc:0x000000011007ef70 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.102.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
       },
       created: {
         oid: 1114,
@@ -1194,202 +1391,5 @@ STRUCTURE = {
         on_update: "no_action"
       }
     ]
-  },
-  companies: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      name: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      email: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      website: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      phone: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      description: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      address_id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      }
-    },
-    foreign_keys: [
-      {
-        name: "companies_address_id_fkey",
-        columns: [
-          "address_id"
-        ],
-        references: {
-          table: "addresses",
-          columns: [
-            "id"
-          ]
-        },
-        on_delete: "cascade",
-        on_update: "no_action"
-      }
-    ]
-  },
-  images: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      image_data: {
-        oid: 3802,
-        comment: nil,
-        db_type: "jsonb",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: nil,
-        ruby_default: nil
-      },
-      type: {
-        oid: 21,
-        comment: nil,
-        db_type: "smallint",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: nil,
-        min_value: -32768,
-        max_value: 32767
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      }
-    },
-    foreign_keys: []
   }
 }

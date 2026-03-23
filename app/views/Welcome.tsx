@@ -1,28 +1,63 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./css/Welcome.css";
+import CATEGORIES from "./data/ua_categories.json";
+import CITIES from "./data/ua_cities.json";
 
 export default function Welcome() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('');
-  const [city, setCity] = useState('');
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const navigate = useNavigate();
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const resultsRef = useRef(null);
 
-  // Format company name for URL: "My Company" -> "my-company"
-  const formatCompanyUrl = (name) => {
-    return name.toLowerCase().replace(/\s+/g, '-');
+  // Filter categories from JSON based on search
+  const filteredCategories = CATEGORIES.filter((category) =>
+    category.toLowerCase().includes(categorySearch.toLowerCase())
+  );
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (resultsRef.current && !resultsRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+      if (!event.target.closest(".category-search-container")) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle category selection from dropdown
+  const handleCategorySelect = (category) => {
+    if (!selectedCategories.includes(category)) {
+      setSelectedCategories([...selectedCategories, category]);
+      setCategorySearch("");
+      setShowCategoryDropdown(false);
+    }
   };
 
-  // Search function - only called on submit
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  // Remove category tag
+  const handleRemoveCategory = (categoryToRemove) => {
+    setSelectedCategories(
+      selectedCategories.filter((cat) => cat !== categoryToRemove)
+    );
+  };
 
-    if (!searchTerm && !category && !city) {
-      setResults([]);
-      setShowResults(false);
+  // Search companies from backend
+  const handleSearch = async (e) => {
+    if (e) e.preventDefault();
+
+    // Don't search if no criteria
+    if (!searchTerm && selectedCategories.length === 0 && !selectedCity) {
       return;
     }
 
@@ -31,319 +66,413 @@ export default function Welcome() {
 
     try {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('params[name]', searchTerm);
-      if (category) params.append('params[category]', category);
-      if (city) params.append('params[city]', city);
 
-      const response = await fetch(`/api/companies?${params}`);
-      const data = await response.json();
-      setResults(Array.isArray(data) ? data : []);
+      if (searchTerm) {
+        params.append("params[name]", searchTerm);
+      }
+
+      if (selectedCity) {
+        params.append("params[city]", selectedCity);
+      }
+
+      // Add all selected categories as separate params
+      selectedCategories.forEach((category) => {
+        params.append("params[categories][]", category);
+      });
+
+      const response = await fetch(`/api/companies?${params.toString()}`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResults(Array.isArray(data) ? data : []);
+      } else {
+        setResults([]);
+      }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       setResults([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle clicking on a result
   const handleResultClick = (company) => {
-    setShowResults(false);
-    setResults([]);
-    navigate(`/w/${formatCompanyUrl(company.name)}`);
+    const slug = company.name.toLowerCase().replace(/\s+/g, "-");
+    navigate(`/w/${slug}`);
   };
 
-  // Close results when clicking outside
-  const handleClickOutside = () => {
-    setShowResults(false);
+  const handleQuickLink = (city) => {
+    setSelectedCity(city);
+    setSearchTerm("");
+    setSelectedCategories([]);
+    // Trigger search with just city
+    setTimeout(() => {
+      fetchResults({ city });
+    }, 0);
+  };
+
+  const handleCategoryCard = (category) => {
+    setSelectedCategories([category]);
+    setSearchTerm("");
+    setSelectedCity("");
+    // Trigger search with just category
+    setTimeout(() => {
+      fetchResults({ categories: [category] });
+    }, 0);
+  };
+
+  const fetchResults = async ({ city, categories }) => {
+    setIsLoading(true);
+    setShowResults(true);
+
+    try {
+      const params = new URLSearchParams();
+
+      if (city) {
+        params.append("params[city]", city);
+      }
+
+      if (categories && categories.length > 0) {
+        categories.forEach((cat) => {
+          params.append("params[categories][]", cat);
+        });
+      }
+
+      const response = await fetch(`/api/companies?${params.toString()}`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResults(Array.isArray(data) ? data : []);
+      } else {
+        setResults([]);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="welcome" onClick={handleClickOutside}>
+    <div className="welcome-page">
       {/* Hero Section */}
-      <section className="hero">
-        <div className="hero__content">
-          <h1 className="hero__title">Є віконце</h1>
-          <p className="hero__subtitle">
-            Знайдіть та забронюйте послуги краси та здоров'я поблизу
-          </p>
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1>Знайдіть найкращі послуги у вашому місті</h1>
+          <p>Салони краси, СПА, фітнес, стоматологія та багато іншого</p>
 
-          {/* Search Bar */}
-          <form className="search-bar" onSubmit={handleSearch} onClick={(e) => e.stopPropagation()}>
-            <div className="search-bar__wrapper">
-              {/* Service/Business Name Input */}
-              <div className="search-bar__field search-bar__field--main">
-                <svg className="search-bar__icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+          {/* Search Form */}
+          <form className="search-form" onSubmit={handleSearch}>
+            <div className="search-inputs">
+              {/* Service/Company Name Input */}
+              <div className="search-field">
                 <input
                   type="text"
-                  className="search-bar__input"
-                  placeholder="Послуга, бізнес або майстер"
+                  placeholder="Назва компанії або послуги"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
                 />
               </div>
 
-              {/* Category Dropdown */}
-              <div className="search-bar__field">
+              {/* Categories Multi-Select - PULLS FROM CATEGORIES JSON */}
+              <div className="search-field category-search-container">
+                <div className="category-input-wrapper">
+                  {/* Selected Categories Tags */}
+                  {selectedCategories.length > 0 && (
+                    <div className="selected-categories-mini">
+                      {selectedCategories.map((category) => (
+                        <span key={category} className="category-mini-tag">
+                          {category}
+                          <button
+                            type="button"
+                            className="category-mini-remove"
+                            onClick={() => handleRemoveCategory(category)}
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Category Search Input */}
+                  <input
+                    type="text"
+                    placeholder={
+                      selectedCategories.length > 0
+                        ? "Додати ще категорію..."
+                        : "Категорії (перукарня, СПА, фітнес...)"
+                    }
+                    value={categorySearch}
+                    onChange={(e) => {
+                      setCategorySearch(e.target.value);
+                      setShowCategoryDropdown(true);
+                    }}
+                    onFocus={() => setShowCategoryDropdown(true)}
+                    className="search-input"
+                  />
+
+                  {/* Category Dropdown - FILTERED FROM CATEGORIES JSON */}
+                  {showCategoryDropdown && categorySearch && (
+                    <div className="category-dropdown-search">
+                      {filteredCategories.length > 0 ? (
+                        filteredCategories.slice(0, 30).map((category) => (
+                          <div
+                            key={category}
+                            className={`category-dropdown-item ${
+                              selectedCategories.includes(category)
+                                ? "selected"
+                                : ""
+                            }`}
+                            onClick={() => handleCategorySelect(category)}
+                          >
+                            {category}
+                            {selectedCategories.includes(category) && (
+                              <span className="checkmark">✓</span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="category-dropdown-empty">
+                          Категорії не знайдено
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* City Dropdown - PULLS FROM CITIES JSON */}
+              <div className="search-field">
                 <select
-                  className="search-bar__select"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="search-select"
                 >
-                  <option value="">Всі категорії</option>
-                  <option value="hair">Перукарня</option>
-                  <option value="nails">Манікюр</option>
-                  <option value="spa">СПА</option>
-                  <option value="massage">Масаж</option>
-                  <option value="beauty">Косметологія</option>
-                  <option value="fitness">Фітнес</option>
+                  <option value="">Всі міста</option>
+                  {CITIES.map((city) => (
+                    <option key={city} value={city}>
+                      {city}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {/* Location Input */}
-              <div className="search-bar__field">
-                <svg className="search-bar__icon" width="16" height="20" viewBox="0 0 16 20" fill="none">
-                  <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M8 1C4.5 1 1 3.5 1 8c0 5.5 7 11 7 11s7-5.5 7-11c0-4.5-3.5-7-7-7z" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                <input
-                  type="text"
-                  className="search-bar__input"
-                  placeholder="Місто"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                />
-              </div>
-
               {/* Search Button */}
-              <button type="submit" className="search-bar__btn">
-                Знайти
+              <button type="submit" className="search-button">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Шукати
               </button>
             </div>
-
-            {/* Search Results Dropdown */}
-            {showResults && (
-              <div className="search-results">
-                {isLoading && (
-                  <div className="search-results__loading">
-                    <div className="spinner"></div>
-                    Завантаження...
-                  </div>
-                )}
-
-                {!isLoading && results.length === 0 && (
-                  <div className="search-results__empty">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                      <path d="M21 38a17 17 0 100-34 17 17 0 000 34zM44 44l-9.5-9.5" stroke="#9ca3af" strokeWidth="3" strokeLinecap="round"/>
-                    </svg>
-                    <p>Нічого не знайдено</p>
-                    <span>Спробуйте змінити параметри пошуку</span>
-                  </div>
-                )}
-
-                {!isLoading && results.length > 0 && (
-                  <>
-                    <div className="search-results__header">
-                      Знайдено {results.length} {results.length === 1 ? 'результат' : 'результатів'}
-                    </div>
-                    {results.map((company) => (
-                      <div
-                        key={company.id}
-                        className="search-results__item"
-                        onClick={() => handleResultClick(company)}
-                      >
-                        <div className="search-results__icon">
-                          {company.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="search-results__content">
-                          <div className="search-results__name">{company.name}</div>
-                          <div className="search-results__details">
-                            {company.description && `${company.description} • `}
-                            {company.city || 'Київ'}
-                          </div>
-                        </div>
-                        <svg className="search-results__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                          <path d="M7 4l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
           </form>
 
-          {/* Quick Links */}
-          <div className="quick-links">
-            <span className="quick-links__label">Популярні:</span>
-            <button
-              className="quick-links__item"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCategory('hair');
-                setSearchTerm('');
-                handleSearch(e);
-              }}
-            >
-              Стрижка
-            </button>
-            <button
-              className="quick-links__item"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCategory('nails');
-                setSearchTerm('');
-                handleSearch(e);
-              }}
-            >
-              Манікюр
-            </button>
-            <button
-              className="quick-links__item"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCategory('massage');
-                setSearchTerm('');
-                handleSearch(e);
-              }}
-            >
-              Масаж
-            </button>
-            <button
-              className="quick-links__item"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCategory('spa');
-                setSearchTerm('');
-                handleSearch(e);
-              }}
-            >
-              СПА
-            </button>
+          {/* Search Results Dropdown */}
+          {showResults && (
+            <div className="search-results-dropdown" ref={resultsRef}>
+              {isLoading ? (
+                <div className="results-loading">
+                  <div className="spinner"></div>
+                  <p>Пошук...</p>
+                </div>
+              ) : results.length > 0 ? (
+                <div className="results-list">
+                  {results.map((company) => (
+                    <div
+                      key={company.id}
+                      className="result-item"
+                      onClick={() => handleResultClick(company)}
+                    >
+                      <div className="result-info">
+                        <h4>{company.name}</h4>
+                        <p className="result-category">
+                          {company.categories?.[0]?.name ||
+                            company.description?.substring(0, 60)}
+                        </p>
+                        <p className="result-location">
+                          📍 {company.address?.city}
+                          {company.address?.street_line1 &&
+                            `, ${company.address.street_line1}`}
+                        </p>
+                      </div>
+                      {company.rating && (
+                        <div className="result-rating">
+                          ⭐ {company.rating}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="results-empty">
+                  <p>Нічого не знайдено</p>
+                  <span>Спробуйте змінити критерії пошуку</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Quick Links */}
+      <section className="quick-links-section">
+        <h2>Популярні міста</h2>
+        <div className="quick-links">
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Київ")}
+          >
+            Київ
+          </button>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Львів")}
+          >
+            Львів
+          </button>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Одеса")}
+          >
+            Одеса
+          </button>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Харків")}
+          >
+            Харків
+          </button>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Дніпро")}
+          >
+            Дніпро
+          </button>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Запоріжжя")}
+          >
+            Запоріжжя
+          </button>
+        </div>
+      </section>
+
+      {/* Popular Categories */}
+      <section className="categories-section">
+        <h2>Популярні категорії</h2>
+        <div className="category-cards">
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Перукарня")}
+          >
+            <div className="category-icon">💇</div>
+            <h3>Перукарня</h3>
+            <p>Стрижки, укладки, фарбування</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Манікюр")}
+          >
+            <div className="category-icon">💅</div>
+            <h3>Манікюр</h3>
+            <p>Манікюр, педикюр, нарощування</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("СПА")}
+          >
+            <div className="category-icon">🧖</div>
+            <h3>СПА</h3>
+            <p>Масаж, релакс, догляд</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Фітнес")}
+          >
+            <div className="category-icon">💪</div>
+            <h3>Фітнес</h3>
+            <p>Тренажерна зала, йога, пілатес</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Стоматологія")}
+          >
+            <div className="category-icon">🦷</div>
+            <h3>Стоматологія</h3>
+            <p>Лікування, протезування, відбілювання</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Косметологія")}
+          >
+            <div className="category-icon">✨</div>
+            <h3>Косметологія</h3>
+            <p>Чистка, пілінг, ін'єкції краси</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Масаж")}
+          >
+            <div className="category-icon">💆</div>
+            <h3>Масаж</h3>
+            <p>Класичний, тайський, спортивний</p>
+          </div>
+
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("Татуювання")}
+          >
+            <div className="category-icon">🎨</div>
+            <h3>Татуювання</h3>
+            <p>Тату, пірсинг, художнє татуювання</p>
           </div>
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="categories">
-        <div className="container">
-          <h2 className="categories__title">Популярні категорії</h2>
-          <div className="categories__grid">
-            <div
-              className="category-card"
-              onClick={() => {
-                setCategory('hair');
-                setSearchTerm('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="category-card__icon">💇</div>
-              <h3 className="category-card__title">Перукарня</h3>
-            </div>
-            <div
-              className="category-card"
-              onClick={() => {
-                setCategory('nails');
-                setSearchTerm('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="category-card__icon">💅</div>
-              <h3 className="category-card__title">Манікюр</h3>
-            </div>
-            <div
-              className="category-card"
-              onClick={() => {
-                setCategory('massage');
-                setSearchTerm('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="category-card__icon">💆</div>
-              <h3 className="category-card__title">Масаж</h3>
-            </div>
-            <div
-              className="category-card"
-              onClick={() => {
-                setCategory('spa');
-                setSearchTerm('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="category-card__icon">🧖</div>
-              <h3 className="category-card__title">СПА</h3>
-            </div>
-            <div
-              className="category-card"
-              onClick={() => {
-                setCategory('beauty');
-                setSearchTerm('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="category-card__icon">✨</div>
-              <h3 className="category-card__title">Косметологія</h3>
-            </div>
-            <div
-              className="category-card"
-              onClick={() => {
-                setCategory('fitness');
-                setSearchTerm('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <div className="category-card__icon">💪</div>
-              <h3 className="category-card__title">Фітнес</h3>
-            </div>
+      {/* How It Works */}
+      <section className="how-it-works">
+        <h2>Як це працює</h2>
+        <div className="steps">
+          <div className="step">
+            <div className="step-number">1</div>
+            <h3>Знайдіть послугу</h3>
+            <p>Скористайтеся пошуком або оберіть категорію</p>
           </div>
-        </div>
-      </section>
-
-      {/* Business CTA Section */}
-      <section className="business-cta">
-        <div className="container">
-          <div className="business-cta__content">
-            <h2 className="business-cta__title">Ви власник бізнесу?</h2>
-            <p className="business-cta__subtitle">
-              Приєднуйтесь до Є віконце та розвивайте свій бізнес
-            </p>
-            <div className="business-cta__features">
-              <div className="business-feature">
-                <svg className="business-feature__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                <span>Онлайн бронювання 24/7</span>
-              </div>
-              <div className="business-feature">
-                <svg className="business-feature__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                <span>Управління записами</span>
-              </div>
-              <div className="business-feature">
-                <svg className="business-feature__icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                <span>Залучення нових клієнтів</span>
-              </div>
-            </div>
-            <Link to="/companies/welcome" className="business-cta__btn">
-              Зареєструвати бізнес
-            </Link>
+          <div className="step">
+            <div className="step-number">2</div>
+            <h3>Порівняйте пропозиції</h3>
+            <p>Переглядайте відгуки та ціни</p>
           </div>
-        </div>
-      </section>
-
-      {/* Client Login Link */}
-      <section className="client-login">
-        <div className="container">
-          <p>Вже маєте запис?</p>
-          <Link to="/clients" className="client-login__link">Увійти як клієнт</Link>
+          <div className="step">
+            <div className="step-number">3</div>
+            <h3>Забронюйте час</h3>
+            <p>Онлайн бронювання за кілька кліків</p>
+          </div>
         </div>
       </section>
     </div>

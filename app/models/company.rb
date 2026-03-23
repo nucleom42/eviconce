@@ -33,6 +33,28 @@ class Company < Rubee::SequelObject
     images.map { |i| CompanyImage.create(image_id: i.id, company_id: id) }
   end
 
+  def attach_categories_by_names(*names)
+    names.each do |name|
+      category = Category.find_or_new(name:)
+      category.save unless category.persisted?
+
+      attach_categories(category)
+    end
+  end
+
+  def attach_categories(*categoris)
+    categoris.map { |c| CompanyCategory.create(category_id: c.id, company_id: id) }
+  end
+
+  def replace_categories_by_names(*names)
+    detach_all_categories
+    attach_categories_by_names(*names)
+  end
+
+  def detach_all_categories
+    CompanyCategory.where(company_id: id).map(&:destroy)
+  end
+
   def email_changed?
     return false if email.nil? && id.nil?
     return true if id.nil? || !email.nil?

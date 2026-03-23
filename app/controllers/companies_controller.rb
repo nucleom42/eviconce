@@ -48,6 +48,7 @@ class CompaniesController < Rubee::BaseController
       owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
       company = Company.create(companny_params.merge(address_id: address.id))
       owner.update(company_id: company.id)
+      company.attach_categories_by_names(category_params)
 
       response_with(object: company, type: :json, status: 201)
     end
@@ -68,7 +69,8 @@ class CompaniesController < Rubee::BaseController
       address = company.address
       address.assign_attributes(address_params)
       if company.valid? && company.save && address.valid? && address.save
-        persist_images! company
+        persist_images!(company)
+        company.replace_categories_by_names(*category_params)
         response_with object: company, type: :json, status: 200
       else
         response_with object: { errors: company.errors }, type: :json, status: 422
@@ -131,5 +133,9 @@ class CompaniesController < Rubee::BaseController
 
   def search_params
     params[:params].reject { |_, val| val.strip == '' }
+  end
+
+  def category_params
+    params[:categories]
   end
 end
