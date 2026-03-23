@@ -16,12 +16,12 @@ export default function Welcome() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const resultsRef = useRef(null);
 
-  // Filter categories from JSON based on search
+  // Filter categories based on search - SAME AS COMPANYFORM
   const filteredCategories = CATEGORIES.filter((category) =>
     category.toLowerCase().includes(categorySearch.toLowerCase())
   );
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside - SAME AS COMPANYFORM
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (resultsRef.current && !resultsRef.current.contains(event.target)) {
@@ -36,7 +36,7 @@ export default function Welcome() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle category selection from dropdown
+  // Handle category selection - SAME AS COMPANYFORM
   const handleCategorySelect = (category) => {
     if (!selectedCategories.includes(category)) {
       setSelectedCategories([...selectedCategories, category]);
@@ -45,14 +45,13 @@ export default function Welcome() {
     }
   };
 
-  // Remove category tag
+  // Remove category - SAME AS COMPANYFORM
   const handleRemoveCategory = (categoryToRemove) => {
     setSelectedCategories(
       selectedCategories.filter((cat) => cat !== categoryToRemove)
     );
   };
 
-  // Search companies from backend
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
 
@@ -75,7 +74,7 @@ export default function Welcome() {
         params.append("params[city]", selectedCity);
       }
 
-      // Add all selected categories as separate params
+      // Add all selected categories
       selectedCategories.forEach((category) => {
         params.append("params[categories][]", category);
       });
@@ -107,20 +106,20 @@ export default function Welcome() {
     setSelectedCity(city);
     setSearchTerm("");
     setSelectedCategories([]);
-    // Trigger search with just city
     setTimeout(() => {
       fetchResults({ city });
     }, 0);
   };
 
   const handleCategoryCard = (category) => {
-    setSelectedCategories([category]);
-    setSearchTerm("");
-    setSelectedCity("");
-    // Trigger search with just category
-    setTimeout(() => {
-      fetchResults({ categories: [category] });
-    }, 0);
+    if (!selectedCategories.includes(category)) {
+      setSelectedCategories([category]);
+      setSearchTerm("");
+      setSelectedCity("");
+      setTimeout(() => {
+        fetchResults({ categories: [category] });
+      }, 0);
+    }
   };
 
   const fetchResults = async ({ city, categories }) => {
@@ -180,19 +179,23 @@ export default function Welcome() {
                 />
               </div>
 
-              {/* Categories Multi-Select - PULLS FROM CATEGORIES JSON */}
+              {/* Categories Multi-Select - EXACTLY LIKE COMPANYFORM */}
               <div className="search-field category-search-container">
-                <div className="category-input-wrapper">
+                <div className="category-search-wrapper">
                   {/* Selected Categories Tags */}
                   {selectedCategories.length > 0 && (
-                    <div className="selected-categories-mini">
+                    <div className="selected-categories-tags-mini">
                       {selectedCategories.map((category) => (
-                        <span key={category} className="category-mini-tag">
+                        <span key={category} className="category-tag-mini">
                           {category}
                           <button
                             type="button"
-                            className="category-mini-remove"
-                            onClick={() => handleRemoveCategory(category)}
+                            className="category-tag-remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveCategory(category);
+                            }}
+                            aria-label="Видалити категорію"
                           >
                             ✕
                           </button>
@@ -204,10 +207,11 @@ export default function Welcome() {
                   {/* Category Search Input */}
                   <input
                     type="text"
+                    className="category-search-input"
                     placeholder={
                       selectedCategories.length > 0
-                        ? "Додати ще категорію..."
-                        : "Категорії (перукарня, СПА, фітнес...)"
+                        ? "Додати ще..."
+                        : "Шукати категорії..."
                     }
                     value={categorySearch}
                     onChange={(e) => {
@@ -215,14 +219,13 @@ export default function Welcome() {
                       setShowCategoryDropdown(true);
                     }}
                     onFocus={() => setShowCategoryDropdown(true)}
-                    className="search-input"
                   />
 
-                  {/* Category Dropdown - FILTERED FROM CATEGORIES JSON */}
+                  {/* Category Dropdown */}
                   {showCategoryDropdown && categorySearch && (
-                    <div className="category-dropdown-search">
+                    <div className="category-dropdown">
                       {filteredCategories.length > 0 ? (
-                        filteredCategories.slice(0, 30).map((category) => (
+                        filteredCategories.slice(0, 50).map((category) => (
                           <div
                             key={category}
                             className={`category-dropdown-item ${
@@ -248,7 +251,7 @@ export default function Welcome() {
                 </div>
               </div>
 
-              {/* City Dropdown - PULLS FROM CITIES JSON */}
+              {/* City Dropdown */}
               <div className="search-field">
                 <select
                   value={selectedCity}
@@ -315,9 +318,7 @@ export default function Welcome() {
                         </p>
                       </div>
                       {company.rating && (
-                        <div className="result-rating">
-                          ⭐ {company.rating}
-                        </div>
+                        <div className="result-rating">⭐ {company.rating}</div>
                       )}
                     </div>
                   ))}
@@ -337,40 +338,22 @@ export default function Welcome() {
       <section className="quick-links-section">
         <h2>Популярні міста</h2>
         <div className="quick-links">
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Київ")}
-          >
+          <button className="quick-link" onClick={() => handleQuickLink("Київ")}>
             Київ
           </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Львів")}
-          >
+          <button className="quick-link" onClick={() => handleQuickLink("Львів")}>
             Львів
           </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Одеса")}
-          >
+          <button className="quick-link" onClick={() => handleQuickLink("Одеса")}>
             Одеса
           </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Харків")}
-          >
+          <button className="quick-link" onClick={() => handleQuickLink("Харків")}>
             Харків
           </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Дніпро")}
-          >
+          <button className="quick-link" onClick={() => handleQuickLink("Дніпро")}>
             Дніпро
           </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Запоріжжя")}
-          >
+          <button className="quick-link" onClick={() => handleQuickLink("Запоріжжя")}>
             Запоріжжя
           </button>
         </div>
@@ -398,10 +381,7 @@ export default function Welcome() {
             <p>Манікюр, педикюр, нарощування</p>
           </div>
 
-          <div
-            className="category-card"
-            onClick={() => handleCategoryCard("СПА")}
-          >
+          <div className="category-card" onClick={() => handleCategoryCard("СПА")}>
             <div className="category-icon">🧖</div>
             <h3>СПА</h3>
             <p>Масаж, релакс, догляд</p>

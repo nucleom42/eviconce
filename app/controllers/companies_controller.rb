@@ -6,15 +6,24 @@ class CompaniesController < Rubee::BaseController
   def index
     query = Company.dataset
     query = query.join(:addresses, id: :address_id).where(
-      Sequel.lit("addresses.city ILIKE ?", "%#{search_params[:city]}%")
+      Sequel.lit("addresses.city ILIKE ?", "%#{search_params[:city].gsub(/[%_\\]/) { |m| "\\#{m}" }}%")
     ) if search_params[:city]
+    if search_params[:categories].any?
+      category_conditions = search_params[:categories].map do |cat_name|
+        escaped_cat = cat_name.gsub(/[%_\\]/) { |m| "\\#{m}" }
+        Sequel.lit("categories.name ILIKE ?", "%#{escaped_cat}%")
+      end
+      query = query
+        .join(:company_categories, { company_id: Sequel[:companies][:id] })
+        .join(:categories, { id: Sequel[:company_categories][:category_id] })
+        .where(Sequel.|(*category_conditions))
+        .select_all(:companies)
+        .distinct
+    end
     query = query.where(
-      Sequel.lit("description ILIKE ?", "%#{search_params[:category]}%")
-    ) if search_params[:category]
-    query = query.where(
-      Sequel.lit("name ILIKE ?", "%#{search_params[:name]}%")
+      Sequel.lit("companies.name ILIKE ?", "%#{search_params[:name].gsub(/[%_\\]/) { |m| "\\#{m}" }}%")
     ) if search_params[:name]
-    response_with object: query.then { |ds| Company.serialize(ds) }, type: :json, status: 200
+    response_with object: query.select_all(:companies).limit(10).then { |ds| Company.serialize(ds) }, type: :json, status: 200
   rescue StandardError => e
     response_with object: { errors: e.message }, type: :json, status: 500
   end
@@ -132,7 +141,7 @@ class CompaniesController < Rubee::BaseController
   end
 
   def search_params
-    params[:params].reject { |_, val| val.strip == '' }
+    params[:params]
   end
 
   def category_params
