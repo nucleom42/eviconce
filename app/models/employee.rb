@@ -1,8 +1,18 @@
 class Employee < Rubee::SequelObject
   JWT_KEY = "#{ENV['JWT_KEY']}#{name}" || 'secret'
 
-  attr_accessor :id, :first_name, :last_name, :description,
-    :email, :phone, :password_digest, :role, :created, :updated, :company_id
+  attr_accessor :id,
+    :first_name,
+    :last_name,
+    :description,
+    :email,
+    :phone,
+    :password_digest,
+    :role,
+    :created,
+    :updated,
+    :company_id
+
   ROLES = { admin: 1, user: 0 }.freeze
 
   validate do
@@ -45,9 +55,33 @@ class Employee < Rubee::SequelObject
     end
   end
 
+  around :save, ->(m, &original_save) do
+    new_record = !m.persisted?
+
+    original_save.call
+
+    if new_record
+      m.notify_employee_welcome!
+    end
+  end
+
+  def notify_employee_welcome!
+    return unless id
+    return if Rubee::Configuration.test?
+
+    AsyncEmailRunner.new.perform_async(
+      options: {
+        method: :welcome_employee,
+        to: email,
+        employee_id: id,
+      }
+    )
+  end
+
   def frames(date, service)
     target_window = window_for_date(date)
     return [] unless target_window
+
     service_time = service.duration
     from_time = date.to_time.at(target_window.start_time.hour, target_window.start_time.min, 0)
     to_time = date.to_time.at(target_window.end_time.hour, target_window.end_time.min, 0)

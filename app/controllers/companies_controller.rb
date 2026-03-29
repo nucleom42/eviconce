@@ -8,7 +8,7 @@ class CompaniesController < Rubee::BaseController
     query = query.join(:addresses, id: :address_id).where(
       Sequel.lit("addresses.city ILIKE ?", "%#{search_params[:city].gsub(/[%_\\]/) { |m| "\\#{m}" }}%")
     ) if search_params[:city]
-    if search_params[:categories].any?
+    if search_params[:categories]&.any?
       category_conditions = search_params[:categories].map do |cat_name|
         escaped_cat = cat_name.gsub(/[%_\\]/) { |m| "\\#{m}" }
         Sequel.lit("categories.name ILIKE ?", "%#{escaped_cat}%")
@@ -30,7 +30,7 @@ class CompaniesController < Rubee::BaseController
 
   # GET /api/companies/{name}
   def show_by_name
-    search_hash = { name: params[:name].downcase.gsub('-', ' ') }
+    search_hash = { evikonce_url: params[:name] }
     found_company = Company.search(
       search_hash.values[0],
       in_fields: [name: search_hash.keys[0]],

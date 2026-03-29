@@ -17,9 +17,12 @@ class AsyncEmailRunner
     {
       to: options['to'],
       client_name: options['client_name'],
-      service: Service.find(options['service_id']),
-      time_slot: TimeSlot.find(options['time_slot_id']),
-    }
+      service: options['service_id'] && Service.find(options['service_id']),
+      time_slot: options['time_slot_id'] && TimeSlot.find(options['time_slot_id']),
+      employee: options['employee_id'] && Employee.find(options['employee_id']),
+      changed: options['changed'],
+      deleted: options['deleted'],
+    }.reject { |_k, v| v.nil? }
   end
 
   def parse_options(options)

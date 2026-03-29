@@ -1,5 +1,15 @@
 class Address < Rubee::SequelObject
-  attr_accessor :id, :city, :country, :postal, :region, :lt, :ln, :street_line1, :street_line2, :created, :updated
+  attr_accessor :id,
+    :city,
+    :country,
+    :postal,
+    :region,
+    :lt,
+    :ln,
+    :street_line1,
+    :street_line2,
+    :created,
+    :updated
 
   validate do
     attribute(:city).required('Місто обов`язкове').type(String)

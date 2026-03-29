@@ -1,3 +1,6 @@
 class Category < Rubee::SequelObject
-  attr_accessor :id, :name, :created, :updated
+  attr_accessor :id,
+    :name,
+    :created,
+ :updated
 end

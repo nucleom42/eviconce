@@ -1,5 +1,12 @@
 class Service < Rubee::SequelObject
-  attr_accessor :id, :name, :description, :price, :duration, :employee_id, :created, :updated
+  attr_accessor :id,
+    :name,
+    :description,
+    :price,
+    :duration,
+    :employee_id,
+    :created,
+    :updated
 
   validate do
     attribute(:name).required.type(String).condition(-> { name.length > 1 })

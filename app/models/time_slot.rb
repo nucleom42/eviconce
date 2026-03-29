@@ -1,6 +1,16 @@
 class TimeSlot < Rubee::SequelObject
-  attr_accessor :id, :start_time, :end_time, :day, :employee_id, :client_id,
-    :company_id, :service_id, :state, :price, :created, :updated
+  attr_accessor :id,
+    :start_time,
+    :end_time,
+    :day,
+    :employee_id,
+    :client_id,
+    :company_id,
+    :service_id,
+    :state,
+    :price,
+    :created,
+    :updated
 
   STATES = {
     0 => 'scheduled', # scheduled but not confirmed
@@ -43,13 +53,19 @@ class TimeSlot < Rubee::SequelObject
     raise Rubee::Validatable::Error, "Time slot with status #{m.status} can't be deleted"
   end, if: ->(m) { !['booked', 'scheduled', 'frozen'].include?(m.status) }
 
-  around :save, ->(m, &original_save) do
-    existing_record = m.persisted?
-    original_save.call
-    return if existing_record
+  around :destroy, ->(m, &original_destroy) do
+    time_slot_object = m
+    original_destroy.call
+    m.notify_client!(changed: false, deleted: true, time_slot_object:)
+    m.notify_company!(changed: false, deleted: true, time_slot_object:)
+  end
 
-    m.notify_client!
-    m.notify_company!
+  around :save, ->(m, &original_save) do
+    changed = m.persisted?
+    original_save.call
+
+    m.notify_client!(changed:, deleted: false)
+    m.notify_company!(changed:, deleted: false)
   end
 
   holds :employee
@@ -61,9 +77,9 @@ class TimeSlot < Rubee::SequelObject
     status == 'booked'
   end
 
-  def notify_client!
+  def notify_client!(changed: false, deleted: false, time_slot_object: nil)
     return unless client
-    return if RACK_ENV['ENV'] == 'test'
+    return if Rubee::Configuration.test?
 
     AsyncEmailRunner.new.perform_async(
       options: {
@@ -72,13 +88,16 @@ class TimeSlot < Rubee::SequelObject
         client_name: "#{client.first_name} #{client.last_name}",
         service_id: service.id,
         time_slot_id: id,
+        changed:,
+        deleted:,
+        time_slot_object:,
       }
     )
   end
 
-  def notify_company!
+  def notify_company!(changed: false, deleted: false, time_slot_object: nil)
     return unless company
-    return if ENV['RACK_ENV'] == 'test'
+    return if Rubee::Configuration.test?
 
     AsyncEmailRunner.new.perform_async(
       options: {
@@ -87,6 +106,9 @@ class TimeSlot < Rubee::SequelObject
         client_name: "#{client.first_name} #{client.last_name}",
         service_id: service.id,
         time_slot_id: id,
+        changed:,
+        deleted:,
+        time_slot_object:,
       }
     )
   end

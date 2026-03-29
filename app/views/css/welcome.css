@@ -12,25 +12,27 @@
    ============================================ */
 
 .hero-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #fff;
   padding: 100px 20px 140px;
-  color: white;
+  color: grey;
   text-align: center;
   position: relative;
-  overflow: hidden; /* Keep this for background pattern */
+  overflow: hidden;
+  border: solid 1px #e4e4e4;
+  border-radius: 10px;
 }
 
-.hero-section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  opacity: 0.5;
-  pointer-events: none;
-}
+/* .hero-section::before { */
+/*   content: ""; */
+/*   position: absolute; */
+/*   top: 0; */
+/*   left: 0; */
+/*   right: 0; */
+/*   bottom: 0; */
+/*   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); */
+/*   opacity: 0.5; */
+/*   pointer-events: none; */
+/* } */
 
 .hero-content {
   max-width: 900px;
@@ -721,4 +723,76 @@
 .category-dropdown::-webkit-scrollbar-thumb:hover,
 .search-results-dropdown::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+/* ============================================
+   REGISTER COMPANY CTA (below search)
+   ============================================ */
+
+.register-company-cta {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.register-company-text {
+  font-size: 0.95rem;
+  color: grey;
+  margin-bottom: 1rem;
+  font-weight: 400;
+}
+
+.register-company-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: grey;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.register-company-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.register-company-button svg {
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-company-cta {
+    margin-top: 1.5rem;
+  }
+
+  .register-company-text {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .register-company-button {
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-company-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  .register-company-button svg {
+    width: 16px;
+    height: 16px;
+  }
 }

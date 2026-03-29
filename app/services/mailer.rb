@@ -1,4 +1,5 @@
 class Mailer
+  DOMAIN = ENV.fetch('DOMAIN', 'localhost:7000')
   class << self
     def setup!
       config = smtp_config
@@ -18,16 +19,35 @@ class Mailer
       }
     end
 
+    def welcome_employee(to:, employee:)
+      html_content = employee_welcome_html(employee.first_name, employee.email, employee.password)
+      text_content = employee_welcome_text(employee.first_name, employee.email, employee.password)
+
+      Mail.deliver do
+        from     ENV.fetch('FROM_EMAIL', "noreply@#{DOMAIN}")
+        to       employee.email
+        subject  "Дякуємо за реєстрацію"
+        html_part do
+          content_type 'text/html; charset=UTF-8'
+          body html_content
+        end
+        text_part do
+          body text_content
+        end
+      end
+    end
+
     # Send booking confirmation
-    def booking_confirmation(to:, client_name:, service:, time_slot:)
+    def booking_confirmation(to:, client_name:, service:, time_slot:, changed: false, deleted: false, time_slot_object: nil)
       # Generate content outside the Mail.deliver block
-      html_content = booking_html(client_name, service, time_slot)
-      text_content = booking_text(client_name, service, time_slot)
+      html_content = booking_html(client_name, service, (time_slot || time_slot_object, changed, deleted)
+      text_content = booking_text(client_name, service, (time_slot || time_slot_object), changed, deleted)
+      subject = changed ? 'Зміна запису' : 'Підтвердження запису'
 
       Mail.deliver do
         from     ENV.fetch('FROM_EMAIL', 'noreply@yourdomain.com')
         to       to
-        subject  "Підтвердження запису"
+        subject  subject
         html_part do
           content_type 'text/html; charset=UTF-8'
           body html_content
@@ -40,7 +60,7 @@ class Mailer
 
     private
 
-    def booking_html(name, service, slot)
+    def employee_welcome_html(name, email, password)
       <<~HTML
         <!DOCTYPE html>
         <html>
@@ -57,7 +77,45 @@ class Mailer
         <body>
           <div class="container">
             <div class="header">
-              <h1>Ваш запис підтверджено!</h1>
+              <h1>Вітаємо, #{name}!</h1>
+            </div>
+            <div class="content">
+              <p>Дякуємо за реєстрацію на Є Віконце!</p>
+              <a href="#{DOMAIN}/companies/welcome">Перейти</a>
+              <p>Ваш обліковий запис:</p>
+              <div class="detail">
+                <span class="label">Логін:</span> #{email}
+              </div>
+              <div class="detail">
+                <span class="label">Пароль:</span> #{password}
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      HTML
+    end
+
+    def booking_html(name, service, slot, changed, deleted)
+      action = changed ? 'змінено' : 'підтверджено'
+      action = 'видалено' if deleted
+      <<~HTML
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #4a90e2; color: white; padding: 20px; text-align: center; }
+            .content { background: #f9f9f9; padding: 20px; }
+            .detail { margin: 10px 0; }
+            .label { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Ваш запис #{action}!</h1>
             </div>
             <div class="content">
               <p>Доброго дня, #{name}!</p>
@@ -71,9 +129,9 @@ class Mailer
                 <span class="label">Час:</span> #{slot.start_time.strftime('%H:%M')}
               </div>
               <div class="detail">
-                <span class="label">Ціна:</span> #{service.price} грн
+                <span class="label">Ціна:</span> #{service.price.to_f} грн
               </div>
-              <p>Дякуємо за ваш запис!</p>
+              <p>Дякуємо!</p>
             </div>
           </div>
         </body>
@@ -81,18 +139,30 @@ class Mailer
       HTML
     end
 
-    def booking_text(name, service, slot)
+    def employee_welcome_text(name, email, password)
       <<~TEXT
-        Ваш запис підтверджено!
+        Вітаємо, #{name}!
+        Дякуємо за реєстрацію!
+
+        Логін: #{email}
+        Пароль: #{password}
+      TEXT
+    end
+
+    def booking_text(name, service, slot, changed, deleted)
+      action = changed ? 'змінено' : 'підтверджено'
+      action = 'видалено' if deleted
+      <<~TEXT
+        Ваш запис #{action}!
 
         Доброго дня, #{name}!
 
         Послуга: #{service.name}
         Дата: #{slot.day}
         Час: #{slot.start_time.strftime('%H:%M')}
-        Ціна: #{service.price} грн
+        Ціна: #{service.price.to_f} грн
 
-        Дякуємо за ваш запис!
+        Дякуємо!
       TEXT
     end
   end

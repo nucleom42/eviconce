@@ -1,5 +1,9 @@
 class CompanyCategory < Rubee::SequelObject
-  attr_accessor :company_id, :category_id, :created, :updated, :id
+  attr_accessor :id,
+  :company_id,
+  :category_id,
+  :created,
+  :updated
 
   holds :company
   holds :category

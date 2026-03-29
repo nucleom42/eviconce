@@ -1,5 +1,14 @@
 class Company < Rubee::SequelObject
-  attr_accessor :id, :name, :email, :website, :phone, :description, :address_id, :created, :updated
+  attr_accessor :id,
+    :name,
+    :email,
+    :website,
+    :evikonce_url,
+    :phone,
+    :description,
+    :address_id,
+    :created,
+    :updated
 
   validate do
     attribute(:name).required('Назва компаніїобовязкова').type(String)
@@ -17,6 +26,12 @@ class Company < Rubee::SequelObject
     attribute(:description).required('Опис обовязковий').type(String)
       .condition(-> { description.length > 10 }, message: 'Опис повинен бути більш ніж 10 символів')
     attribute(:address_id).optional
+    attribute(:evikonce_url).optional
+  end
+
+  around :save, ->(m, &original_save) do
+    m.evikonce_url = m.name.urlize
+    original_save.call
   end
 
   holds :address

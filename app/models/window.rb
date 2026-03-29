@@ -1,8 +1,18 @@
 class Window < Rubee::SequelObject
   WEEKS = [0, 1, 2, 3, 4, 5, 6].freeze
   WEEKENDS = [0, 6].freeze
-  attr_accessor :id, :start_time, :end_time, :break_from, :break_to,
-    :weekends, :effective_date, :end_date, :created, :updated, :employee_id
+
+  attr_accessor :id,
+    :start_time,
+    :end_time,
+    :break_from,
+    :break_to,
+    :weekends,
+    :effective_date,
+    :end_date,
+    :created,
+    :updated,
+    :employee_id
 
   before :save, ->(m) { m.weekends = Sequel.pg_array(m.weekends) }
 

@@ -1,8 +1,8 @@
 class ClientsController < Rubee::BaseController
   include Rubee::AuthTokenable
 
-  auth_methods :index
-  before :index, :create, :set_company
+  auth_methods :index, :create, :update, :destroy
+  before :index, :create, :update, :destroy, :set_company
 
   # GET /api/clients
   def index
@@ -14,7 +14,7 @@ class ClientsController < Rubee::BaseController
   # POST /api/clients
   def create
     Rubee::SequelObject::DB.transaction do
-      client = Client.find_or_new(client_params.except(:id))
+      client = Client.find_or_new(client_params.except(:id).merge(company_id: @company.id))
       persisted = client.persisted?
       client.password = client_params[:password] || client.first_name unless persisted
       if persisted || (client.valid? && client.save)
@@ -30,7 +30,7 @@ class ClientsController < Rubee::BaseController
   # PUT /api/clients/{id}
   def update
     client = Client.find(params[:id])
-    client.assign_attributes(client_params.except(:id))
+    client.assign_attributes(client_params.except(:id).merge(company_id: @company.id))
     client.password = client_params[:password] if client_params[:password]
 
     if client.valid? && client.save

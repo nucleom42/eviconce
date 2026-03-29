@@ -7,6 +7,7 @@ class CreateCompanies
       String(:name, null: false, unique: true)
       String(:email, null: false, unique: true)
       String(:website, null: true)
+      String(:evikonce_url, null: true)
       String(:phone, null: true)
       String(:description, null: false)
       foreign_key(:address_id, :addresses, null: true, on_delete: :cascade)

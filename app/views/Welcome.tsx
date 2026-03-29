@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./css/Welcome.css";
 import CATEGORIES from "./data/ua_categories.json";
 import CITIES from "./data/ua_cities.json";
@@ -98,7 +98,7 @@ export default function Welcome() {
   };
 
   const handleResultClick = (company) => {
-    const slug = company.name.toLowerCase().replace(/\s+/g, "-");
+    const slug = company.evikonce_url;
     navigate(`/w/${slug}`);
   };
 
@@ -287,50 +287,74 @@ export default function Welcome() {
                 Шукати
               </button>
             </div>
+
+            {/* Search Results Dropdown */}
+            {showResults && (
+              <div className="search-results-dropdown" ref={resultsRef}>
+                {isLoading ? (
+                  <div className="results-loading">
+                    <div className="spinner"></div>
+                    <p>Пошук...</p>
+                  </div>
+                ) : results.length > 0 ? (
+                  <div className="results-list">
+                    {results.map((company) => (
+                      <div
+                        key={company.id}
+                        className="result-item"
+                        onClick={() => handleResultClick(company)}
+                      >
+                        <div className="result-info">
+                          <h4>{company.name}</h4>
+                          <p className="result-category">
+                            {company.categories?.[0]?.name ||
+                              company.description?.substring(0, 60)}
+                          </p>
+                          <p className="result-location">
+                            📍 {company.address?.city}
+                            {company.address?.street_line1 &&
+                              `, ${company.address.street_line1}`}
+                          </p>
+                        </div>
+                        {company.rating && (
+                          <div className="result-rating">⭐ {company.rating}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="results-empty">
+                    <p>Нічого не знайдено</p>
+                    <span>Спробуйте змінити критерії пошуку</span>
+                  </div>
+                )}
+              </div>
+            )}
           </form>
 
-          {/* Search Results Dropdown */}
-          {showResults && (
-            <div className="search-results-dropdown" ref={resultsRef}>
-              {isLoading ? (
-                <div className="results-loading">
-                  <div className="spinner"></div>
-                  <p>Пошук...</p>
-                </div>
-              ) : results.length > 0 ? (
-                <div className="results-list">
-                  {results.map((company) => (
-                    <div
-                      key={company.id}
-                      className="result-item"
-                      onClick={() => handleResultClick(company)}
-                    >
-                      <div className="result-info">
-                        <h4>{company.name}</h4>
-                        <p className="result-category">
-                          {company.categories?.[0]?.name ||
-                            company.description?.substring(0, 60)}
-                        </p>
-                        <p className="result-location">
-                          📍 {company.address?.city}
-                          {company.address?.street_line1 &&
-                            `, ${company.address.street_line1}`}
-                        </p>
-                      </div>
-                      {company.rating && (
-                        <div className="result-rating">⭐ {company.rating}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="results-empty">
-                  <p>Нічого не знайдено</p>
-                  <span>Спробуйте змінити критерії пошуку</span>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Register Company Button - NEW */}
+          <div className="register-company-cta">
+            <p className="register-company-text">
+              Ви власник бізнесу?
+            </p>
+            <Link to="/companies/welcome" className="register-company-button">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 4v12M4 10h12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Зареєструвати компанію
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -367,7 +391,7 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Перукарня")}
           >
-            <div className="category-icon">💇</div>
+            <div className="category-icon"></div>
             <h3>Перукарня</h3>
             <p>Стрижки, укладки, фарбування</p>
           </div>
@@ -376,13 +400,13 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Манікюр")}
           >
-            <div className="category-icon">💅</div>
+            <div className="category-icon"></div>
             <h3>Манікюр</h3>
             <p>Манікюр, педикюр, нарощування</p>
           </div>
 
           <div className="category-card" onClick={() => handleCategoryCard("СПА")}>
-            <div className="category-icon">🧖</div>
+            <div className="category-icon"></div>
             <h3>СПА</h3>
             <p>Масаж, релакс, догляд</p>
           </div>
@@ -391,7 +415,7 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Фітнес")}
           >
-            <div className="category-icon">💪</div>
+            <div className="category-icon"></div>
             <h3>Фітнес</h3>
             <p>Тренажерна зала, йога, пілатес</p>
           </div>
@@ -400,7 +424,7 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Стоматологія")}
           >
-            <div className="category-icon">🦷</div>
+            <div className="category-icon"></div>
             <h3>Стоматологія</h3>
             <p>Лікування, протезування, відбілювання</p>
           </div>
@@ -409,7 +433,7 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Косметологія")}
           >
-            <div className="category-icon">✨</div>
+            <div className="category-icon"></div>
             <h3>Косметологія</h3>
             <p>Чистка, пілінг, ін'єкції краси</p>
           </div>
@@ -418,7 +442,7 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Масаж")}
           >
-            <div className="category-icon">💆</div>
+            <div className="category-icon"></div>
             <h3>Масаж</h3>
             <p>Класичний, тайський, спортивний</p>
           </div>
@@ -427,7 +451,7 @@ export default function Welcome() {
             className="category-card"
             onClick={() => handleCategoryCard("Татуювання")}
           >
-            <div className="category-icon">🎨</div>
+            <div className="category-icon"></div>
             <h3>Татуювання</h3>
             <p>Тату, пірсинг, художнє татуювання</p>
           </div>

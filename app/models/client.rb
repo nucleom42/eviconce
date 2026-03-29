@@ -1,7 +1,16 @@
 class Client < Rubee::SequelObject
   JWT_KEY = "#{ENV['JWT_KEY']}#{name}" || 'secret'
-  attr_accessor :id, :first_name, :last_name, :email, :phone, :password_digest,
-    :created, :updated, :address_id, :company_id
+
+  attr_accessor :id,
+    :first_name,
+    :last_name,
+    :email,
+    :phone,
+    :password_digest,
+    :created,
+    :updated,
+    :address_id,
+    :company_id
 
   validate do
     attribute(:first_name).required.type(String).condition(-> { first_name.length > 2 })

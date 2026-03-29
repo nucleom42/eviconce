@@ -1,11 +1,16 @@
 class Image < Rubee::SequelObject
-  attr_accessor :id, :created, :image_data, :type, :updated
   TYPES_MAP = {
     0 => :photo,
     1 => :logo,
   }.freeze
-  after :destroy, :rm_file
 
+  attr_accessor :id,
+    :created,
+    :image_data,
+    :type,
+    :updated
+
+  after :destroy, :rm_file
   # Virtual attribute for image (Shrine provides this)
   def image
     return unless image_data
