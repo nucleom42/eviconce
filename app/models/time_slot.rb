@@ -54,10 +54,10 @@ class TimeSlot < Rubee::SequelObject
   end, if: ->(m) { !['booked', 'scheduled', 'frozen'].include?(m.status) }
 
   around :destroy, ->(m, &original_destroy) do
-    time_slot_object = m
+    time_slot_hash = m.to_h
     original_destroy.call
-    m.notify_client!(changed: false, deleted: true, time_slot_object:)
-    m.notify_company!(changed: false, deleted: true, time_slot_object:)
+    m.notify_client!(changed: false, deleted: true, time_slot_hash:)
+    m.notify_company!(changed: false, deleted: true, time_slot_hash:)
   end
 
   around :save, ->(m, &original_save) do
@@ -77,7 +77,7 @@ class TimeSlot < Rubee::SequelObject
     status == 'booked'
   end
 
-  def notify_client!(changed: false, deleted: false, time_slot_object: nil)
+  def notify_client!(changed: false, deleted: false, time_slot_hash: nil)
     return unless client
     return if Rubee::Configuration.test?
 
@@ -87,15 +87,14 @@ class TimeSlot < Rubee::SequelObject
         to: client.email,
         client_name: "#{client.first_name} #{client.last_name}",
         service_id: service.id,
-        time_slot_id: id,
+        time_slot: time_slot_hash || to_h,
         changed:,
         deleted:,
-        time_slot_object:,
       }
     )
   end
 
-  def notify_company!(changed: false, deleted: false, time_slot_object: nil)
+  def notify_company!(changed: false, deleted: false, time_slot_hash: nil)
     return unless company
     return if Rubee::Configuration.test?
 
@@ -105,10 +104,9 @@ class TimeSlot < Rubee::SequelObject
         to: company.email,
         client_name: "#{client.first_name} #{client.last_name}",
         service_id: service.id,
-        time_slot_id: id,
+        time_slot: time_slot_hash || to_h,
         changed:,
         deleted:,
-        time_slot_object:,
       }
     )
   end

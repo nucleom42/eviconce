@@ -7,23 +7,10 @@ class AsyncEmailRunner
   def perform(options)
     options = parse_options(options)
     method = options['method']
-    mailer_args = mailer_args(options)
-    Mailer.send(method, **mailer_args)
+    Mailer.send(method, **options)
   end
 
   private
-
-  def mailer_args(options)
-    {
-      to: options['to'],
-      client_name: options['client_name'],
-      service: options['service_id'] && Service.find(options['service_id']),
-      time_slot: options['time_slot_id'] && TimeSlot.find(options['time_slot_id']),
-      employee: options['employee_id'] && Employee.find(options['employee_id']),
-      changed: options['changed'],
-      deleted: options['deleted'],
-    }.reject { |_k, v| v.nil? }
-  end
 
   def parse_options(options)
     return options unless options.is_a?(String)

@@ -19,7 +19,8 @@ class Mailer
       }
     end
 
-    def welcome_employee(to:, employee:)
+    def welcome_employee(args = {})
+      employee = Employee.find args[:employee_id]
       html_content = employee_welcome_html(employee.first_name, employee.email, employee.password)
       text_content = employee_welcome_text(employee.first_name, employee.email, employee.password)
 
@@ -38,11 +39,18 @@ class Mailer
     end
 
     # Send booking confirmation
-    def booking_confirmation(to:, client_name:, service:, time_slot:, changed: false, deleted: false, time_slot_object: nil)
+    def booking_confirmation(args = {})
+      client_name = args[:client_name]
+      to = args[:to]
+      service = Service.find args[:service_id]
+      time_slot = args[:time_slot]
+      changed = args[:changed]
+      deleted = args[:deleted]
       # Generate content outside the Mail.deliver block
-      html_content = booking_html(client_name, service, (time_slot || time_slot_object, changed, deleted)
-      text_content = booking_text(client_name, service, (time_slot || time_slot_object), changed, deleted)
+      html_content = booking_html(client_name, service, time_slot, changed, deleted)
+      text_content = booking_text(client_name, service, time_slot, changed, deleted)
       subject = changed ? 'Зміна запису' : 'Підтвердження запису'
+      subject = 'Видалення запису' if deleted
 
       Mail.deliver do
         from     ENV.fetch('FROM_EMAIL', 'noreply@yourdomain.com')
@@ -123,10 +131,10 @@ class Mailer
                 <span class="label">Послуга:</span> #{service.name}
               </div>
               <div class="detail">
-                <span class="label">Дата:</span> #{slot.day}
+                <span class="label">Дата:</span> #{slot[:day]}
               </div>
               <div class="detail">
-                <span class="label">Час:</span> #{slot.start_time.strftime('%H:%M')}
+                <span class="label">Час:</span> #{Time.parse(slot[:start_time]).strftime('%H:%M')}
               </div>
               <div class="detail">
                 <span class="label">Ціна:</span> #{service.price.to_f} грн
@@ -158,8 +166,8 @@ class Mailer
         Доброго дня, #{name}!
 
         Послуга: #{service.name}
-        Дата: #{slot.day}
-        Час: #{slot.start_time.strftime('%H:%M')}
+        Дата: #{slot[:day]}
+        Час: #{Time.parse(slot[:start_time]).strftime('%H:%M')}
         Ціна: #{service.price.to_f} грн
 
         Дякуємо!
