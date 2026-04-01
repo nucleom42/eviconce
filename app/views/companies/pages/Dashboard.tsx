@@ -54,12 +54,12 @@ export default function CompanyDashboard() {
       return <Settings dashboardData={dashboardData} />;
     }
     // Default to dashboard/calendar
-    return <Calendar employees={dashboardData.employees} companyId={id} />;
+    return <Calendar employees={dashboardData.employees} companyId={id}/>;
   };
 
   return (
     <div className="dashboard">
-      <Sidebar companyName={dashboardData.company.name} id={id} />
+      <Sidebar companyName={dashboardData.company.name} id={id} evikonceUrl={dashboardData.company.evikonce_url}/>
       <div className="dashboard__content">
         <TopBar userName={dashboardData.user.first_name} />
         <main className="dashboard__main content-center">

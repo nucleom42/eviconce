@@ -31,6 +31,7 @@ class Dashboard
       logo: company.logo&.serializable_hash,
       images: company.images.map(&:serializable_hash),
       categories: company.categories.map(&:name),
+      evikonce_url: company.evikonce_url,
     }
     @user = { id: user.id, first_name: user.first_name, last_name: user.last_name }
   end

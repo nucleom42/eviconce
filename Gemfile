@@ -25,6 +25,8 @@ gem 'redis'
 gem 'mail'
 # Background engine
 gem 'sidekiq'
+# Hash JWT
+gem 'jwt'
 
 group :development do
   gem 'minitest'

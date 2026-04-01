@@ -94,6 +94,10 @@ class TimeSlot < Rubee::SequelObject
     )
   end
 
+  def destroy_token
+    JWT.encode({ id:, client_email: client&.email }, JWT_KEY, 'HS256')
+  end
+
   def notify_company!(changed: false, deleted: false, time_slot_hash: nil)
     return unless company
     return if Rubee::Configuration.test?

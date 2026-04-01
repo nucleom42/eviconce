@@ -159,6 +159,7 @@ Rubee::Router.draw do |router|
   router.get('/api/time_slots/{id}/edit', to: 'time_slots#edit')
   router.put('/api/time_slots/{id}', to: 'time_slots#update')
   router.delete('/api/time_slots/{id}', to: 'time_slots#destroy')
+  router.get('/api/time_slots/del/{token}', to: 'time_slots#destroy_by_token')
   ### END TIME_SLOT API ###
 
   ### START WINDOW API ###

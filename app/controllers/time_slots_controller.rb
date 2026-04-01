@@ -1,6 +1,7 @@
 class TimeSlotsController < Rubee::BaseController
   include Rubee::AuthTokenable
   auth_methods :index, :update, :destroy
+  JWT_KEY = ENV['JWT_KEY'] || 'my_secret_jwt_key'
 
   # GET /api/time_slots
   def index
@@ -37,6 +38,24 @@ class TimeSlotsController < Rubee::BaseController
       response_with object: time_slot.serialized_hash, type: :json, status: 200
     else
       response_with object: { errors: time_slot.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    response_with object: { errors: e.message }, type: :json, status: 500
+  end
+
+  # GET /api/time_slots/del/{token}
+  def delete_with_token
+    token = params[:token]
+    decoded_token = JWT.decode(token, JWT_KEY, true, { algorithm: 'HS256' })
+    time_slot = TimeSlot.find(decoded_token[0]['id'])
+    if time_slot.client.email == decoded_token[0]['client_email']
+      if time_slot.destroy
+        response_with object: { ok: :deleted }, type: :json, status: 200
+      else
+        response_with object: { errors: time_slot.errors }, type: :json, status: 422
+      end
+    else
+      response_with object: { errors: 'Unauthorized' }, type: :json, status: 401
     end
   rescue StandardError => e
     response_with object: { errors: e.message }, type: :json, status: 500
