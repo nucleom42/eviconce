@@ -7,7 +7,8 @@ class Dashboard
   after :initialize, :serialize!
 
   def serialize!
-    @employees = employees.map do |e|
+    target_employees = @user.admin? ? employees : [@user]
+    @employees = target_employees.map do |e|
       {
         id: e.id,
         first_name: e.first_name,

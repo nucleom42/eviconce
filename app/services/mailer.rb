@@ -1,5 +1,4 @@
 class Mailer
-  DOMAIN = ENV.fetch('DOMAIN', 'localhost:7000')
   class << self
     def setup!
       config = smtp_config
@@ -25,7 +24,7 @@ class Mailer
       text_content = employee_welcome_text(employee.first_name, employee.email, employee.password)
 
       Mail.deliver do
-        from     ENV.fetch('FROM_EMAIL', "noreply@#{DOMAIN}")
+        from     ENV.fetch('FROM_EMAIL', "noreply@#{Domain.base_url}")
         to       employee.email
         subject  "Дякуємо за реєстрацію"
         html_part do
@@ -83,13 +82,13 @@ class Mailer
           </style>
         </head>
         <body>
-          <div class="container">
-            <div class="header">
-              <h1>Вітаємо, #{name}!</h1>
+          <div class="container">.
+            <div class="header">.
+              <h1>Вітаємо, #{name}!</h1.>
             </div>
             <div class="content">
               <p>Дякуємо за реєстрацію на Є Віконце!</p>
-              <a href="#{DOMAIN}/companies/welcome">Перейти</a>
+              <a href="#{Domain.base_url}/companies/welcome">Перейти</a>
               <p>Ваш обліковий запис:</p>
               <div class="detail">
                 <span class="label">Логін:</span> #{email}
@@ -107,6 +106,17 @@ class Mailer
     def booking_html(name, service, slot, changed, deleted)
       action = changed ? 'змінено' : 'підтверджено'
       action = 'видалено' if deleted
+
+      cancel_link = unless deleted
+        <<~LINK
+          <div class="detail">
+            <span class="label">
+              <a href="#{Domain.delete_time_slot_url(TimeSlot.find(slot[:id]))}">Відмінити</a>
+            </span>
+          </div>
+        LINK
+      end
+
       <<~HTML
         <!DOCTYPE html>
         <html>
@@ -139,6 +149,7 @@ class Mailer
               <div class="detail">
                 <span class="label">Ціна:</span> #{service.price.to_f} грн
               </div>
+              #{cancel_link}
               <p>Дякуємо!</p>
             </div>
           </div>
@@ -160,6 +171,11 @@ class Mailer
     def booking_text(name, service, slot, changed, deleted)
       action = changed ? 'змінено' : 'підтверджено'
       action = 'видалено' if deleted
+      cancel_link = unless deleted
+        <<~TEXT
+          <a href="#{Domain.delete_time_slot_url(TimeSlot.find(slot[:id]))}">Відмінити</a>
+        TEXT
+      end
       <<~TEXT
         Ваш запис #{action}!
 
@@ -169,6 +185,8 @@ class Mailer
         Дата: #{slot[:day]}
         Час: #{Time.parse(slot[:start_time]).strftime('%H:%M')}
         Ціна: #{service.price.to_f} грн
+
+        #{cancel_link}
 
         Дякуємо!
       TEXT

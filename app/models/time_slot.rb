@@ -1,4 +1,6 @@
 class TimeSlot < Rubee::SequelObject
+  JWT_KEY = ENV['JWT_KEY'] || 'my_secret_jwt_key'
+
   attr_accessor :id,
     :start_time,
     :end_time,
@@ -191,6 +193,10 @@ class TimeSlot < Rubee::SequelObject
       return 0 if status == 'preview'
 
       STATES.key(status)
+    end
+
+    def decoded_destroy_token(token)
+      JWT.decode(token, JWT_KEY, true, { algorithm: 'HS256' })
     end
   end
 end

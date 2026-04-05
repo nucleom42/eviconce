@@ -1,6 +1,9 @@
 class CompaniesController < Rubee::BaseController
   include Rubee::AuthTokenable
+  include ::Authorizable
+
   auth_methods :create, :dashboard, :update
+  authorize admin: :update
 
   # GET /api/companies
   def index

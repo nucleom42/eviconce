@@ -1,7 +1,9 @@
 class EmployeesController < Rubee::BaseController
   include Rubee::AuthTokenable
+  include Authorizable
 
   auth_methods :index, :update, :destroy, :availability
+  authorize admin: [:update, :destroy]
 
   # GET /api/employees
   def index

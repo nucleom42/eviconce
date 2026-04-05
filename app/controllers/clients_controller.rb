@@ -1,7 +1,10 @@
 class ClientsController < Rubee::BaseController
   include Rubee::AuthTokenable
+  include Authorizable
 
   auth_methods :index, :update, :destroy
+  authorize admin: [:destroy, :update]
+
   before :index, :create, :update, :destroy, :set_company
 
   # GET /api/clients

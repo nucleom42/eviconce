@@ -65,6 +65,14 @@ class Employee < Rubee::SequelObject
     end
   end
 
+  def role_name
+    ROLES.key(role)
+  end
+
+  def admin?
+    role_name == :admin
+  end
+
   def notify_employee_welcome!
     return unless id
     return if Rubee::Configuration.test?
