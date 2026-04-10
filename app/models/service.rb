@@ -17,4 +17,23 @@ class Service < Rubee::SequelObject
   end
 
   holds :employee
+
+  def days_available(from = Date.today, to = Date.today + 14)
+    days = obtain_available(from, to)
+    return [] if days.empty?
+
+    until days.count >= 14
+      from = days.last + 1
+      to = from + (14 - days.count)
+      days += obtain_available(from, to)
+    end
+
+    days.first(14)
+  end
+
+  def obtain_available(from, to)
+    (from..to).to_a.select do |date|
+      employee.frames(date, self).any?
+    end
+  end
 end

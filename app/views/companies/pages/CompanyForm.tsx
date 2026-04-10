@@ -44,7 +44,7 @@ export default function CompanyForm({
 
   // Filter categories based on search
   const filteredCategories = CATEGORIES.filter((category) =>
-    category.toLowerCase().includes(categorySearch.toLowerCase())
+    category.toLowerCase().includes(categorySearch.toLowerCase()),
   );
 
   // Prefill form if editing
@@ -66,7 +66,7 @@ export default function CompanyForm({
 
       // Set existing categories
       if (company.categories && company.categories.length > 0) {
-        setSelectedCategories(company.categories.map(cat => cat.name || cat));
+        setSelectedCategories(company.categories.map((cat) => cat.name || cat));
       }
 
       // Set existing logo
@@ -103,7 +103,7 @@ export default function CompanyForm({
   // Remove category
   const handleRemoveCategory = (categoryToRemove) => {
     setSelectedCategories(
-      selectedCategories.filter((cat) => cat !== categoryToRemove)
+      selectedCategories.filter((cat) => cat !== categoryToRemove),
     );
   };
 
@@ -254,7 +254,17 @@ export default function CompanyForm({
         navigate(`/companies/${body.id}/dashboard`);
       }
     } else {
-      setErrors(body.errors || {});
+      // Handle both string and object errors from server
+      if (typeof body.errors === "string") {
+        setErrors({ _base: body.errors });
+      } else {
+        setErrors(body.errors || {});
+      }
+      // Clear failed new image uploads
+      setNewImageFiles([]);
+      setImagePreviews([]);
+      setLogoFile(null);
+      if (!logoId) setLogoPreview(null);
     }
   };
 
@@ -520,6 +530,11 @@ export default function CompanyForm({
           <section className="form-section">
             <div className="images-header">
               <h3>Фотографії компанії</h3>
+              {errors._base && (
+                <div className="field-error" style={{ marginBottom: "1rem" }}>
+                  {errors._base}
+                </div>
+              )}
               <label htmlFor="images-input" className="btn-add-image">
                 + Додати фото
               </label>

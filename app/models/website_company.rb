@@ -15,7 +15,8 @@ class WebsiteCompany
         email: e.email,
         description: e.description,
         phone: e.phone,
-        services: e.services.map(&:to_h),
+        services: e.services.map { _1.to_h.merge({ days_available: _1.days_available }) },
+        image: "/images#{e.image&.image_url}",
       }
     end
     @company = {

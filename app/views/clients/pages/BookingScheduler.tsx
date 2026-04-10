@@ -13,7 +13,12 @@ import {
   windowForDay,
 } from "./../../companies/utils/time";
 
-export default function BookingScheduler({ service, onClose, onComplete, company_id }) {
+export default function BookingScheduler({
+  service,
+  onClose,
+  onComplete,
+  company_id,
+}) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -27,18 +32,15 @@ export default function BookingScheduler({ service, onClose, onComplete, company
   });
   const [step, setStep] = useState(1);
 
-  const getNext14Days = () => {
-    const days = [];
-    const today = new Date();
-    for (let i = 0; i < 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      days.push(date);
-    }
-    return days;
+  const getAvailableDays = () => {
+    if (!service.days_available || service.days_available.length === 0)
+      return [];
+    return service.days_available.map(
+      (dateStr) => new Date(dateStr + "T00:00:00"),
+    );
   };
 
-  const days = getNext14Days();
+  const days = getAvailableDays();
 
   useEffect(() => {
     if (selectedDate) {
@@ -228,7 +230,7 @@ export default function BookingScheduler({ service, onClose, onComplete, company
           {/* Step 1: Select Date */}
           {step === 1 && (
             <div className="date-selector">
-              <h3>Оберіть дату</h3>
+              <h3>Оберіть вільну дату</h3>
               <div className="date-grid">
                 {days.map((day, index) => {
                   const formatted = formatDate(day);

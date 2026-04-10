@@ -11,7 +11,8 @@ class Employee < Rubee::SequelObject
     :role,
     :created,
     :updated,
-    :company_id
+    :company_id,
+    :image_id
 
   ROLES = { admin: 1, user: 0 }.freeze
 
@@ -37,9 +38,11 @@ class Employee < Rubee::SequelObject
     attribute(:role).required('Роль не може бути порожнім').type(Integer)
       .condition(-> { role.to_i&.between?(0, 1) }, 'Роль повинна бути адмін чи користувач')
     attribute(:company_id).optional
+    attribute(:image_id).optional
   end
 
   holds :company
+  holds :image
   owns_many :windows
   owns_many :time_slots
   owns_many :services
@@ -224,6 +227,12 @@ class Employee < Rubee::SequelObject
     end
 
     true
+  end
+
+  def add_or_replace_image(image)
+    Image.find(image_id)&.destroy if image_id
+
+    self.image_id = image.id
   end
 
   class << self

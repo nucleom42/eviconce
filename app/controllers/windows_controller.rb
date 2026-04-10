@@ -43,6 +43,7 @@ class WindowsController < Rubee::BaseController
       response_with object: window, type: :json, status: (new_window_record ? 201 : 200)
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 422
   end
 
@@ -55,6 +56,7 @@ class WindowsController < Rubee::BaseController
       response_with object: { errors: window.errors }, type: :json, status: 422
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 

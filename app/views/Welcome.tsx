@@ -18,8 +18,11 @@ export default function Welcome() {
 
   // Filter categories based on search - SAME AS COMPANYFORM
   const filteredCategories = CATEGORIES.filter((category) =>
-    category.toLowerCase().includes(categorySearch.toLowerCase())
+    category.toLowerCase().includes(categorySearch.toLowerCase()),
   );
+  useEffect(() => {
+    document.title = "Є віконце — Логін / Реєстрація";
+  }, []);
 
   // Close dropdown when clicking outside - SAME AS COMPANYFORM
   useEffect(() => {
@@ -48,7 +51,7 @@ export default function Welcome() {
   // Remove category - SAME AS COMPANYFORM
   const handleRemoveCategory = (categoryToRemove) => {
     setSelectedCategories(
-      selectedCategories.filter((cat) => cat !== categoryToRemove)
+      selectedCategories.filter((cat) => cat !== categoryToRemove),
     );
   };
 
@@ -317,7 +320,9 @@ export default function Welcome() {
                           </p>
                         </div>
                         {company.rating && (
-                          <div className="result-rating">⭐ {company.rating}</div>
+                          <div className="result-rating">
+                            ⭐ {company.rating}
+                          </div>
                         )}
                       </div>
                     ))}
@@ -334,9 +339,7 @@ export default function Welcome() {
 
           {/* Register Company Button - NEW */}
           <div className="register-company-cta">
-            <p className="register-company-text">
-              Ви власник бізнесу?
-            </p>
+            <p className="register-company-text">Ви власник бізнесу?</p>
             <Link to="/companies/welcome" className="register-company-button">
               <svg
                 width="20"
@@ -362,22 +365,40 @@ export default function Welcome() {
       <section className="quick-links-section">
         <h2>Популярні міста</h2>
         <div className="quick-links">
-          <button className="quick-link" onClick={() => handleQuickLink("Київ")}>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Київ")}
+          >
             Київ
           </button>
-          <button className="quick-link" onClick={() => handleQuickLink("Львів")}>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Львів")}
+          >
             Львів
           </button>
-          <button className="quick-link" onClick={() => handleQuickLink("Одеса")}>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Одеса")}
+          >
             Одеса
           </button>
-          <button className="quick-link" onClick={() => handleQuickLink("Харків")}>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Харків")}
+          >
             Харків
           </button>
-          <button className="quick-link" onClick={() => handleQuickLink("Дніпро")}>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Дніпро")}
+          >
             Дніпро
           </button>
-          <button className="quick-link" onClick={() => handleQuickLink("Запоріжжя")}>
+          <button
+            className="quick-link"
+            onClick={() => handleQuickLink("Запоріжжя")}
+          >
             Запоріжжя
           </button>
         </div>
@@ -405,7 +426,10 @@ export default function Welcome() {
             <p>Манікюр, педикюр, нарощування</p>
           </div>
 
-          <div className="category-card" onClick={() => handleCategoryCard("СПА")}>
+          <div
+            className="category-card"
+            onClick={() => handleCategoryCard("СПА")}
+          >
             <div className="category-icon"></div>
             <h3>СПА</h3>
             <p>Масаж, релакс, догляд</p>

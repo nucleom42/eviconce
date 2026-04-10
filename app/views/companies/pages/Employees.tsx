@@ -88,7 +88,7 @@ export default function Employees({ dashboardData }) {
                 <th>Прізвище</th>
                 <th>Email</th>
                 <th>Телефон</th>
-                <th>Дії</th>
+                <th className="content-right">Дії</th>
               </tr>
             </thead>
             <tbody>
@@ -98,7 +98,7 @@ export default function Employees({ dashboardData }) {
                   <td>{employee.last_name}</td>
                   <td>{employee.email}</td>
                   <td>{employee.phone || 'N/A'}</td>
-                  <td className="actions content-center">
+                  <td className="actions content-right">
                     <button
                       className="btn-edit"
                       onClick={() => handleEdit(employee)}

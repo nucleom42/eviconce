@@ -16,6 +16,7 @@ gem 'ru.Bee'
 gem 'sequel'
 # File management
 gem 'shrine'
+gem "image_processing", "~> 1.8"
 
 # Websocket is required to use integrated websocket feature
 gem 'websocket'

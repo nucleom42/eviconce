@@ -17,13 +17,21 @@ class EmployeesController < Rubee::BaseController
     employee = Employee.find(params[:id])
     employee.assign_attributes(employee_params.except(:id))
     employee.password = employee_params[:password] if employee_params[:password]
-
-    if employee.valid? && employee.save
-      response_with object: employee, type: :json, status: 200
-    else
-      response_with object: { errors: employee.errors }, type: :json, status: 422
+    Rubee::SequelObject::DB.transaction do
+      if image_params
+        image = Image.new(image: image_params)
+        image.image_type = :photo
+        image.save
+        employee.add_or_replace_image(image)
+      end
+      if employee.valid? && employee.save
+        response_with object: employee, type: :json, status: 200
+      else
+        response_with object: { errors: employee.errors }, type: :json, status: 422
+      end
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -39,6 +47,7 @@ class EmployeesController < Rubee::BaseController
       response_with object: { errors: employee.errors }, type: :json, status: 422
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -51,6 +60,7 @@ class EmployeesController < Rubee::BaseController
       response_with object: { errors: employee.errors }, type: :json, status: 422
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -67,6 +77,7 @@ class EmployeesController < Rubee::BaseController
     employee_availability.serialize!(from, to)
     response_with object: employee_availability, type: :json, status: 200
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -96,6 +107,7 @@ class EmployeesController < Rubee::BaseController
       response_with object: { errors: :unauthentificated }, type: :json, status: 401
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -116,5 +128,9 @@ class EmployeesController < Rubee::BaseController
     params[:employee].tap do |ee_params|
       ee_params['role'] = ee_params['role'].to_i
     end
+  end
+
+  def image_params
+    params[:image]
   end
 end

@@ -14,6 +14,7 @@ class CreateEmployees
       DateTime(:created)
       DateTime(:updated)
       foreign_key(:company_id, :companies, null: true, on_delete: :cascade)
+      foreign_key(:image_id, :images, null: true, on_delete: :set_null)
       index([:company_id, :email], unique: true)
     end
   end

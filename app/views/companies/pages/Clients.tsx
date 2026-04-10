@@ -136,7 +136,7 @@ export default function Clients({ dashboardData }) {
                   <td>{client.last_name}</td>
                   <td>{client.email}</td>
                   <td>{client.phone || "N/A"}</td>
-                  <td className="actions content-center">
+                  <td className="actions content-right">
                     <button
                       className="btn-edit"
                       onClick={() => handleEdit(client)}

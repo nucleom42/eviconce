@@ -15,6 +15,10 @@ class Time
     Time.new(year, month, day, hr, mn, sc)
   end
 
+  def all_day
+    beginning_of_day..end_of_day
+  end
+
   def add_days(days)
     self + days * 86_400
   end

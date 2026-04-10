@@ -316,19 +316,30 @@ export default function TimeSlotForm({
               open={serviceModalOpen}
               employee={currentEmployee}
               onClose={() => setServiceModalOpen(false)}
-              onCreated={(service) => {
-                // add to employee services
+              onSaved={(service) => {
+                if (!service) return;
+                // Add to employee services
                 currentEmployee.services.push(service);
 
-                setEditingSlot((prev) => ({
-                  ...prev,
+                // Auto-select the newly created service
+                const start = new Date(editingSlot.start_time);
+                setTimeStep(service.duration);
+
+                const updated = {
                   service_id: service.id,
                   duration: service.duration,
                   price: service.price,
-                }));
+                  end_time: toLocalISOString(
+                    addMinutes(start, service.duration),
+                  ),
+                };
 
+                setEditingSlot((prev) => ({ ...prev, ...updated }));
+                setPreviewSlot((prev) =>
+                  prev ? { ...prev, ...updated } : null,
+                );
                 setSelectedService(service);
-                setServiceModalOpen(false);
+                setSelectedServiceCustomPrice(null);
               }}
             />
           </div>

@@ -178,6 +178,17 @@ textarea:focus {
   justify-content: center;
   align-items: center;
 }
+.content-left {
+  display: flex;
+  justify-content: flex-start;
+  align-items: left;
+}
+
+.content-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: right;
+}
 
 .t-sm {
   font-size: 12px !important;

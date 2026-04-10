@@ -12,7 +12,10 @@ export default function CompanyWebsite() {
   const [selectedService, setSelectedService] = useState(null);
   const [activeTab, setActiveTab] = useState("services");
   const [showBooking, setShowBooking] = useState(false);
-
+  useEffect(() => {
+    if (!company) return;
+    document.title = `Є віконце — ${company?.name}`;
+  }, [company]);
   useEffect(() => {
     const fetchCompany = async () => {
       try {
@@ -109,7 +112,17 @@ export default function CompanyWebsite() {
             )}
             <h1>{company.name}</h1>
           </div>
-          <button className="book-now-btn">Записатися</button>
+          <button
+            className="book-now-btn"
+            onClick={() => {
+              setActiveTab("services");
+              document
+                .querySelector(".tab-container")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Записатися
+          </button>
         </div>
       </header>
 
@@ -212,9 +225,9 @@ export default function CompanyWebsite() {
                     <div key={employee.id} className="team-item">
                       <div className="team-member-info">
                         <div className="member-photo">
-                          {employee.photo ? (
+                          {employee.image ? (
                             <img
-                              src={employee.photo}
+                              src={employee.image}
                               alt={`${employee.first_name} ${employee.last_name}`}
                             />
                           ) : (

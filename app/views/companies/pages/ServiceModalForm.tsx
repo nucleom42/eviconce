@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 type Props = {
   open: boolean;
   employee: any;
-  service?: any; // Optional - if provided, we're editing
+  service?: any;
   onClose: () => void;
   onSaved: (service: any) => void;
 };
@@ -23,9 +23,7 @@ export default function ServiceModalForm({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Prefill form when editing
   useEffect(() => {
     if (service) {
       setForm({
@@ -35,13 +33,7 @@ export default function ServiceModalForm({
         duration: service.duration || 30,
       });
     } else {
-      // Reset form when creating new
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        duration: 30,
-      });
+      setForm({ name: "", description: "", price: "", duration: 30 });
     }
   }, [service, open]);
 
@@ -51,11 +43,7 @@ export default function ServiceModalForm({
     setLoading(true);
     setError(null);
 
-    const payload = {
-      ...form,
-      employee_id: employee.id,
-    };
-
+    const payload = { ...form, employee_id: employee.id };
     const url = service ? `/api/services/${service.id}` : "/api/services";
     const method = service ? "PUT" : "POST";
 
@@ -67,22 +55,11 @@ export default function ServiceModalForm({
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+      if (!res.ok) throw new Error(await res.text());
 
       const savedService = await res.json();
-      const message = service
-        ? `Service ${savedService.name} successfully updated`
-        : `Service ${savedService.name} successfully created`;
-
-      setSuccessMessage(message);
-
-      setTimeout(() => {
-        setSuccessMessage(null);
-        onSaved(savedService);
-        onClose();
-      }, 1000);
+      onClose();
+      onSaved(savedService);
     } catch (e: any) {
       setError(e.message || "Failed to save service");
     } finally {
@@ -103,22 +80,21 @@ export default function ServiceModalForm({
         credentials: "include",
       });
 
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
+      if (!res.ok) throw new Error(await res.text());
 
-      setSuccessMessage("Service deleted successfully");
-      setTimeout(() => {
-        setSuccessMessage(null);
-        onSaved(null); // Signal deletion
-        onClose();
-      }, 1000);
+      onClose();
+      onSaved(null);
     } catch (e: any) {
       setError(e.message || "Failed to delete service");
     } finally {
       setLoading(false);
     }
   };
+  const formatPrice = (price: string) => {
+    if (!price) return "0";
+    const num = parseFloat(price);
+    return num.toFixed(0);
+  }
 
   return (
     <div className="confirm-overlay" onClick={onClose}>
@@ -126,9 +102,6 @@ export default function ServiceModalForm({
         <h3>{service ? "Edit Service" : "Add Service"}</h3>
 
         {error && <div className="form__error">{error}</div>}
-        {successMessage && (
-          <div className="form__success">{successMessage}</div>
-        )}
 
         <input
           placeholder="Name"
@@ -147,7 +120,7 @@ export default function ServiceModalForm({
         <input
           type="number"
           placeholder="Price"
-          value={form.price}
+          value={formatPrice(form.price)}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
           disabled={loading}
         />
@@ -172,7 +145,7 @@ export default function ServiceModalForm({
             </button>
           )}
           <button className="apply" onClick={handleSubmit} disabled={loading}>
-            {service ? "Update" : "Create"}
+            {loading ? "Saving..." : service ? "Update" : "Create"}
           </button>
         </div>
       </div>

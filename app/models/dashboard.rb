@@ -19,6 +19,7 @@ class Dashboard
         phone: e.phone,
         services: e.services.map(&:to_h),
         window: e.current_window,
+        image: e.image&.serializable_hash,
       }
     end
     @company = {

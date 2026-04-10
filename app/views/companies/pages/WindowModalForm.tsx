@@ -7,6 +7,7 @@ type Props = {
   open: boolean;
   employee: any;
   window?: any | null; // existing window (for edit)
+  selectedDate?: string | null;
   onClose: () => void;
   onSaved: (window: any) => void;
 };
@@ -15,6 +16,7 @@ export default function WindowModalForm({
   open,
   employee,
   window,
+  selectedDate,
   onClose,
   onSaved,
 }: Props) {
@@ -61,23 +63,30 @@ export default function WindowModalForm({
         effective_date: window.effective_date || "",
         end_date: window.end_date || "",
       });
-
       setInitialDates({
         effective_date: window.effective_date?.slice(0, 10) || "",
         end_date: window.end_date?.slice(0, 10) || "",
       });
     } else {
-      setForm(emptyForm);
+      setForm({
+        start_time: "2000-01-01T09:00:00",
+        end_time: "2000-01-01T18:00:00",
+        break_from: "2000-01-01T13:00:00",
+        break_to: "2000-01-01T14:00:00",
+        weekends: [5, 6],
+        effective_date: selectedDate || new Date().toISOString().slice(0, 10),
+        end_date: "",
+      });
     }
-  }, [window, open]);
+  }, [window, open, selectedDate]);
 
   const emptyForm = {
-    start_time: "",
-    end_time: "",
-    break_from: "",
-    break_to: "",
-    weekends: [] as number[],
-    effective_date: new Date().toISOString().slice(0, 10),
+    start_time: "2000-01-01T09:00:00",
+    end_time: "2000-01-01T18:00:00",
+    break_from: "2000-01-01T13:00:00",
+    break_to: "2000-01-01T14:00:00",
+    weekends: [5, 6] as number[], // Сб, Нд off by default
+    effective_date: selectedDate || new Date().toISOString().slice(0, 10),
     end_date: "",
   };
 

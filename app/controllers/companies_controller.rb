@@ -28,6 +28,7 @@ class CompaniesController < Rubee::BaseController
     ) if search_params[:name]
     response_with object: query.select_all(:companies).limit(10).then { |ds| Company.serialize(ds) }, type: :json, status: 200
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -50,6 +51,7 @@ class CompaniesController < Rubee::BaseController
       response_with object: { errors: :not_found }, type: :json, status: 404
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -89,6 +91,7 @@ class CompaniesController < Rubee::BaseController
       end
     end
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 
@@ -104,6 +107,7 @@ class CompaniesController < Rubee::BaseController
 
     response_with object: Dashboard.new(employees:, company:, user:), type: :json, status: 200
   rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
   end
 

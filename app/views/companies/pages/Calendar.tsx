@@ -238,6 +238,7 @@ export default function Calendar({ employees, companyId }) {
                 availabilityWindow,
                 ...(upcomingWindows || []),
               ])}
+              selectedDate={clickedDay.toISOString().slice(0, 10)}
               onClose={() => {
                 setClickedDay(null);
                 setWindowModalOpen(false);

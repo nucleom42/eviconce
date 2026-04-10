@@ -15,6 +15,10 @@ export default function CompanyDashboard() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+    if (dashboardData === undefined) return;
+    document.title = `Є віконце — ${dashboardData?.company.name}`;
+  }, [dashboardData]);
 
   useEffect(() => {
     fetch(`/api/companies/${id}/dashboard`)
@@ -41,25 +45,29 @@ export default function CompanyDashboard() {
   const renderContent = () => {
     const path = location.pathname;
 
-    if (path.includes('/employees')) {
+    if (path.includes("/employees")) {
       return <Employees dashboardData={dashboardData} />;
     }
-    if (path.includes('/clients')) {
+    if (path.includes("/clients")) {
       return <Clients dashboardData={dashboardData} />;
     }
-    if (path.includes('/edit')) {
+    if (path.includes("/edit")) {
       return <Company dashboardData={dashboardData} />;
     }
-    if (path.includes('/settings')) {
+    if (path.includes("/settings")) {
       return <Settings dashboardData={dashboardData} />;
     }
     // Default to dashboard/calendar
-    return <Calendar employees={dashboardData.employees} companyId={id}/>;
+    return <Calendar employees={dashboardData.employees} companyId={id} />;
   };
 
   return (
     <div className="dashboard">
-      <Sidebar companyName={dashboardData.company.name} id={id} evikonceUrl={dashboardData.company.evikonce_url}/>
+      <Sidebar
+        companyName={dashboardData.company.name}
+        id={id}
+        evikonceUrl={dashboardData.company.evikonce_url}
+      />
       <div className="dashboard__content">
         <TopBar userName={dashboardData.user.first_name} />
         <main className="dashboard__main content-center">
