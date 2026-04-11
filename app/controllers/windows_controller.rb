@@ -12,18 +12,23 @@ class WindowsController < Rubee::BaseController
   def upsert
     Rubee::SequelObject::DB.transaction do
       found_window = window_params[:id] && Window.find(window_params[:id])
-      window = if found_window
-        # Check if any existing time slots fall OUTSIDE the new date range
-        new_from = found_window.effective_date < window_params[:effective_date] ? found_window.effective_date : window_params[:effective_date]
-        new_to = if found_window.end_date
-          found_window.end_date > window_params[:end_date] ? found_window.end_date : window_params[:end_date]
+
+      window = if found_window && !window_params[:end_date].nil?
+        new_from = window_params[:effective_date]
+        new_to   = window_params[:end_date]
+        old_from = found_window.effective_date
+        old_to   = found_window.end_date
+
+        # Check slots in the gap if effective_date moved forward (orphaned at the start)
+        if old_from < new_from && found_window.has_time_slots_in_range?(old_from, new_from - 1)
+          raise Rubee::Validatable::Error,
+            "There are time slots before the new effective date, please move or delete them first"
         end
 
-        slots_outside_new_range = found_window.has_time_slots_in_range?(new_from, new_to)
-
-        if slots_outside_new_range
+        # Check slots in the gap if end_date shrunk (orphaned at the end)
+        if new_to && old_to && old_to > new_to && found_window.has_time_slots_in_range?(new_to + 1, old_to)
           raise Rubee::Validatable::Error,
-            "There are time slots outside the new date range, please move or delete them first"
+            "There are time slots after the new end date, please move or delete them first"
         end
 
         found_window.assign_attributes(window_params.except(:id, :employee_id))
@@ -32,23 +37,25 @@ class WindowsController < Rubee::BaseController
         Window.new(window_params.except(:id))
       end
 
-      found_employee = Employee.find(window_params[:employee_id])
       # Define whether the record is new
       new_window_record = !window.persisted?
-      window.save
 
-      if new_window_record
-        # Noramlize in case of previous endless
-        prev_endless = window.previous_endless
-        prev_endless&.update(end_date: window.effective_date - 1)
-        # Final check if there is any intersections
-        raise Rubee::Validatable::Error, "Window intersects with another window" if window.any_windows_intersects?
-      else
-        # Check whether all time slots are avaible..
+      # Validate before save for update path
+      unless new_window_record
         unless window.all_time_slots_available?
           raise Rubee::Validatable::Error,
             "There are time_slot(s) which will become unavailable, please move them first"
         end
+      end
+
+      window.save
+
+      if new_window_record
+        # Normalize in case of previous endless
+        prev_endless = window.previous_endless
+        prev_endless&.update(end_date: window.effective_date - 1)
+        # Final check if there is any intersections
+        raise Rubee::Validatable::Error, "Window intersects with another window" if window.any_windows_intersects?
       end
 
       response_with object: window, type: :json, status: (new_window_record ? 201 : 200)
