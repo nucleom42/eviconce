@@ -12,9 +12,20 @@ class WindowsController < Rubee::BaseController
   def upsert
     Rubee::SequelObject::DB.transaction do
       found_window = window_params[:id] && Window.find(window_params[:id])
-      # Update if window is found and there are time slots in range or no time slotss
-      window = if (found_window && TimeSlot.any_in_range?(window_params[:effective_date], window_params[:end_date])) ||
-          (found_window && !found_window.has_time_slots?)
+      window = if found_window
+        # Check if any existing time slots fall OUTSIDE the new date range
+        new_from = found_window.effective_date < window_params[:effective_date] ? found_window.effective_date : window_params[:effective_date]
+        new_to = if found_window.end_date
+          found_window.end_date > window_params[:end_date] ? found_window.end_date : window_params[:end_date]
+        end
+
+        slots_outside_new_range = found_window.has_time_slots_in_range?(new_from, new_to)
+
+        if slots_outside_new_range
+          raise Rubee::Validatable::Error,
+            "There are time slots outside the new date range, please move or delete them first"
+        end
+
         found_window.assign_attributes(window_params.except(:id, :employee_id))
         found_window
       else

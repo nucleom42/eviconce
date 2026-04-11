@@ -87,6 +87,13 @@ class Window < Rubee::SequelObject
       .where(employee_id: employee_id, day: effective_date..end_date)
       .get(1)
   end
+  
+  def has_time_slots_in_range?(from, to)
+    !!TimeSlot
+      .dataset
+      .where(employee_id: employee_id, day: from..to)
+      .get(1)
+  end
 
   def previous_endless
     Window

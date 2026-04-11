@@ -21,11 +21,13 @@ class Service < Rubee::SequelObject
   def days_available(from = Date.today, to = Date.today + 14)
     days = obtain_available(from, to)
     return [] if days.empty?
-
-    until days.count >= 14
+    attempts = 0
+    max_attempts = 2
+    until days.count >= 14 || attempts >= max_attempts
       from = days.last + 1
       to = from + (14 - days.count)
       days += obtain_available(from, to)
+      attempts += 1
     end
 
     days.first(14)
