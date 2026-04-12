@@ -21,8 +21,7 @@ class Employee < Rubee::SequelObject
       .type(String).condition(-> { first_name.length > 1 }, 'Ім\'я повинно бути більше 1 символа')
     attribute(:last_name).optional.type(String)
       .condition(-> { last_name.length > 1 }, 'Прізвище повинно бути більше 1 символа')
-    attribute(:description).required('Опис не може бути порожнім').type(String)
-      .condition(-> { description.length > 5 }, 'Опис повинен бути більше 5 символів')
+    attribute(:description).optional.type(String)
     attribute(:email).required('Email не може бути порожнім').type(String)
       .condition(-> {
                    email.match?(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i)

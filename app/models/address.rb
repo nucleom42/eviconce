@@ -25,6 +25,6 @@ class Address < Rubee::SequelObject
     attribute(:street_line1).required('Адреса обов`язкова').type(String)
       .condition(-> { street_line1.length > 4 }, 'Адреса1 має бути більше 4 символів')
     attribute(:street_line2).optional.type(String)
-      .condition(-> { street_line2.length > 4 }, 'Адреса2 має бути більше 4 символів')
+      .condition(-> { street_line2.length > 2 }, 'Адреса2 має бути більше 2 символів')
   end
 end

@@ -46,10 +46,10 @@ class Image < Rubee::SequelObject
     unless VALID_TYPES.include?(file_type)
       raise Rubee::Validatable::Error, "Зображення має бути #{VALID_TYPES.join(', ')}"
     end
-
+    # For production it should be some cloud solution for resizing, so that is needed to be rethinked
     processed = ImageProcessing::MiniMagick
       .source(file)
-      .resize_to_limit(800, 800)
+      .resize_to_limit(1200, 1200)
       .quality(80)
       .call
 

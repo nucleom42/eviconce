@@ -314,7 +314,7 @@ STRUCTURE = {
         comment: nil,
         db_type: "text",
         default: nil,
-        allow_null: false,
+        allow_null: true,
         primary_key: false,
         generated: false,
         type: "string",
@@ -638,62 +638,6 @@ STRUCTURE = {
       }
     ]
   },
-  categories: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      name: {
-        oid: 25,
-        comment: nil,
-        db_type: "text",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "string",
-        ruby_default: nil
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      }
-    },
-    foreign_keys: []
-  },
   company_categories: {
     columns: {
       id: {
@@ -785,6 +729,279 @@ STRUCTURE = {
         ],
         references: {
           table: "companies",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      }
+    ]
+  },
+  categories: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      name: {
+        oid: 25,
+        comment: nil,
+        db_type: "text",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "string",
+        ruby_default: nil
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      }
+    },
+    foreign_keys: []
+  },
+  time_slots: {
+    columns: {
+      id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: true,
+        generated: false,
+        type: "integer",
+        auto_increment: true,
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      start_time: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      end_time: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      day: {
+        oid: 1082,
+        comment: nil,
+        db_type: "date",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "date",
+        min_value: "-4713-11-24",
+        max_value: "5874897-12-31",
+        ruby_default: nil
+      },
+      state: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: "0",
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: 0,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      price: {
+        oid: 1700,
+        comment: nil,
+        db_type: "numeric",
+        default: "0",
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "decimal",
+        ruby_default: "0.0"
+      },
+      created: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      updated: {
+        oid: 1114,
+        comment: nil,
+        db_type: "timestamp without time zone",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "datetime",
+        min_value: "-4713-11-24 00:00:00 UTC",
+        max_value: "294276-12-31 23:59:59 UTC",
+        ruby_default: nil
+      },
+      employee_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      client_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      company_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: false,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      },
+      service_id: {
+        oid: 23,
+        comment: nil,
+        db_type: "integer",
+        default: nil,
+        allow_null: true,
+        primary_key: false,
+        generated: false,
+        type: "integer",
+        ruby_default: nil,
+        min_value: -2147483648,
+        max_value: 2147483647
+      }
+    },
+    foreign_keys: [
+      {
+        name: "time_slots_client_id_fkey",
+        columns: [
+          "client_id"
+        ],
+        references: {
+          table: "clients",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      },
+      {
+        name: "time_slots_company_id_fkey",
+        columns: [
+          "company_id"
+        ],
+        references: {
+          table: "companies",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      },
+      {
+        name: "time_slots_employee_id_fkey",
+        columns: [
+          "employee_id"
+        ],
+        references: {
+          table: "employees",
+          columns: [
+            "id"
+          ]
+        },
+        on_delete: "cascade",
+        on_update: "no_action"
+      },
+      {
+        name: "time_slots_service_id_fkey",
+        columns: [
+          "service_id"
+        ],
+        references: {
+          table: "services",
           columns: [
             "id"
           ]
@@ -1049,223 +1266,6 @@ STRUCTURE = {
       }
     ]
   },
-  time_slots: {
-    columns: {
-      id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: true,
-        generated: false,
-        type: "integer",
-        auto_increment: true,
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      start_time: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      end_time: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      day: {
-        oid: 1082,
-        comment: nil,
-        db_type: "date",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "date",
-        min_value: "-4713-11-24",
-        max_value: "5874897-12-31",
-        ruby_default: nil
-      },
-      state: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: "0",
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: 0,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      price: {
-        oid: 1700,
-        comment: nil,
-        db_type: "numeric",
-        default: "0",
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "decimal",
-        ruby_default: "0.0"
-      },
-      created: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      updated: {
-        oid: 1114,
-        comment: nil,
-        db_type: "timestamp without time zone",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "datetime",
-        min_value: "-4713-11-24 00:00:00 UTC",
-        max_value: "294276-12-31 23:59:59 UTC",
-        ruby_default: nil
-      },
-      employee_id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      client_id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      company_id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: false,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      },
-      service_id: {
-        oid: 23,
-        comment: nil,
-        db_type: "integer",
-        default: nil,
-        allow_null: true,
-        primary_key: false,
-        generated: false,
-        type: "integer",
-        ruby_default: nil,
-        min_value: -2147483648,
-        max_value: 2147483647
-      }
-    },
-    foreign_keys: [
-      {
-        name: "time_slots_client_id_fkey",
-        columns: [
-          "client_id"
-        ],
-        references: {
-          table: "clients",
-          columns: [
-            "id"
-          ]
-        },
-        on_delete: "cascade",
-        on_update: "no_action"
-      },
-      {
-        name: "time_slots_company_id_fkey",
-        columns: [
-          "company_id"
-        ],
-        references: {
-          table: "companies",
-          columns: [
-            "id"
-          ]
-        },
-        on_delete: "cascade",
-        on_update: "no_action"
-      },
-      {
-        name: "time_slots_employee_id_fkey",
-        columns: [
-          "employee_id"
-        ],
-        references: {
-          table: "employees",
-          columns: [
-            "id"
-          ]
-        },
-        on_delete: "cascade",
-        on_update: "no_action"
-      },
-      {
-        name: "time_slots_service_id_fkey",
-        columns: [
-          "service_id"
-        ],
-        references: {
-          table: "services",
-          columns: [
-            "id"
-          ]
-        },
-        on_delete: "cascade",
-        on_update: "no_action"
-      }
-    ]
-  },
   windows: {
     columns: {
       id: {
@@ -1384,7 +1384,7 @@ STRUCTURE = {
         generated: false,
         type: "smallint_array",
         ruby_default: nil,
-        callable_default: "#<Proc:0x0000000121a51bb8 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.103.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
+        callable_default: "#<Proc:0x0000000108f00e48 /Users/oleg/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/sequel-5.103.0/lib/sequel/extensions/pg_array.rb:284 (lambda)>"
       },
       created: {
         oid: 1114,

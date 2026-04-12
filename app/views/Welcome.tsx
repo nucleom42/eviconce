@@ -272,21 +272,6 @@ export default function Welcome() {
 
               {/* Search Button */}
               <button type="submit" className="search-button">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
                 Шукати
               </button>
             </div>
@@ -365,40 +350,12 @@ export default function Welcome() {
       <section className="quick-links-section">
         <h2>Популярні міста</h2>
         <div className="quick-links">
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Київ")}
-          >
-            Київ
-          </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Львів")}
-          >
-            Львів
-          </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Одеса")}
-          >
-            Одеса
-          </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Харків")}
-          >
-            Харків
-          </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Дніпро")}
-          >
-            Дніпро
-          </button>
-          <button
-            className="quick-link"
-            onClick={() => handleQuickLink("Запоріжжя")}
-          >
+          <button className="quick-links-button" onClick={() => handleQuickLink("Київ")}>Київ</button>
+          <button className="quick-links-button" onClick={() => handleQuickLink("Львів")}>Львів</button>
+          <button className="quick-links-button" onClick={() => handleQuickLink("Одеса")}>Одеса</button>
+          <button className="quick-links-button" onClick={() => handleQuickLink("Харків")}>Харків</button>
+          <button className="quick-links-button" onClick={() => handleQuickLink("Дніпро")}>Дніпро</button>
+          <button className="quick-links-button" onClick={() => handleQuickLink("Запоріжжя")}>
             Запоріжжя
           </button>
         </div>
@@ -478,28 +435,6 @@ export default function Welcome() {
             <div className="category-icon"></div>
             <h3>Татуювання</h3>
             <p>Тату, пірсинг, художнє татуювання</p>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="how-it-works">
-        <h2>Як це працює</h2>
-        <div className="steps">
-          <div className="step">
-            <div className="step-number">1</div>
-            <h3>Знайдіть послугу</h3>
-            <p>Скористайтеся пошуком або оберіть категорію</p>
-          </div>
-          <div className="step">
-            <div className="step-number">2</div>
-            <h3>Порівняйте пропозиції</h3>
-            <p>Переглядайте відгуки та ціни</p>
-          </div>
-          <div className="step">
-            <div className="step-number">3</div>
-            <h3>Забронюйте час</h3>
-            <p>Онлайн бронювання за кілька кліків</p>
           </div>
         </div>
       </section>

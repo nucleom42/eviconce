@@ -6,7 +6,7 @@ class CreateEmployees
       primary_key(:id)
       String(:first_name, null: false)
       String(:last_name, null: true)
-      String(:description, null: false)
+      String(:description, null: true)
       String(:email, null: true, unique: true)
       String(:phone, null: true)
       String(:password_digest, null: false)

@@ -63,7 +63,7 @@ export default function Company({ dashboardData, fetchData }) {
       <div className="company-header">
         <h2>Компанія</h2>
         <button className="btn-primary" onClick={handleEdit}>
-          ✏️ Редагувати
+          Редагувати
         </button>
       </div>
 

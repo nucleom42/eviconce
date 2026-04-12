@@ -167,7 +167,7 @@ export default function WindowModalForm({
               ( {initialDates.effective_date} .. {initialDates.end_date} )
             </div>
             <br></br>
-            <label>Effective date</label>
+            <label>Дата початку</label>
             <input
               type="date"
               value={form.effective_date}
@@ -176,7 +176,7 @@ export default function WindowModalForm({
               }
             />
 
-            <label>End date</label>
+            <label>Дата закінчення</label>
             <input
               type="date"
               value={form.end_date}
@@ -187,7 +187,7 @@ export default function WindowModalForm({
               <div className="form__success">{successMessage}</div>
             )}
 
-            <label>Start time</label>
+            <label>Робочиий час початок</label>
             <input
               type="time"
               value={toTimeValue(form.start_time)}
@@ -200,7 +200,7 @@ export default function WindowModalForm({
               }}
             />
 
-            <label>End time</label>
+            <label>Робочий час закінчення</label>
             <input
               type="time"
               value={toTimeValue(form.end_time)}
@@ -213,7 +213,7 @@ export default function WindowModalForm({
               }}
             />
 
-            <label>Break from</label>
+            <label>Перерва початок</label>
             <input
               type="time"
               value={toTimeValue(form.break_from)}
@@ -226,7 +226,7 @@ export default function WindowModalForm({
               }}
             />
 
-            <label>Break to</label>
+            <label>Перерва закінчення</label>
             <input
               type="time"
               value={toTimeValue(form.break_to)}
@@ -277,15 +277,15 @@ export default function WindowModalForm({
                     className="danger"
                     onClick={() => setConfirmOpen(true)}
                   >
-                    Delete
+                    Видалити
                   </button>
 
                   <ConfirmModal
                     open={confirmOpen}
-                    title="Delete window"
-                    message="Are you sure you want to delete this window?"
-                    confirmText="Yes"
-                    cancelText="No"
+                    title="Видалити віконце?"
+                    message="Ви впевнені, що хочете видалити це віконце?"
+                    confirmText="Так"
+                    cancelText="Ні"
                     onConfirm={() => {
                       setConfirmOpen(false);
                       handleDelete();
@@ -299,7 +299,7 @@ export default function WindowModalForm({
                 onClick={handleSubmit}
                 disabled={loading}
               >
-                {window ? "Update" : "Create"}
+                {window ? "Оновити" : "Створити"}
               </button>
             </div>
           </div>

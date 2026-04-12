@@ -220,7 +220,7 @@ export default function TimeSlotForm({
     <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
         <div className="form__title">
-          <div className="form__title-left">Edit time slot:</div>
+          <div className="form__title-left">Редагування слоту:</div>
           <div className={`form__title-right form__title_${editingSlot.state}`}>
             {editingSlot.state}
           </div>
@@ -235,8 +235,8 @@ export default function TimeSlotForm({
 
         {/* ---------- DATE ---------- */}
         <div className="form-group mt-3">
-          <div className="time-range-row">
-            <label>Date</label>
+          <div className="time-range-row width-50">
+            <label>Дата</label>
             <input
               type="date"
               className="date__picker"
@@ -257,7 +257,7 @@ export default function TimeSlotForm({
 
         {/* ---------- SERVICE ---------- */}
         <div className="form-group mt-2">
-          <label>Service</label>
+          <label>Послуга</label>
           <div className="time-range-row">
             <div className="input-with-button">
               <select
@@ -306,7 +306,7 @@ export default function TimeSlotForm({
               </select>
               <div
                 className="input-button content-center"
-                title="Add service"
+                title="Додати послугу"
                 onClick={() => setServiceModalOpen(true)}
               >
                 +
@@ -349,7 +349,7 @@ export default function TimeSlotForm({
           {selectedService && (
             <>
               <div className="time-range-row mt-1 t-sm">
-                <label>Duration</label>
+                <label>Хв</label>
 
                 <input
                   type="number"
@@ -384,7 +384,7 @@ export default function TimeSlotForm({
                   }}
                 />
 
-                <label className="content-center">Price</label>
+                <label className="content-center">Ціна</label>
 
                 <input
                   type="number"
@@ -411,7 +411,7 @@ export default function TimeSlotForm({
 
         {/* ---------- TIME ---------- */}
         <div className="form-group time-range">
-          <label>Time</label>
+          <label>Час</label>
           <div className="time-range-row">
             <input
               type="time"
@@ -448,7 +448,7 @@ export default function TimeSlotForm({
 
         {/* ---------- CLIENT ---------- */}
         <div className="form-group">
-          <label>Client</label>
+          <label>Клієнт</label>
           <div className="input-with-button">
             <input
               type="text"
@@ -525,18 +525,18 @@ export default function TimeSlotForm({
               setSelectedClient(null);
             }}
           >
-            Close
+           Закрити 
           </button>
           {editingSlot.state === "preview" && (
             <button className="apply" onClick={handleSchedule}>
-              Schedule
+              Запланувати
             </button>
           )}
 
           {editingSlot.state === "scheduled" && (
             <>
               <button className="danger" onClick={() => setConfirmOpen(true)}>
-                Delete
+                Видалити
               </button>
 
               <ConfirmModal
@@ -555,7 +555,7 @@ export default function TimeSlotForm({
           )}
           {editingSlot.state === "scheduled" && (
             <button className="apply" onClick={handleUpdate}>
-              Update
+              Оновити
             </button>
           )}
         </div>

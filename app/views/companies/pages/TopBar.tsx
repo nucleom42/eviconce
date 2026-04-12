@@ -19,7 +19,7 @@ export default function TopBar({ userName }) {
       <div className="topbar__right">
         <span className="topbar__user"></span>
         <button onClick={logout} className="logout-btn">
-          Logout
+          Вихід
         </button>
       </div>
     </header>

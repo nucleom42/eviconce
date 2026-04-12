@@ -10,10 +10,10 @@ export default function Sidebar({ companyName, id, evikonceUrl }: any) {
       </h2>
 
       <nav className="sidebar__nav">
-        <NavLink to={`/companies/${id}/dashboard`}>Dashboard</NavLink>
-        <NavLink to={`/companies/${id}/employees`}>Employees</NavLink>
-        <NavLink to={`/companies/${id}/clients`}>Clients</NavLink>
-        <NavLink to={`/companies/${id}/edit`}>Company</NavLink>
+        <NavLink to={`/companies/${id}/dashboard`}>Календар</NavLink>
+        <NavLink to={`/companies/${id}/employees`}>Працівники</NavLink>
+        <NavLink to={`/companies/${id}/clients`}>Клієнти</NavLink>
+        <NavLink to={`/companies/${id}/edit`}>Компанія</NavLink>
         {/*     <NavLink to={`/companies/${id}/settings`}>Settings</NavLink> */}
       </nav>
     </aside>
