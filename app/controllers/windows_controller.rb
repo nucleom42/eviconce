@@ -22,13 +22,13 @@ class WindowsController < Rubee::BaseController
         # Check slots in the gap if effective_date moved forward (orphaned at the start)
         if old_from < new_from && found_window.has_time_slots_in_range?(old_from, new_from - 1)
           raise Rubee::Validatable::Error,
-            "There are time slots before the new effective date, please move or delete them first"
+            "Перед новою датою віконця є бронювання, видаліть їх"
         end
 
         # Check slots in the gap if end_date shrunk (orphaned at the end)
         if new_to && old_to && old_to > new_to && found_window.has_time_slots_in_range?(new_to + 1, old_to)
           raise Rubee::Validatable::Error,
-            "There are time slots after the new end date, please move or delete them first"
+            "Після нового дати віконця є бронювання, видаліть їх"
         end
 
         found_window.assign_attributes(window_params.except(:id, :employee_id))
@@ -44,7 +44,7 @@ class WindowsController < Rubee::BaseController
       unless new_window_record
         unless window.all_time_slots_available?
           raise Rubee::Validatable::Error,
-            "There are time_slot(s) which will become unavailable, please move them first"
+            "Віконце не може бути вже занято, видаліть бронювання"
         end
       end
 
@@ -55,7 +55,7 @@ class WindowsController < Rubee::BaseController
         prev_endless = window.previous_endless
         prev_endless&.update(end_date: window.effective_date - 1)
         # Final check if there is any intersections
-        raise Rubee::Validatable::Error, "Window intersects with another window" if window.any_windows_intersects?
+        raise Rubee::Validatable::Error, "Час віконця перекривається" if window.any_windows_intersects?
       end
 
       response_with object: window, type: :json, status: (new_window_record ? 201 : 200)

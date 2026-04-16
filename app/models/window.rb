@@ -18,30 +18,30 @@ class Window < Rubee::SequelObject
 
   validate do
     attribute(:start_time).required.type(Time)
-      .condition(-> { start_time < end_time }, "Start time can't be greater than end time")
+      .condition(-> { start_time < end_time }, "Початковий час не може бути більшим за кінцевий")
     attribute(:end_time).required.type(Time)
     attribute(:break_from).required.type(Time)
-      .condition(-> { break_from < break_to }, "Break from can't be greater than break to")
+      .condition(-> { break_from < break_to }, "Початок перериви не може бути більшою за кінцевий час")
     attribute(:break_to).required.type(Time)
     attribute(:effective_date).required.type(Date)
       .condition(
         -> { !end_date || end_date && effective_date.to_time <= end_date.to_time.end_of_day },
-        'End date can not be less than effective date'
+        'Кінцевий час не може бути меншим за початковий'
       )
       .condition(
         -> { persisted? || effective_date.to_time >= Date.today.to_time.beginning_of_day },
-        'Effective date can not be in the past'
+        'Початковий час не може бути в мінулому'
       )
     attribute(:end_date).optional.type(Date)
       .condition(-> { effective_date <= end_date })
-      .condition(-> { !persisted? || persisted? && !any_windows_intersects? }, 'Window intersects with another window')
+      .condition(-> { !persisted? || persisted? && !any_windows_intersects? }, 'Час віконця перекриває інший час віконця')
     attribute(:weekends).required
       .condition(-> { weekends.uniq.size == weekends.size && weekends.all? { |w| WEEKS.include?(w) } })
     attribute(:employee_id).required
   end
 
   before :destroy, ->(m) do
-    raise Rubee::Validatable::Error, 'Window has time slots, remove them first' if m.has_time_slots?
+    raise Rubee::Validatable::Error, 'Віконце має бронювання' if m.has_time_slots?
   end
 
   def all_time_slots_available?
@@ -77,7 +77,7 @@ class Window < Rubee::SequelObject
 
   def any_windows_with_effective_date_eq_or_later!
     if any_windows_with_effective_date_eq_or_later?
-      raise Rubee::Validatable::Error, "Window with effective date greater or eq than #{effective_date} already exists"
+      raise Rubee::Validatable::Error, "Віконце з початком або датою #{effective_date} вже існує"
     end
   end
 

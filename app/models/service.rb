@@ -9,10 +9,14 @@ class Service < Rubee::SequelObject
     :updated
 
   validate do
-    attribute(:name).required.type(String).condition(-> { name.length > 1 })
-    attribute(:description).required.type(String).condition(-> { description.length > 5 })
-    attribute(:price).required.type(Float).condition(-> { price >= 0.0 })
-    attribute(:duration).required.type(Integer).condition(-> { duration >= 0 })
+    attribute(:name).required.type(String)
+      .condition(-> { name.length > 1 }, message: 'Ім\'я повинно бути більше 1 символа')
+    attribute(:description).required.type(String)
+      .condition(-> { description.length > 5 }, message: 'Опис повинен бути більше 5 символів')
+    attribute(:price).required.type(Float)
+      .condition(-> { price >= 0.0 }, message: 'Ціна повинна бути більше 0')
+    attribute(:duration).required.type(Integer)
+      .condition(-> { duration >= 0 }, message: 'Тривалість повинна бути більше 0')
     attribute(:employee_id).required
   end
 

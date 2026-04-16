@@ -99,19 +99,19 @@ export default function ServiceModalForm({
   return (
     <div className="confirm-overlay" onClick={onClose}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{service ? "Edit Service" : "Add Service"}</h3>
+        <h3>{service ? "Редагування послуги" : "Додати послугу"}</h3>
 
         {error && <div className="form__error">{error}</div>}
 
         <input
-          placeholder="Name"
+          placeholder="Ім'я"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           disabled={loading}
         />
 
         <textarea
-          placeholder="Description"
+          placeholder="Опис"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           disabled={loading}

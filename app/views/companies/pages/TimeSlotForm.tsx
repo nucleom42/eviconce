@@ -45,6 +45,10 @@ export default function TimeSlotForm({
   const [editTimeSlotSuccess, setEditTimeSlotSuccess] = useState(null);
   const [availabilityWindow, setAvailabilityWindow] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const states_ua = {
+    preview: "Предпланований",
+    scheduled: "Запланований",
+  }
 
   const [selectedService, setSelectedService] = useState<any | null>(null);
   const [selectedServiceCustomPrice, setSelectedServiceCustomPrice] = useState<
@@ -187,7 +191,7 @@ export default function TimeSlotForm({
       const json = await res.json();
 
       setTimeSlots((prev) => [...prev, json]);
-      setEditTimeSlotSuccess("Time slot scheduled successfully!");
+      setEditTimeSlotSuccess("Слот записаний успішно!");
       setTimeout(() => {
         setEditTimeSlotSuccess(null);
         setEditingSlot(null);
@@ -220,7 +224,7 @@ export default function TimeSlotForm({
     <div className="glass-overlay" onClick={() => setEditingSlot(null)}>
       <div className="glass-modal" onClick={(e) => e.stopPropagation()}>
         <div className="form__title">
-          <div className="form__title-left">Редагування слоту:</div>
+          <div className="form__title-left">Редагуння слоту:</div>
           <div className={`form__title-right form__title_${editingSlot.state}`}>
             {editingSlot.state}
           </div>
@@ -297,7 +301,7 @@ export default function TimeSlotForm({
                   setSelectedServiceCustomPrice(null);
                 }}
               >
-                <option value="">Select a service</option>
+                <option value="">Оберіть послугу</option>
                 {currentEmployee.services.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}

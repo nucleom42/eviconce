@@ -13,10 +13,12 @@ class Client < Rubee::SequelObject
     :company_id
 
   validate do
-    attribute(:first_name).required.type(String).condition(-> { first_name.length > 2 })
-    attribute(:last_name).optional.type(String).condition(-> { last_name.length > 2 })
+    attribute(:first_name).required.type(String)
+      .condition(-> { first_name.length > 2 }, message: 'Ім\'я повинно бути більше 2 символів')
+    attribute(:last_name).optional.type(String)
+      .condition(-> { last_name.length > 2 }, message: 'Прізвище повинно бути більше 2 символів')
     attribute(:email).optional.type(String)
-      .condition(-> { email.match?(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/) }, message: 'invalid email')
+      .condition(-> { email.match?(/\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/) }, message: 'Некоректний email')
     attribute(:phone).optional.type(String)
     attribute(:password_digest).required.type(String)
       .condition(

@@ -36,13 +36,13 @@ class TimeSlot < Rubee::SequelObject
         start_time < end_time &&
         end_time.to_date.to_s == day.to_s
       })
-    attribute(:day).required.type(Date).condition(-> { day > (Date.today - 1) })
+    attribute(:day).required.type(Date).condition(-> { day > (Date.today - 1) }, 'Дата повинна бути в майбутньому')
     attribute(:employee_id).required.type(Integer)
     attribute(:client_id).condition(-> { scheduled? ? client_id : true }, 'Клієнт повинен бути заданий')
     attribute(:company_id).required.type(Integer)
     attribute(:service_id).optional.type(Integer)
-    attribute(:price).optional.type(Float).condition(-> { price >= 0 })
-    attribute(:state).required.type(Integer).condition(-> { (0..4).include?(state) })
+    attribute(:price).optional.type(Float).condition(-> { price >= 0 }, 'Ціна повинна бути від 0')
+    attribute(:state).required.type(Integer).condition(-> { (0..4).include?(state) }, 'Некоректний статус')
   end
 
   before :save, :check_overlapping!

@@ -57,7 +57,7 @@ export default function ClientCreateModal({ open, onClose, onCreated }: Props) {
   return (
     <div className="confirm-overlay" onClick={onClose}>
       <div className="glass-modal small" onClick={(e) => e.stopPropagation()}>
-        <h3>New client</h3>
+        <h3>Новий клієнт</h3>
 
         {error && <div className="form__error">{error}</div>}
 
