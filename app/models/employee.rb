@@ -200,19 +200,19 @@ class Employee < Rubee::SequelObject
     target_window ||= current_window
     skip_invalidation = options[:skip_invalidation]
     unless target_window
-      add_error(:availability, message: 'No windows') unless skip_invalidation
+      add_error(:availability, message: 'Віконце відсутнє') unless skip_invalidation
       return false
     end
     unless target_window.within_work_hours?(request_from, request_to)
-      add_error(:availability, message: 'Outside work hours') unless skip_invalidation
+      add_error(:availability, message: 'Не відповідає графіку') unless skip_invalidation
       return false
     end
     if target_window.overlapping_break?(request_from, request_to)
-      add_error(:availability, message: 'Within break hours') unless skip_invalidation
+      add_error(:availability, message: 'На час перерви') unless skip_invalidation
       return false
     end
     if target_window.weekends?(request_date)
-      add_error(:availability, message: 'On weekends') unless skip_invalidation
+      add_error(:availability, message: 'На вихідні') unless skip_invalidation
       return false
     end
     overlapps_with_others = time_slots(request_date).any? do |ts|
@@ -221,7 +221,7 @@ class Employee < Rubee::SequelObject
       ts.overlapping?(request_date, request_from, request_to)
     end
     if overlapps_with_others
-      add_error(:availability, message: 'Overlapping') unless skip_invalidation
+      add_error(:availability, message: 'Пересекається з іншим віконцем') unless skip_invalidation
       return false
     end
 
