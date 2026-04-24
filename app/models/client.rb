@@ -39,10 +39,6 @@ class Client < Rubee::SequelObject
     end
   end
 
-  after :save do |client|
-    binding.pry
-  end
-
   def password=(value)
     self.password_digest = ::JWT.encode({ password: value }, JWT_KEY, 'HS256')
     @__encoded = true unless value == password_digest

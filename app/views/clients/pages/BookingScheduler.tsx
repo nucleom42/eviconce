@@ -106,7 +106,12 @@ export default function BookingScheduler({
       });
 
       if (!clientResponse.ok) {
-        throw new Error("Failed to create client");
+        const error = await clientResponse.json();
+        const message =
+          typeof error.errors === "string"
+            ? error.errors
+            : Object.values(error.errors || {}).join(", ");
+        throw new Error(message);
       }
 
       const client = await clientResponse.json();
@@ -137,7 +142,7 @@ export default function BookingScheduler({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.errors || "Failed to create booking");
+        throw new Error(error.errors || "Помилка при бронюванні");
       }
 
       const timeSlot = await response.json();

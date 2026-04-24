@@ -24,7 +24,7 @@ class ClientsController < Rubee::BaseController
         response_with object: client, type: :json, status: persisted ? 200 : 201
       else
         errors = if client.errors.deep_dig(:sequel_error)&.include?('PG::UniqueViolation')
-          { errors: { email: 'Client with this email already exists' } }
+          { errors: { email: 'Користувач з такою поштою вже існує' } }
         else
           { errors: client.errors }
         end
@@ -46,7 +46,7 @@ class ClientsController < Rubee::BaseController
       response_with object: client, type: :json, status: 200
     else
       errors = if client.errors.deep_dig(:sequel_error)&.include?('PG::UniqueViolation')
-        { errors: { email: 'Client with this email already exists' } }
+        { errors: { email: 'Користувач з такою поштою вже існує' } }
       else
         { errors: client.errors }
       end
@@ -61,7 +61,7 @@ class ClientsController < Rubee::BaseController
   def destroy
     client = Client.find(params[:id])
     if client.company_id != @company.id
-      response_with(object: { errors: { id: 'Client not found' } }, type: :json, status: 404)
+      response_with(object: { errors: { id: 'Користувач не знайдено' } }, type: :json, status: 404)
     end
     if client.destroy
       response_with(object: { ok: :deleted }, type: :json, status: 200)
