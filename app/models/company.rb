@@ -44,6 +44,10 @@ class Company < Rubee::SequelObject
     images.where(type: Image::TYPES_MAP.key(:logo)).first
   end
 
+  def owner
+    employees.where(role: Employee::ROLES[:admin]).first
+  end
+
   def add_images(*images)
     images.map { |i| CompanyImage.create(image_id: i.id, company_id: id) }
   end

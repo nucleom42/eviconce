@@ -106,7 +106,7 @@ export default function Clients({ dashboardData }) {
     <div className="clients-container">
       <div className="clients-header">
         <h2>Клієнти</h2>
-        <button className="btn-primary" onClick={handleCreate}>
+        <button className="btn" onClick={handleCreate}>
           + Додати клієнта
         </button>
       </div>
@@ -126,7 +126,7 @@ export default function Clients({ dashboardData }) {
                 <th>Прізвище</th>
                 <th>Email</th>
                 <th>Телефон</th>
-                <th>Дії</th>
+                <th className="content-right">Дії</th>
               </tr>
             </thead>
             <tbody>

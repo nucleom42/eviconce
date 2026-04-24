@@ -164,6 +164,12 @@ export default function Welcome() {
     <div className="welcome-page">
       {/* Hero Section */}
       <section className="hero-section">
+        <div className="hero-logo">
+          <img src="/images/evikonce-logo.png" alt="Є Віконце" />
+          <div className="hero-logo-name">
+            <span>Є</span> Віконце
+          </div>
+        </div>
         <div className="hero-content">
           <h1>Знайдіть найкращі послуги у вашому місті</h1>
           <p>Салони краси, СПА, фітнес, стоматологія та багато іншого</p>
@@ -350,12 +356,40 @@ export default function Welcome() {
       <section className="quick-links-section">
         <h2>Популярні міста</h2>
         <div className="quick-links">
-          <button className="quick-links-button" onClick={() => handleQuickLink("Київ")}>Київ</button>
-          <button className="quick-links-button" onClick={() => handleQuickLink("Львів")}>Львів</button>
-          <button className="quick-links-button" onClick={() => handleQuickLink("Одеса")}>Одеса</button>
-          <button className="quick-links-button" onClick={() => handleQuickLink("Харків")}>Харків</button>
-          <button className="quick-links-button" onClick={() => handleQuickLink("Дніпро")}>Дніпро</button>
-          <button className="quick-links-button" onClick={() => handleQuickLink("Запоріжжя")}>
+          <button
+            className="quick-links-button"
+            onClick={() => handleQuickLink("Київ")}
+          >
+            Київ
+          </button>
+          <button
+            className="quick-links-button"
+            onClick={() => handleQuickLink("Львів")}
+          >
+            Львів
+          </button>
+          <button
+            className="quick-links-button"
+            onClick={() => handleQuickLink("Одеса")}
+          >
+            Одеса
+          </button>
+          <button
+            className="quick-links-button"
+            onClick={() => handleQuickLink("Харків")}
+          >
+            Харків
+          </button>
+          <button
+            className="quick-links-button"
+            onClick={() => handleQuickLink("Дніпро")}
+          >
+            Дніпро
+          </button>
+          <button
+            className="quick-links-button"
+            onClick={() => handleQuickLink("Запоріжжя")}
+          >
             Запоріжжя
           </button>
         </div>

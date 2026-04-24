@@ -68,7 +68,9 @@ class WindowsController < Rubee::BaseController
   # DELETE /api/windows/{id}
   def destroy
     window = Window.find(params[:id])
-    if window&.destroy
+    if window.company_id != @company.id
+      response_with object: { errors: { id: 'Window not found' } }, type: :json, status: 404
+    elsif window&.destroy
       response_with object: { ok: :deleted }, type: :json, status: 200
     else
       response_with object: { errors: window.errors }, type: :json, status: 422
@@ -117,6 +119,6 @@ class WindowsController < Rubee::BaseController
   end
 
   def set_company
-    @company ||= auth_user&.company
+    @company ||= authentificated_user(user_model: Employee, login: :email, password: :password_digest)&.company
   end
 end

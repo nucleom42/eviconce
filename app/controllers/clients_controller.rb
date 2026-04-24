@@ -23,7 +23,12 @@ class ClientsController < Rubee::BaseController
       if persisted || (client.valid? && client.save)
         response_with object: client, type: :json, status: persisted ? 200 : 201
       else
-        response_with(object: { errors: client.errors }, type: :json, status: 422)
+        errors = if client.errors.deep_dig(:sequel_error)&.include?('PG::UniqueViolation')
+          { errors: { email: 'Client with this email already exists' } }
+        else
+          { errors: client.errors }
+        end
+        response_with(object: errors, type: :json, status: 422)
       end
     end
   rescue StandardError => e
@@ -40,7 +45,12 @@ class ClientsController < Rubee::BaseController
     if client.valid? && client.save
       response_with object: client, type: :json, status: 200
     else
-      response_with(object: { errors: client.errors }, type: :json, status: 422)
+      errors = if client.errors.deep_dig(:sequel_error)&.include?('PG::UniqueViolation')
+        { errors: { email: 'Client with this email already exists' } }
+      else
+        { errors: client.errors }
+      end
+      response_with(object: errors, type: :json, status: 422)
     end
   rescue StandardError => e
     Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
@@ -50,6 +60,9 @@ class ClientsController < Rubee::BaseController
   # DELETE /api/clients/{id}
   def destroy
     client = Client.find(params[:id])
+    if client.company_id != @company.id
+      response_with(object: { errors: { id: 'Client not found' } }, type: :json, status: 404)
+    end
     if client.destroy
       response_with(object: { ok: :deleted }, type: :json, status: 200)
     else

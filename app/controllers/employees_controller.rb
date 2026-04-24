@@ -15,19 +15,23 @@ class EmployeesController < Rubee::BaseController
   # PUT /api/employees
   def update
     employee = Employee.find(params[:id])
-    employee.assign_attributes(employee_params.except(:id))
-    employee.password = employee_params[:password] if employee_params[:password]
-    Rubee::SequelObject::DB.transaction do
-      if image_params
-        image = Image.new(image: image_params)
-        image.image_type = :photo
-        image.save
-        employee.add_or_replace_image(image)
-      end
-      if employee.valid? && employee.save
-        response_with object: employee, type: :json, status: 200
-      else
-        response_with object: { errors: employee.errors }, type: :json, status: 422
+    if employee.company_id != company.id
+      response_with object: { errors: :unauthentificated }, type: :json, status: 401
+    else
+      employee.assign_attributes(employee_params.except(:id))
+      employee.password = employee_params[:password] if employee_params[:password]
+      Rubee::SequelObject::DB.transaction do
+        if image_params
+          image = Image.new(image: image_params)
+          image.image_type = :photo
+          image.save
+          employee.add_or_replace_image(image)
+        end
+        if employee.valid? && employee.save
+          response_with object: employee, type: :json, status: 200
+        else
+          response_with object: { errors: employee.errors }, type: :json, status: 422
+        end
       end
     end
   rescue StandardError => e
@@ -54,7 +58,9 @@ class EmployeesController < Rubee::BaseController
   # DELETE /api/employees/{id}
   def destroy
     employee = Employee.find(params[:id])
-    if employee&.destroy
+    if employee.company_id != company.id
+      response_with object: { errors: :unauthentificated }, type: :json, status: 401
+    elsif employee&.destroy
       response_with object: { ok: :deleted }, type: :json, status: 200
     else
       response_with object: { errors: employee.errors }, type: :json, status: 422
@@ -69,13 +75,13 @@ class EmployeesController < Rubee::BaseController
     from = params[:from]
     to = params[:to]
     employee = Employee.find(params[:id])
-    unless employee
+    if employee
+      employee_availability = EmployeeAvailability.new(employee: employee)
+      employee_availability.serialize!(from, to)
+      response_with object: employee_availability, type: :json, status: 200
+    else
       response_with object: { errors: :not_found }, type: :json, status: 404
-      return
     end
-    employee_availability = EmployeeAvailability.new(employee: employee)
-    employee_availability.serialize!(from, to)
-    response_with object: employee_availability, type: :json, status: 200
   rescue StandardError => e
     Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
@@ -88,10 +94,10 @@ class EmployeesController < Rubee::BaseController
     employee = Employee.find(params[:id])
     if employee.nil? || service.nil? || params[:date].nil?
       response_with object: { errors: :not_found }, type: :json, status: 404
-      return
+    else
+      frames = employee.frames(date, service)
+      response_with object: frames, type: :json, status: 200
     end
-    frames = employee.frames(date, service)
-    response_with object: frames, type: :json, status: 200
   end
 
   # POST /api/employees/login
@@ -122,6 +128,10 @@ class EmployeesController < Rubee::BaseController
 
   def auth_user
     @auth_user ||= authentificated_user user_model: Employee, login: :email, password: :password_digest
+  end
+
+  def company
+    @company ||= auth_user ? auth_user&.company : Company.find(params[:company_id])
   end
 
   def employee_params

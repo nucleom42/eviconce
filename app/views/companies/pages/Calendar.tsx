@@ -209,7 +209,7 @@ export default function Calendar({ employees, companyId }) {
                 data-tooltip={
                   !currentEmployee || !windowForTheDay?.effective_date
                     ? ""
-                    : `Window\nStarting ${windowForTheDay?.effective_date}\nEnding ${
+                    : `Віконце\nПочаток ${windowForTheDay?.effective_date}\nКінець ${
                         windowForTheDay?.end_date || "∞"
                       }`
                 }

@@ -68,7 +68,7 @@ export default function Employees({ dashboardData }) {
     <div className="employees-container">
       <div className="employees-header">
         <h2>Працівники</h2>
-        <button className="btn-primary" onClick={handleCreate}>
+        <button className="btn" onClick={handleCreate}>
           + Додати працівника
         </button>
       </div>

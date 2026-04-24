@@ -26,7 +26,9 @@ class CompaniesController < Rubee::BaseController
     query = query.where(
       Sequel.lit("companies.name ILIKE ?", "%#{search_params[:name].gsub(/[%_\\]/) { |m| "\\#{m}" }}%")
     ) if search_params[:name]
-    response_with object: query.select_all(:companies).limit(10).then { |ds| Company.serialize(ds) }, type: :json, status: 200
+    response_with object: query.select_all(:companies).limit(10).then { |ds|
+      Company.serialize(ds)
+    }, type: :json, status: 200
   rescue StandardError => e
     Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
@@ -60,11 +62,15 @@ class CompaniesController < Rubee::BaseController
     Rubee::SequelObject::DB.transaction do
       address = Address.create(address_params)
       owner = authentificated_user user_model: Employee, login: :email, password: :password_digest
-      company = Company.create(companny_params.merge(address_id: address.id))
-      owner.update(company_id: company.id)
-      company.attach_categories_by_names(category_params)
+      if owner.company
+        response_with object: { errors: :unauthentificated }, type: :json, status: 401
+      else
+        company = Company.create(companny_params.merge(address_id: address.id))
+        owner.update(company_id: company.id)
+        company.attach_categories_by_names(category_params)
 
-      response_with(object: company, type: :json, status: 201)
+        response_with(object: company, type: :json, status: 201)
+      end
     end
   rescue StandardError => e
     errors = begin
@@ -79,15 +85,19 @@ class CompaniesController < Rubee::BaseController
   def update
     Rubee::SequelObject::DB.transaction do
       company = Company.find(params[:id])
-      company.assign_attributes(companny_params)
-      address = company.address
-      address.assign_attributes(address_params)
-      if company.valid? && company.save && address.valid? && address.save
-        persist_images!(company)
-        company.replace_categories_by_names(*category_params)
-        response_with object: company, type: :json, status: 200
+      if company.owner&.id != authentificated_user(user_model: Employee, login: :email, password: :password_digest)&.id
+        response_with object: { errors: :unauthentificated }, type: :json, status: 401
       else
-        response_with object: { errors: company.errors }, type: :json, status: 422
+        company.assign_attributes(companny_params)
+        address = company.address
+        address.assign_attributes(address_params)
+        if company.valid? && company.save && address.valid? && address.save
+          persist_images!(company)
+          company.replace_categories_by_names(*category_params)
+          response_with object: company, type: :json, status: 200
+        else
+          response_with object: { errors: company.errors }, type: :json, status: 422
+        end
       end
     end
   rescue StandardError => e
@@ -99,13 +109,12 @@ class CompaniesController < Rubee::BaseController
   def dashboard
     user = authentificated_user user_model: Employee, login: :email, password: :password_digest
     company = Company.find(params[:id])
-    employees = company.employees
-    unless user.company
+    if user&.company && user.company&.id != company&.id
       response_with object: { errors: :unauthentificated }, type: :json, status: 401
-      return
+    else
+      employees = company.employees
+      response_with object: Dashboard.new(employees:, company:, user:), type: :json, status: 200
     end
-
-    response_with object: Dashboard.new(employees:, company:, user:), type: :json, status: 200
   rescue StandardError => e
     Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
     response_with object: { errors: e.message }, type: :json, status: 500
