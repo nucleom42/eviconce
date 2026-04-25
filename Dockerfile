@@ -27,6 +27,7 @@ COPY --from=builder /usr/local/bundle /usr/local/bundle
 COPY --from=builder /app /app
 
 ENV RACK_ENV=production
+ENV RACK_ENV=WEB_CONCURRENCY=4
 
 # Main entry point
 CMD ["rubee", "start", "--port=80"]

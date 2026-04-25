@@ -1,9 +1,28 @@
 // esbuild.config.js (CommonJS style)
 const esbuild = require("esbuild");
-const inlineCss = require("esbuild-plugin-inline-css");
+const path = require("path");
+const fs = require("fs");
+
+const inlineCssFixed = {
+  name: "inline-css-fixed",
+  setup(build) {
+    build.onLoad({ filter: /\.css$/ }, (args) => {
+      const css = fs.readFileSync(args.path, "utf8");
+      const escaped = css.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
+      return {
+        contents: `
+          const style = document.createElement('style');
+          style.textContent = \`${escaped}\`;
+          document.head.appendChild(style);
+        `,
+        loader: "js",
+      };
+    });
+  },
+};
 
 const buildOptions = {
-  entryPoints: ["js/app.js"], // Can be .ts or .tsx too
+  entryPoints: ["js/app.js"],
   outfile: "js/bundle.js",
   bundle: true,
   format: "esm",
@@ -12,9 +31,9 @@ const buildOptions = {
     ".jsx": "jsx",
     ".ts": "ts",
     ".tsx": "tsx",
-    ".css": "css",
   },
-  plugins: [inlineCss()],
+  // Note: remove ".css": "css" from loader since the plugin handles it
+  plugins: [inlineCssFixed],
   allowOverwrite: true,
   minify: true,
   sourcemap: false,
