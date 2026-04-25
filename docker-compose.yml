@@ -1,0 +1,38 @@
+services:
+  # The Database
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password_change_me
+
+  # The Cache/Queue Store
+  redis:
+    image: redis:alpine
+
+  # The Main Ruby App
+  app:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/postgres
+      REDIS_URL: redis://redis:6379/0
+
+  # The Background Worker (Sidekiq)
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml -r ./inits/sidekiq.rb
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/postgres
+      REDIS_URL: redis://redis:6379/0
+
+volumes:
+  postgres_data:
