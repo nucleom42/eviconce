@@ -1,36 +1,43 @@
-db:
-  image: postgres:15-alpine
-  volumes:
-    - postgres_data:/var/lib/postgresql/data
-  environment:
-    POSTGRES_PASSWORD: password
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U postgres"]
-    interval: 5s
-    timeout: 5s
-    retries: 5
+services:
+  db:
+    image: postgres:15-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
 
-app:
-  build: .
-  ports:
-    - "80:80"
-  depends_on:
-    db:
-      condition: service_healthy  # waits for healthcheck to pass
-    redis:
-      condition: service_started
-  environment:
-    DATABASE_URL: postgres://postgres:password@db:5432/postgres
-    REDIS_URL: redis://redis:6379/0
+  redis:
+    image: redis:alpine
 
-sidekiq:
-  build: .
-  command: bundle exec sidekiq -C config/sidekiq.yml -r ./inits/sidekiq.rb
-  depends_on:
-    db:
-      condition: service_healthy
-    redis:
-      condition: service_started
-  environment:
-    DATABASE_URL: postgres://postgres:password@db:5432/postgres
-    REDIS_URL: redis://redis:6379/0
+  app:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/postgres
+      REDIS_URL: redis://redis:6379/0
+
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml -r ./inits/sidekiq.rb
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/postgres
+      REDIS_URL: redis://redis:6379/0
+
+volumes:
+  postgres_data:
