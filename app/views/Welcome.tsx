@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "./css/Welcome.css";
+import "./css/welcome.css";
 import CATEGORIES from "./data/ua_categories.json";
 import CITIES from "./data/ua_cities.json";
 

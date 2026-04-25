@@ -5,7 +5,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: password_change_me
+      POSTGRES_PASSWORD: password
 
   # The Cache/Queue Store
   redis:

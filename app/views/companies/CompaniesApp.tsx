@@ -9,7 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Welcome from "./pages/Welcome";
 import Employees from "./pages/Employees";
 
-import "./styles/Companies.css";
+import "./styles/companies.css";
 
 export default function CompaniesApp() {
   return (
