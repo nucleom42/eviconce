@@ -6,12 +6,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install
 
 WORKDIR /app
 
-# Install dependencies
-COPY Betterfile Gemfile.lock ./
+# Install dependencies using standard Gemfile
+COPY Gemfile Gemfile.lock ./
 RUN gem install bundler && bundle install --redownload
 
-# Copy code and build assets
+# Copy project files
 COPY . .
+
+# Rubee build steps
 ENV RACK_ENV=production
 RUN rubee react prepare
 RUN rubee react build
@@ -26,5 +28,5 @@ COPY --from=builder /app /app
 
 ENV RACK_ENV=production
 
-# We remove the multiple CMDs from here and move them to docker-compose
+# Main entry point
 CMD ["rubee", "start", "--port=80"]
