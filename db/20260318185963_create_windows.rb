@@ -1,4 +1,4 @@
-# Rubee::SequelObject::DB.extension :pg_array
+Rubee::SequelObject::DB.extension :pg_array
 
 class CreateWindows
   def call
