@@ -5,7 +5,7 @@ set -e
 sleep 2 
 
 # If db:init needs the environment, make sure rubee loads it
-bundle exec rubee db:init
-bundle exec rubee db:run:all
+bundle exec rubee db init
+bundle exec rubee db run:all
 
 exec "$@"

@@ -19,7 +19,7 @@ Rubee::Configuration.setup(env = :test) do |config|
 end
 
 Rubee::Configuration.setup(env = :production) do |config|
-  config.database_url = { url: 'postgres://postgres@localhost:5432/production', env: }
+  config.database_url = { url: ENV['DATABASE_URL'], env: }
 
   config.react = { on: true, env: }
   config.rubee_support = { all: true }
