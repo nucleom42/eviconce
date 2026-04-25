@@ -627,3 +627,46 @@ input.error {
     padding: 5px 10px;
   }
 }
+
+.form-actions .btn-danger {
+  margin-left: auto;
+  background: transparent !important;
+  color: #aaa !important;
+  border: 1.5px solid #ddd !important;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 400 !important;
+  transition: all 0.25s ease;
+  opacity: 0.55;
+  box-shadow: none !important;
+}
+
+.form-actions .btn-danger:hover {
+  opacity: 1;
+  color: #c0392b !important;
+  border-color: #c0392b !important;
+  background: rgba(192, 57, 43, 0.06) !important;
+}
+.delete-toggle {
+  cursor: pointer;
+  color: #bbb;
+  font-size: 0.85rem;
+  font-weight: 400;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.delete-toggle:hover {
+  color: #c0392b;
+}
+.delete-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}

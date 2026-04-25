@@ -17,9 +17,14 @@ class ClientsController < Rubee::BaseController
   # POST /api/clients
   def create
     Rubee::SequelObject::DB.transaction do
-      client = Client.find_or_new(client_params.except(:id).merge(company_id: @company.id))
-      persisted = client.persisted?
-      client.password = client_params[:password] || client.first_name unless persisted
+      client = Client.find_or_new(client_params.slice(:email).merge(company_id: @company.id))
+      if (persisted = client.persisted?)
+        fisrt_name_matching = client.first_name.strip.downcase == client_params[:first_name].strip.downcase
+        phone_matching = client.phone.to_s.strip.downcase == client_params[:phone].to_s.strip.downcase
+        if !fisrt_name_matching || !phone_matching
+          raise StandardError, "У користувача з поштою #{client.email} вказані невірні Імʼя та/або Телефон"
+        end
+      end
       if persisted || (client.valid? && client.save)
         response_with object: client, type: :json, status: persisted ? 200 : 201
       else

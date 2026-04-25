@@ -29,6 +29,7 @@ export default function CompanyForm({
   const [logoPreview, setLogoPreview] = useState(null);
   const [logoId, setLogoId] = useState(null);
   const [cachedLogoData, setCachedLogoData] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
 
   // Images state
   const [images, setImages] = useState([]);
@@ -97,6 +98,36 @@ export default function CompanyForm({
       setCategorySearch("");
       setShowCategoryDropdown(false);
       setErrors((prev) => ({ ...prev, categories: null }));
+    }
+  };
+
+  const handleDeleteCompany = async () => {
+    const confirmed = window.confirm(
+      `⚠️ Видалити компанію "${company.name}"?\n\n` +
+        `Ця дія є незворотною. Буде видалено:\n` +
+        `• Всі записи та бронювання\n` +
+        `• Всіх співробітників\n` +
+        `• Всі послуги\n` +
+        `• Фотографії та логотип\n\n` +
+        `Відновлення даних буде неможливим.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        navigate("/companies");
+      } else {
+        const body = await response.json();
+        alert(body.errors || "Помилка при видаленні компанії");
+      }
+    } catch (error) {
+      alert("Помилка при видаленні компанії");
     }
   };
 
@@ -616,15 +647,43 @@ export default function CompanyForm({
           </section>
         )}
 
-        <div className="form-actions">
-          {isModal && onCancel && (
-            <button type="button" onClick={onCancel} className="btn-secondary">
-              Скасувати
+        <div className="form-actions border-top pt-3 content-between pb-3">
+          <h3>Дії</h3>
+          <div className="content-center">
+            {isModal && onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="btn-secondary"
+              >
+                Скасувати
+              </button>
+            )}
+            <button type="submit" className="btn-primary">
+              {company ? "Оновити" : "Створити компанію"}
             </button>
+          </div>
+        </div>
+        <div className="form-actions border-top pt-3">
+          {company && (
+            <>
+              <h3
+                className="delete-toggle"
+                onClick={() => setShowDelete(!showDelete)}
+              >
+                {showDelete ? "▲" : "▼"} Видалення
+              </h3>
+              {showDelete && (
+                <button
+                  type="button"
+                  className="btn-danger"
+                  onClick={handleDeleteCompany}
+                >
+                  🗑 Видалити компанію
+                </button>
+              )}
+            </>
           )}
-          <button type="submit" className="btn-primary">
-            {company ? "Оновити" : "Створити компанію"}
-          </button>
         </div>
       </form>
     </div>

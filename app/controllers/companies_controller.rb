@@ -2,8 +2,8 @@ class CompaniesController < Rubee::BaseController
   include Rubee::AuthTokenable
   include ::Authorizable
 
-  auth_methods :create, :dashboard, :update
-  authorize admin: :update
+  auth_methods :create, :dashboard, :update, :destroy
+  authorize admin: [:update, :destroy]
 
   # GET /api/companies
   def index
@@ -79,6 +79,19 @@ class CompaniesController < Rubee::BaseController
                e.message
              end
     response_with object: { errors: }, type: :json, status: 422
+  end
+
+
+  def destroy
+    company = Company.find(params[:id])
+    if company.destroy
+      response_with object: { ok: :deleted }, type: :json, status: 200
+    else
+      response_with object: { errors: company.errors }, type: :json, status: 422
+    end
+  rescue StandardError => e
+    Rubee::Logger.error(message: e.backtrace.first(10).join("\n"), method: __method__, class_name: self.class.name)
+    response_with object: { errors: e.message }, type: :json, status: 500
   end
 
   # PUT /api/companies/{id}
