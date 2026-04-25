@@ -30,4 +30,7 @@ ENV RACK_ENV=production
 ENV RACK_ENV=WEB_CONCURRENCY=4
 
 # Main entry point
+COPY entrypoint.sh /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["rubee", "start", "--port=80"]
