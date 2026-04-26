@@ -11,6 +11,6 @@ end
 unless Object.const_defined?('Rubee')
   require 'rubee'
   # Load dev envs.
-  require_relative 'dev.rb'
+  require_relative 'dev.rb' if Rubee.env.development? || Rubee.env.test?
   Rubee::Autoload.call
 end
