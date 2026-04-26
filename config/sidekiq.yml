@@ -1,7 +1,8 @@
 development:
-  redis: redis://localhost:6379/0
+  # Change localhost to redis
+  redis: redis://redis:6379/0 
   concurrency: 5
   queues:
-    default:
-    low:
-    high:
+    - [high, 3]
+    - [default, 2]
+    - [low, 1]
